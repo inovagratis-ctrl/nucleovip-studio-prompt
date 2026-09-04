@@ -15,7 +15,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
   reasonTitle = 'Desbloqueie o Poder Total do Núcleo VIP — Studio Prompt Pro',
   reasonDescription = 'Escolha o plano ideal para você criar prompts profissionais e vídeos com IA.',
 }) => {
-  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('yearly');
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
   const [selectedPlanId, setSelectedPlanId] = useState<'trial' | 'pro' | 'agency'>('pro');
 
   if (!isOpen) return null;

@@ -7,7 +7,7 @@ interface PricingSectionProps {
 }
 
 export const PricingSection: React.FC<PricingSectionProps> = ({ onNavigateToSignup }) => {
-  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('yearly');
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
 
   const handlePlanCheckout = (plan: PlanPricing) => {
     const checkoutUrl = billingCycle === 'monthly' ? plan.checkoutUrlMonthly : plan.checkoutUrlYearly;
