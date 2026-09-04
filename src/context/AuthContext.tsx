@@ -51,10 +51,46 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Carregar usuário e plano
   useEffect(() => {
+    // 1. Verificar se há parâmetros de ativação imediata da Cakto na URL
+    try {
+      const searchStr = window.location.search || (window.location.hash.includes('?') ? window.location.hash.split('?')[1] : '');
+      const params = new URLSearchParams(searchStr);
+      const urlPlan = params.get('plan') || params.get('plano');
+      const status = params.get('status') || params.get('payment_status') || 'approved';
+      const customerEmail = params.get('email') || params.get('customer_email') || params.get('buyer_email') || '';
+      const customerName = params.get('name') || params.get('customer_name') || params.get('buyer_name') || '';
+
+      if (urlPlan && (status === 'approved' || status === 'success' || status === 'paid' || status === 'pago' || !params.has('status'))) {
+        let mappedPlan: PlanType = 'trial';
+        if (urlPlan.toLowerCase().includes('agency') || urlPlan.toLowerCase().includes('master')) mappedPlan = 'agency';
+        else if (urlPlan.toLowerCase().includes('pro')) mappedPlan = 'pro';
+        else if (urlPlan.toLowerCase().includes('starter') || urlPlan.toLowerCase().includes('trial')) mappedPlan = 'trial';
+
+        localStorage.setItem('prompt_studio_activated_plan', mappedPlan);
+        localStorage.setItem('prompt_studio_just_purchased', mappedPlan);
+
+        const newVipUser: User = {
+          id: `usr_cakto_${Date.now()}`,
+          name: customerName || (customerEmail ? customerEmail.split('@')[0] : 'Membro VIP'),
+          email: customerEmail || 'membro@nucleovip.com.br',
+          createdAt: new Date().toISOString(),
+          plan: mappedPlan,
+        };
+
+        setUser(newVipUser);
+        localStorage.setItem(LOCAL_AUTH_STORAGE_KEY, JSON.stringify(newVipUser));
+        setIsLoading(false);
+        window.location.hash = 'app';
+        return;
+      }
+    } catch (e) {
+      console.warn('Erro ao processar ativação de URL Cakto:', e);
+    }
+
     if (isSupabaseConfigured && supabase) {
       supabase.auth.getSession().then(({ data: { session }, error }) => {
         if (!error && session?.user) {
-          const userPlan = (session.user.user_metadata?.plan as PlanType) || 'free';
+          const userPlan = (session.user.user_metadata?.plan as PlanType) || 'trial';
           setUser({
             id: session.user.id,
             name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'Usuário',
@@ -68,7 +104,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
         if (session?.user) {
-          const userPlan = (session.user.user_metadata?.plan as PlanType) || 'free';
+          const userPlan = (session.user.user_metadata?.plan as PlanType) || 'trial';
           setUser({
             id: session.user.id,
             name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'Usuário',
@@ -97,35 +133,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     }
   }, []);
-
-  // Listener de ativação pós-compra (Cakto / URL de redirecionamento)
-  useEffect(() => {
-    try {
-      const params = new URLSearchParams(window.location.search);
-      const urlPlan = params.get('plan') || params.get('plano');
-      const status = params.get('status') || params.get('payment_status') || 'approved';
-
-      if (urlPlan && (status === 'approved' || status === 'success' || status === 'paid' || status === 'pago')) {
-        let mappedPlan: PlanType = 'trial';
-        if (urlPlan.toLowerCase().includes('pro')) mappedPlan = 'pro';
-        else if (urlPlan.toLowerCase().includes('agency') || urlPlan.toLowerCase().includes('master')) mappedPlan = 'agency';
-        else if (urlPlan.toLowerCase().includes('starter') || urlPlan.toLowerCase().includes('trial')) mappedPlan = 'trial';
-
-        // Salva ativação para garantir mesmo se registrar depois
-        localStorage.setItem('prompt_studio_activated_plan', mappedPlan);
-
-        if (user) {
-          upgradePlan(mappedPlan);
-        }
-
-        // Limpa parâmetros da URL de forma elegante
-        const cleanUrl = window.location.pathname;
-        window.history.replaceState({}, document.title, cleanUrl);
-      }
-    } catch (e) {
-      console.warn('Erro ao processar ativação de URL:', e);
-    }
-  }, [user]);
 
   const plan: PlanType = user?.plan || (localStorage.getItem('prompt_studio_activated_plan') as PlanType) || 'trial';
   const maxDailyGenerations = 999999;

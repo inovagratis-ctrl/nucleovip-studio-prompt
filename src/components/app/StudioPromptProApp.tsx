@@ -19,11 +19,37 @@ import confetti from 'canvas-confetti';
 
 export const StudioPromptProApp: React.FC = () => {
   const { history, addToHistory } = useHistory();
-  const { canGenerate, incrementGenerationCount } = useAuth();
-  const [activeTab, setActiveTab] = useState<ActiveTab>('generate');
+  const { plan, canGenerate, incrementGenerationCount } = useAuth();
+  const [activeTab, setActiveTab] = useState<ActiveTab>(() => {
+    // Se acabou de vir da Cakto, abre direto na Área de Membros
+    if (localStorage.getItem('prompt_studio_just_purchased')) {
+      return 'members';
+    }
+    return 'generate';
+  });
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [upgradeReason, setUpgradeReason] = useState({ title: '', description: '' });
+  const [justPurchasedPlan, setJustPurchasedPlan] = useState<string | null>(null);
+
+  // Efeito de celebração pós-compra
+  useEffect(() => {
+    const purchased = localStorage.getItem('prompt_studio_just_purchased');
+    if (purchased) {
+      setJustPurchasedPlan(purchased);
+      localStorage.removeItem('prompt_studio_just_purchased');
+      try {
+        confetti({
+          particleCount: 100,
+          spread: 80,
+          origin: { y: 0.6 },
+          colors: ['#4F46E5', '#10B981', '#F59E0B', '#EC4899'],
+        });
+      } catch (e) {
+        // Confetti
+      }
+    }
+  }, []);
 
   // Generator state
   const [category, setCategory] = useState<CategoryType>('thumbnail');
@@ -129,6 +155,30 @@ export const StudioPromptProApp: React.FC = () => {
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-10">
+        {justPurchasedPlan && (
+          <div className="mb-8 p-6 rounded-3xl bg-gradient-to-r from-emerald-600 via-teal-600 to-indigo-600 text-white shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4 animate-fadeIn">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-2xl shrink-0">
+                🎉
+              </div>
+              <div>
+                <h3 className="text-base sm:text-lg font-black tracking-tight">
+                  Parabéns! Seu Plano {justPurchasedPlan === 'agency' ? 'Studio Master' : justPurchasedPlan === 'pro' ? 'PRO Creator VIP' : 'Starter VIP'} está 100% Liberado!
+                </h3>
+                <p className="text-xs sm:text-sm text-emerald-100 mt-0.5">
+                  Seu pagamento foi confirmado com sucesso pela Cakto. Todos os recursos, packs e ferramentas já estão desbloqueados.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setJustPurchasedPlan(null)}
+              className="px-4 py-2 rounded-xl bg-white text-emerald-800 text-xs font-bold hover:bg-emerald-50 transition cursor-pointer shrink-0 shadow-sm"
+            >
+              Começar Agora
+            </button>
+          </div>
+        )}
         {activeTab === 'generate' && (
           <div className="max-w-4xl mx-auto space-y-8">
             {/* Header / Intro */}

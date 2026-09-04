@@ -12,7 +12,11 @@ type AppRoute = 'landing' | 'login' | 'signup' | 'app';
 const MainRouter: React.FC = () => {
   const { isAuthenticated } = useAuth();
   const [currentRoute, setCurrentRoute] = useState<AppRoute>(() => {
-    const hash = window.location.hash.replace('#', '');
+    const searchParams = new URLSearchParams(window.location.search || (window.location.hash.includes('?') ? window.location.hash.split('?')[1] : ''));
+    if (searchParams.get('plan') || searchParams.get('plano') || searchParams.get('status') === 'approved') {
+      return 'app';
+    }
+    const hash = window.location.hash.replace('#', '').split('?')[0];
     if (hash === 'app') return 'app';
     if (hash === 'login') return 'login';
     if (hash === 'signup') return 'signup';
@@ -21,7 +25,12 @@ const MainRouter: React.FC = () => {
 
   useEffect(() => {
     const handleHashChange = () => {
-      const hash = window.location.hash.replace('#', '');
+      const searchParams = new URLSearchParams(window.location.search || (window.location.hash.includes('?') ? window.location.hash.split('?')[1] : ''));
+      if (searchParams.get('plan') || searchParams.get('plano') || searchParams.get('status') === 'approved') {
+        setCurrentRoute('app');
+        return;
+      }
+      const hash = window.location.hash.replace('#', '').split('?')[0];
       if (hash === 'app') setCurrentRoute('app');
       else if (hash === 'login') setCurrentRoute('login');
       else if (hash === 'signup') setCurrentRoute('signup');
