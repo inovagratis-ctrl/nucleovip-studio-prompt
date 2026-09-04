@@ -34,8 +34,8 @@ export const PLANS_CONFIG: PlanPricing[] = [
       'Suporte por E-mail',
       'Sem fidelidade: Cancele a qualquer momento com 1 clique',
     ],
-    checkoutUrlMonthly: import.meta.env.VITE_CHECKOUT_TRIAL || 'https://kiwify.app/6bQUedT',
-    checkoutUrlYearly: import.meta.env.VITE_CHECKOUT_TRIAL || 'https://kiwify.app/6bQUedT',
+    checkoutUrlMonthly: import.meta.env.VITE_CHECKOUT_STARTER_MONTHLY || 'https://pay.cakto.com.br/3fa8t5v_1085807',
+    checkoutUrlYearly: import.meta.env.VITE_CHECKOUT_STARTER_YEARLY || 'https://pay.cakto.com.br/5ybjaep',
   },
   {
     id: 'pro',
@@ -56,8 +56,8 @@ export const PLANS_CONFIG: PlanPricing[] = [
       'Sincronização ilimitada de histórico na nuvem (Supabase)',
       'Suporte prioritário por E-mail',
     ],
-    checkoutUrlMonthly: import.meta.env.VITE_CHECKOUT_PRO_MONTHLY || 'https://pay.kiwify.com.br/exemplo-pro-mensal',
-    checkoutUrlYearly: import.meta.env.VITE_CHECKOUT_PRO_YEARLY || 'https://pay.kiwify.com.br/exemplo-pro-anual',
+    checkoutUrlMonthly: import.meta.env.VITE_CHECKOUT_PRO_MONTHLY || 'https://pay.cakto.com.br/pvufpys_1085829',
+    checkoutUrlYearly: import.meta.env.VITE_CHECKOUT_PRO_YEARLY || 'https://pay.cakto.com.br/r2zfq48',
   },
   {
     id: 'agency',
@@ -76,7 +76,7 @@ export const PLANS_CONFIG: PlanPricing[] = [
       '💻 Código-Fonte Completo do Projeto 3 (Python CLI + Automação)',
       'Suporte VIP Prioritário por E-mail',
     ],
-    checkoutUrlMonthly: import.meta.env.VITE_CHECKOUT_AGENCY_MONTHLY || 'https://pay.kiwify.com.br/exemplo-agency-mensal',
-    checkoutUrlYearly: import.meta.env.VITE_CHECKOUT_AGENCY_YEARLY || 'https://pay.kiwify.com.br/exemplo-agency-anual',
+    checkoutUrlMonthly: import.meta.env.VITE_CHECKOUT_AGENCY_MONTHLY || 'https://pay.cakto.com.br/pqd58v4_1085842',
+    checkoutUrlYearly: import.meta.env.VITE_CHECKOUT_AGENCY_YEARLY || 'https://pay.cakto.com.br/yxxtp4s',
   },
 ];
