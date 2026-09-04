@@ -2,7 +2,7 @@ export type CategoryType = 'thumbnail' | 'personagem' | 'cena' | 'video';
 
 export type AIModelType = 'chatgpt' | 'nanobanana' | 'veo' | 'kling' | 'seedance';
 
-export type PlanType = 'free' | 'pro' | 'agency';
+export type PlanType = 'trial' | 'pro' | 'agency' | 'free';
 
 export interface CategoryInfo {
   id: CategoryType;

@@ -14,28 +14,30 @@ interface UpgradeModalProps {
 export const UpgradeModal: React.FC<UpgradeModalProps> = ({
   isOpen,
   onClose,
-  reasonTitle = 'Desbloqueie o Poder Ilimitado do Studio Prompt Pro',
-  reasonDescription = 'Você atingiu o limite gratuito diário ou tentou acessar um recurso exclusivo para assinantes PRO.',
+  reasonTitle = 'Desbloqueie o Poder Total do Núcleo VIP — Studio Prompt Pro',
+  reasonDescription = 'Escolha o plano ideal para você criar prompts profissionais sem limites para imagens e vídeos.',
 }) => {
   const { upgradePlan } = useAuth();
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('yearly');
-  const [selectedPlanId, setSelectedPlanId] = useState<'pro' | 'agency'>('pro');
+  const [selectedPlanId, setSelectedPlanId] = useState<'trial' | 'pro' | 'agency'>('pro');
 
   if (!isOpen) return null;
 
-  const proPlan = PLANS_CONFIG.find((p) => p.id === 'pro')!;
-  const agencyPlan = PLANS_CONFIG.find((p) => p.id === 'agency')!;
-  const currentPlan = selectedPlanId === 'pro' ? proPlan : agencyPlan;
+  const currentPlan = PLANS_CONFIG.find((p) => p.id === selectedPlanId) || PLANS_CONFIG[1];
+  const isTrial = selectedPlanId === 'trial';
 
-  const price = billingCycle === 'monthly' ? currentPlan.monthlyPrice : currentPlan.yearlyPrice;
+  const price = isTrial
+    ? '2,99'
+    : billingCycle === 'monthly'
+    ? currentPlan.monthlyPrice.toFixed(2).replace('.', ',')
+    : (currentPlan.yearlyPrice / 12).toFixed(2).replace('.', ',');
+
   const checkoutUrl = billingCycle === 'monthly' ? currentPlan.checkoutUrlMonthly : currentPlan.checkoutUrlYearly;
 
   const handleSimulatePayment = () => {
-    // Para facilidade de teste local ou redirecionamento real
     if (checkoutUrl && !checkoutUrl.includes('exemplo-')) {
       window.open(checkoutUrl, '_blank');
     } else {
-      // Simulação instantânea de ativação PRO
       upgradePlan(selectedPlanId);
       try {
         confetti({
@@ -45,7 +47,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
           colors: ['#4F46E5', '#7C3AED', '#06B6D4', '#F59E0B'],
         });
       } catch (e) {}
-      alert(`🎉 Parabéns! Seu plano foi atualizado para ${currentPlan.name}! Todas as funções foram liberadas.`);
+      alert(`🎉 Parabéns! Seu plano foi ativado com sucesso: ${currentPlan.name}!`);
       onClose();
     }
   };
@@ -62,30 +64,30 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
         </button>
 
         {/* Top Banner */}
-        <div className="bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-800 p-6 sm:p-8 text-white relative overflow-hidden text-center">
-          <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center mx-auto mb-3 text-amber-300 shadow-md">
+        <div className="bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-800 p-6 sm:p-7 text-white relative overflow-hidden text-center">
+          <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center mx-auto mb-2 text-amber-300 shadow-md">
             <Crown className="w-6 h-6" />
           </div>
 
           <span className="text-xs font-bold uppercase tracking-wider bg-white/20 px-3 py-1 rounded-full text-indigo-100 border border-white/10">
-            Acesso Ilimitado
+            Acesso Especial VIP
           </span>
 
-          <h3 className="text-2xl sm:text-3xl font-black mt-3">{reasonTitle}</h3>
-          <p className="text-xs sm:text-sm text-indigo-100 mt-2 max-w-lg mx-auto">
+          <h3 className="text-xl sm:text-2xl font-black mt-2">{reasonTitle}</h3>
+          <p className="text-xs sm:text-sm text-indigo-100 mt-1 max-w-lg mx-auto">
             {reasonDescription}
           </p>
         </div>
 
         {/* Modal Body */}
-        <div className="p-6 sm:p-8 space-y-6">
+        <div className="p-5 sm:p-7 space-y-5">
           {/* Plan Switcher (Monthly vs Yearly) */}
           <div className="flex items-center justify-center gap-3">
             <div className="bg-slate-100 p-1 rounded-xl flex items-center border border-slate-200 text-xs font-bold">
               <button
                 type="button"
                 onClick={() => setBillingCycle('monthly')}
-                className={`px-4 py-2 rounded-lg transition cursor-pointer ${
+                className={`px-3.5 py-1.5 rounded-lg transition cursor-pointer ${
                   billingCycle === 'monthly'
                     ? 'bg-white text-indigo-700 shadow-xs'
                     : 'text-slate-600 hover:text-slate-900'
@@ -96,7 +98,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
               <button
                 type="button"
                 onClick={() => setBillingCycle('yearly')}
-                className={`px-4 py-2 rounded-lg transition flex items-center gap-1.5 cursor-pointer ${
+                className={`px-3.5 py-1.5 rounded-lg transition flex items-center gap-1.5 cursor-pointer ${
                   billingCycle === 'yearly'
                     ? 'bg-white text-indigo-700 shadow-xs'
                     : 'text-slate-600 hover:text-slate-900'
@@ -110,53 +112,81 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
             </div>
           </div>
 
-          {/* Plan Cards Selector */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* PRO */}
+          {/* 3 Plan Cards Selector */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {/* TRIAL */}
             <div
-              onClick={() => setSelectedPlanId('pro')}
-              className={`p-5 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${
-                selectedPlanId === 'pro'
-                  ? 'border-indigo-500 bg-indigo-50/50 ring-2 ring-indigo-500/20 shadow-sm'
+              onClick={() => setSelectedPlanId('trial')}
+              className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${
+                selectedPlanId === 'trial'
+                  ? 'border-amber-500 bg-amber-50/50 ring-2 ring-amber-500/20 shadow-xs'
                   : 'border-slate-200 bg-white hover:border-slate-300'
               }`}
             >
               <div>
                 <div className="flex items-center justify-between">
-                  <span className="font-extrabold text-slate-900 text-base">PRO Creator</span>
-                  <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700">
-                    Mais Popular
+                  <span className="font-bold text-slate-900 text-xs">Teste 7 Dias</span>
+                  <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">
+                    Degustação
                   </span>
                 </div>
-                <div className="mt-3">
-                  <span className="text-2xl font-black text-slate-900">R$ {billingCycle === 'monthly' ? '37' : '24'}</span>
-                  <span className="text-xs text-slate-500 font-medium"> /mês</span>
+                <div className="mt-2">
+                  <span className="text-xl font-black text-slate-900">R$ 2,99</span>
+                  <span className="text-[10px] text-slate-500 font-medium"> /7 dias</span>
                 </div>
-                <p className="text-xs text-slate-500 mt-1">Gerações ilimitadas e todos os modelos de IA.</p>
+                <p className="text-[11px] text-slate-500 mt-1">Taxa simbólica de teste.</p>
+              </div>
+            </div>
+
+            {/* PRO */}
+            <div
+              onClick={() => setSelectedPlanId('pro')}
+              className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${
+                selectedPlanId === 'pro'
+                  ? 'border-indigo-500 bg-indigo-50/50 ring-2 ring-indigo-500/20 shadow-xs'
+                  : 'border-slate-200 bg-white hover:border-slate-300'
+              }`}
+            >
+              <div>
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-slate-900 text-xs">PRO Creator VIP</span>
+                  <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700">
+                    Mais Vendido
+                  </span>
+                </div>
+                <div className="mt-2">
+                  <span className="text-xl font-black text-slate-900">
+                    R$ {billingCycle === 'monthly' ? '14,99' : '9,99'}
+                  </span>
+                  <span className="text-[10px] text-slate-500 font-medium"> /mês</span>
+                </div>
+                <p className="text-[11px] text-slate-500 mt-1">Ilimitado + Modelos de Vídeo.</p>
               </div>
             </div>
 
             {/* AGENCY */}
             <div
               onClick={() => setSelectedPlanId('agency')}
-              className={`p-5 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${
+              className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${
                 selectedPlanId === 'agency'
-                  ? 'border-indigo-500 bg-indigo-50/50 ring-2 ring-indigo-500/20 shadow-sm'
+                  ? 'border-purple-500 bg-purple-50/50 ring-2 ring-purple-500/20 shadow-xs'
                   : 'border-slate-200 bg-white hover:border-slate-300'
               }`}
             >
               <div>
                 <div className="flex items-center justify-between">
-                  <span className="font-extrabold text-slate-900 text-base">Agência & Studio</span>
-                  <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-purple-100 text-purple-700">
+                  <span className="font-bold text-slate-900 text-xs">Studio Master</span>
+                  <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-purple-100 text-purple-700">
                     Comercial
                   </span>
                 </div>
-                <div className="mt-3">
-                  <span className="text-2xl font-black text-slate-900">R$ {billingCycle === 'monthly' ? '87' : '58'}</span>
-                  <span className="text-xs text-slate-500 font-medium"> /mês</span>
+                <div className="mt-2">
+                  <span className="text-xl font-black text-slate-900">
+                    R$ {billingCycle === 'monthly' ? '29,99' : '19,99'}
+                  </span>
+                  <span className="text-[10px] text-slate-500 font-medium"> /mês</span>
                 </div>
-                <p className="text-xs text-slate-500 mt-1">Para canais dark, escala e atendimento a clientes.</p>
+                <p className="text-[11px] text-slate-500 mt-1">Packs Bônus + Canais Dark.</p>
               </div>
             </div>
           </div>
@@ -184,7 +214,11 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
               className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-black text-base shadow-xl shadow-indigo-500/25 flex items-center justify-center gap-2 transition transform active:scale-95 cursor-pointer"
             >
               <Zap className="w-5 h-5 text-amber-300 fill-amber-300" />
-              <span>Assinar Agora ({billingCycle === 'monthly' ? `R$ ${price}/mês` : `R$ ${price}/ano`})</span>
+              <span>
+                {isTrial
+                  ? 'Ativar Teste 7 Dias (R$ 2,99)'
+                  : `Assinar Agora (${billingCycle === 'monthly' ? `R$ ${price}/mês` : `R$ ${currentPlan.yearlyPrice.toFixed(2).replace('.', ',')}/ano`})`}
+              </span>
               <ArrowRight className="w-5 h-5" />
             </button>
 

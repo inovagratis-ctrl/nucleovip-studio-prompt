@@ -37,12 +37,12 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigateToSignup }) 
             className="px-8 py-4 rounded-2xl text-base font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white shadow-xl shadow-indigo-500/25 flex items-center gap-3 transition-all transform hover:-translate-y-0.5 active:scale-95 cursor-pointer"
           >
             <Sparkles className="w-5 h-5 text-indigo-100" />
-            <span>Começar Grátis</span>
+            <span>Testar 7 Dias por R$ 2,99</span>
             <ArrowRight className="w-5 h-5" />
           </button>
 
           <p className="text-xs sm:text-sm text-slate-500 font-medium">
-            Crie sua conta gratuitamente e comece agora.
+            Acesso imediato • Planos a partir de R$ 14,99/mês • Cancele quando quiser
           </p>
         </div>
 
@@ -50,11 +50,11 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigateToSignup }) 
         <div className="mt-8 flex items-center justify-center gap-6 text-xs text-slate-600 flex-wrap">
           <div className="flex items-center gap-1.5 font-medium">
             <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-            <span>Sem necessidade de cartão</span>
+            <span>Garantia incondicional de 7 dias</span>
           </div>
           <div className="flex items-center gap-1.5 font-medium">
             <CheckCircle2 className="w-4 h-4 text-indigo-600" />
-            <span>Acesso ao Studio Prompt Pro</span>
+            <span>Acesso Completo Núcleo VIP</span>
           </div>
           <div className="flex items-center gap-1.5 font-medium">
             <CheckCircle2 className="w-4 h-4 text-cyan-600" />

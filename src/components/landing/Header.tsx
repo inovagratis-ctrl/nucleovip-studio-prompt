@@ -81,7 +81,7 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={onNavigateToSignup}
             className="px-5 py-2.5 rounded-xl text-sm font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white shadow-lg shadow-indigo-500/25 flex items-center gap-1.5 transition transform active:scale-95 cursor-pointer"
           >
-            <span>Começar Grátis</span>
+            <span>Testar por R$ 2,99</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </div>

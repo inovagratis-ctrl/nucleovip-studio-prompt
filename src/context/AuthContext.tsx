@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { User, PlanType } from '../types';
 import { supabase, isSupabaseConfigured } from '../services/supabaseClient';
-import { FREE_DAILY_LIMIT } from '../config/plans';
 
 interface AuthContextType {
   user: User | null;
@@ -99,12 +98,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  const plan: PlanType = user?.plan || 'free';
-  const maxDailyGenerations = plan === 'free' ? FREE_DAILY_LIMIT : 999999;
+  const plan: PlanType = user?.plan || 'trial';
+  const maxDailyGenerations = 999999;
 
   const canGenerate = (): boolean => {
-    if (plan === 'pro' || plan === 'agency') return true;
-    return dailyGenerationsUsed < FREE_DAILY_LIMIT;
+    return true;
   };
 
   const incrementGenerationCount = () => {

@@ -20,7 +20,7 @@ export const FinalCta: React.FC<FinalCtaProps> = ({ onNavigateToSignup }) => {
           </h2>
 
           <p className="mt-6 text-base sm:text-lg text-slate-600 max-w-xl mx-auto leading-relaxed">
-            Transforme suas ideias em prompts profissionais com o <strong>Studio Prompt Pro</strong>.
+            Transforme suas ideias em prompts profissionais com o <strong>Núcleo VIP — Studio Prompt Pro</strong>.
           </p>
 
           <div className="mt-8 flex justify-center">
@@ -29,7 +29,7 @@ export const FinalCta: React.FC<FinalCtaProps> = ({ onNavigateToSignup }) => {
               className="px-8 py-4 rounded-2xl text-base font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white shadow-xl shadow-indigo-500/25 flex items-center gap-3 transition-all transform hover:-translate-y-0.5 active:scale-95 cursor-pointer"
             >
               <Sparkles className="w-5 h-5 text-indigo-100" />
-              <span>Começar Grátis</span>
+              <span>Testar 7 Dias por R$ 2,99</span>
               <ArrowRight className="w-5 h-5" />
             </button>
           </div>

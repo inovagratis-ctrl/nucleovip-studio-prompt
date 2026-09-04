@@ -1,7 +1,7 @@
-export const FREE_DAILY_LIMIT = 5;
+export const TRIAL_DAYS = 7;
 
 export interface PlanPricing {
-  id: 'free' | 'pro' | 'agency';
+  id: 'trial' | 'pro' | 'agency' | 'free';
   name: string;
   badge?: string;
   description: string;
@@ -15,54 +15,60 @@ export interface PlanPricing {
 
 export const PLANS_CONFIG: PlanPricing[] = [
   {
-    id: 'free',
-    name: 'Gratuito',
-    description: 'Perfeito para experimentar a qualidade da engenharia de prompts.',
-    monthlyPrice: 0,
-    yearlyPrice: 0,
+    id: 'trial',
+    name: 'Teste 7 Dias',
+    badge: 'Degustação VIP',
+    description: 'Acesso completo de 7 dias por uma taxa simbólica para você testar sem compromisso.',
+    monthlyPrice: 2.99,
+    yearlyPrice: 2.99,
     features: [
-      '5 gerações de prompts por dia',
-      'Acesso aos modelos ChatGPT e Nano Banana',
-      'Categorias: Thumbnail e Cena',
-      'Histórico local recente (até 5 prompts)',
-      'Recomendações técnicas básicas',
+      '7 dias de acesso total à plataforma',
+      'Engenharia de prompts com IA Gemini Pro',
+      'Modelos de Imagem (ChatGPT DALL-E 3 e Nano Banana Flux/SDXL)',
+      'Ferramenta Otimizador de Prompts (Antes vs Depois)',
+      'Categorias completas: Thumbnails, Personagens e Cenas',
+      'Histórico salvo na nuvem',
+      'Sem fidelidade: cancele quando quiser',
     ],
+    checkoutUrlMonthly: import.meta.env.VITE_CHECKOUT_TRIAL || 'https://pay.kiwify.com.br/exemplo-trial-7dias',
+    checkoutUrlYearly: import.meta.env.VITE_CHECKOUT_TRIAL || 'https://pay.kiwify.com.br/exemplo-trial-7dias',
   },
   {
     id: 'pro',
-    name: 'PRO Creator',
-    badge: 'Mais Popular',
+    name: 'PRO Creator VIP',
+    badge: 'Mais Vendido',
     popular: true,
-    description: 'Para criadores de conteúdo, YouTubers e designers que exigem alta performance.',
-    monthlyPrice: 37,
-    yearlyPrice: 297, // Economia de 33%
+    description: 'Para criadores de conteúdo, YouTubers e designers que buscam prompts de altíssimo nível.',
+    monthlyPrice: 14.99,
+    yearlyPrice: 119.90, // ~R$ 9,99/mês
     features: [
-      'Gerações de prompts ILIMITADAS',
-      'Todos os modelos de IA (Veo, Kling, Seedance, DALL-E, Flux)',
-      'Modo Comparativo Multi-IA liberado',
-      'Refinador de linguagem natural com Gemini AI ilimitado',
-      'Ferramenta de Otimização Antes/Depois',
-      'Sincronização ilimitada de histórico na nuvem',
-      'Suporte prioritário por WhatsApp/Email',
+      'Gerações de prompts ILIMITADAS todos os dias',
+      'Todos os 5 Modelos de Imagem & Vídeo (Veo, Kling, Seedance, ChatGPT, Flux)',
+      'Modo Comparativo Multi-IA lado a lado liberado',
+      'Refinamento em linguagem natural com Gemini Pro',
+      '🎁 BÔNUS: Pack com +500 Prompts Prontos de Alta Conversão',
+      '🚀 SERVIÇO: Atualizações contínuas de novos parâmetros de IA',
+      'Sincronização ilimitada de histórico na nuvem (Supabase)',
+      'Suporte rápido por WhatsApp e E-mail',
     ],
     checkoutUrlMonthly: import.meta.env.VITE_CHECKOUT_PRO_MONTHLY || 'https://pay.kiwify.com.br/exemplo-pro-mensal',
     checkoutUrlYearly: import.meta.env.VITE_CHECKOUT_PRO_YEARLY || 'https://pay.kiwify.com.br/exemplo-pro-anual',
   },
   {
     id: 'agency',
-    name: 'Agência & Estúdio',
-    badge: 'Uso Comercial',
-    description: 'Para agências de marketing, canais dark em escala e produtoras de vídeo.',
-    monthlyPrice: 87,
-    yearlyPrice: 697,
+    name: 'Agência & Studio Master',
+    badge: 'Mais Completo',
+    description: 'Solução completa para agências, produtores de canais Dark e prestadores de serviços.',
+    monthlyPrice: 29.99,
+    yearlyPrice: 239.90, // ~R$ 19,99/mês
     features: [
-      'Tudo incluído no Plano PRO',
-      'Prioridade máxima de processamento e velocidade',
-      'Presets exclusivos para Canais Dark de Alto CTR',
-      'Exportação de prompts em lote (Batch)',
-      'Direito de uso comercial para clientes',
-      'Acesso antecipado a novos modelos de vídeo',
-      'Consultoria de engenharia de prompts',
+      'TUDO do Plano PRO Creator VIP incluído',
+      '🎁 SUPER BÔNUS: Pack +1.000 Prompts para Canais Dark, Shorts & Reels Virais',
+      '📚 BÔNUS EXCLUSIVO: E-book Guia do Mestre em Engenharia de Prompts',
+      '💼 SERVIÇO: Licença de Uso Comercial Ilimitada (venda para clientes)',
+      '⚡ Prioridade Máxima de Processamento no Gemini Pro',
+      'Acesso Antecipado a Novos Modelos (Midjourney v7, OpenAI Sora)',
+      'Suporte VIP Direto no WhatsApp',
     ],
     checkoutUrlMonthly: import.meta.env.VITE_CHECKOUT_AGENCY_MONTHLY || 'https://pay.kiwify.com.br/exemplo-agency-mensal',
     checkoutUrlYearly: import.meta.env.VITE_CHECKOUT_AGENCY_YEARLY || 'https://pay.kiwify.com.br/exemplo-agency-anual',
