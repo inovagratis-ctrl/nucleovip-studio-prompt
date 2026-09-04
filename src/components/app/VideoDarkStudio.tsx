@@ -18,7 +18,10 @@ import {
   Tv,
   Smartphone,
   ArrowRight,
-  Maximize2
+  Maximize2,
+  Mic,
+  Music,
+  ExternalLink
 } from 'lucide-react';
 import type { VideoDarkProject, VideoFormat, VideoNiche, VideoTone } from '../../types';
 import { generateDarkVideoProject, getSceneImageUrl, NICHE_LABELS, TONE_LABELS } from '../../services/videoDarkService';
@@ -36,17 +39,18 @@ export const VideoDarkStudio: React.FC<VideoDarkStudioProps> = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [project, setProject] = useState<VideoDarkProject | null>(null);
 
-  // Player preview & TTS Audio state
+  // Player preview & Audio modes
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isAudioEnabled, setIsAudioEnabled] = useState(true);
+  const [audioMode, setAudioMode] = useState<'music' | 'voice' | 'mute'>('music');
   const [currentSceneIdx, setCurrentSceneIdx] = useState(0);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
 
   // Active view tab inside project results
-  const [activeResultTab, setActiveResultTab] = useState<'storyboard' | 'script' | 'titles' | 'player'>('storyboard');
+  const [activeResultTab, setActiveResultTab] = useState<'storyboard' | 'player' | 'script' | 'titles'>('storyboard');
 
-  const speechSynthRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const oscillatorNodesRef = useRef<any[]>([]);
 
   const handleCopy = (text: string, key: string) => {
     navigator.clipboard.writeText(text);
@@ -58,6 +62,7 @@ export const VideoDarkStudio: React.FC<VideoDarkStudioProps> = () => {
     if (!topic.trim() || isLoading) return;
     setIsLoading(true);
     setIsPlaying(false);
+    stopCinematicMusic();
     window.speechSynthesis?.cancel();
     setCurrentSceneIdx(0);
 
@@ -86,7 +91,61 @@ export const VideoDarkStudio: React.FC<VideoDarkStudioProps> = () => {
     }
   };
 
-  // Regenerar imagem de uma cena específica com nova seed
+  // Web Audio API: Gerador de Trilha Sonora Épica Cinematográfica
+  const playCinematicMusic = () => {
+    try {
+      if (!audioCtxRef.current) {
+        audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      }
+      const ctx = audioCtxRef.current;
+      if (ctx.state === 'suspended') {
+        ctx.resume();
+      }
+
+      stopCinematicMusic();
+
+      const chords = [130.81, 164.81, 196.00, 261.63]; // C minor cinematic chords
+      const nodes: any[] = [];
+
+      chords.forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = i % 2 === 0 ? 'sine' : 'triangle';
+        osc.frequency.setValueAtTime(freq + (i * 1.5), ctx.currentTime);
+
+        gain.gain.setValueAtTime(0.01, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.06, ctx.currentTime + 1.5);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        nodes.push({ osc, gain });
+      });
+
+      oscillatorNodesRef.current = nodes;
+    } catch (e) {
+      console.warn('Web Audio não suportado ou bloqueado:', e);
+    }
+  };
+
+  const stopCinematicMusic = () => {
+    if (oscillatorNodesRef.current.length > 0) {
+      oscillatorNodesRef.current.forEach(({ osc, gain }) => {
+        try {
+          if (audioCtxRef.current) {
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtxRef.current.currentTime + 0.4);
+            setTimeout(() => osc.stop(), 450);
+          } else {
+            osc.stop();
+          }
+        } catch (e) {}
+      });
+      oscillatorNodesRef.current = [];
+    }
+  };
+
+  // Regenerar imagem de uma cena específica
   const handleRegenerateSceneImage = (sceneNumber: number) => {
     if (!project) return;
     const newSeed = Math.floor(Math.random() * 1000000);
@@ -102,49 +161,57 @@ export const VideoDarkStudio: React.FC<VideoDarkStudioProps> = () => {
     setProject({ ...project, scenes: updatedScenes });
   };
 
-  // TTS Voice Synthesis Function for Brazilian Portuguese
+  // Fala a narração (apenas se o usuário escolher 'voice')
   const speakSceneNarration = (text: string) => {
-    if (!isAudioEnabled || !window.speechSynthesis) return;
+    if (audioMode !== 'voice' || !window.speechSynthesis) return;
     window.speechSynthesis.cancel();
 
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'pt-BR';
-    utterance.rate = 1.05; // ritmo natural de canal dark
-    utterance.pitch = 0.95;
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
 
-    // Tenta voz em português se disponível
     const voices = window.speechSynthesis.getVoices();
     const ptVoice = voices.find((v) => v.lang.includes('pt') || v.lang.includes('BR'));
     if (ptVoice) utterance.voice = ptVoice;
 
-    speechSynthRef.current = utterance;
     window.speechSynthesis.speak(utterance);
   };
 
-  // Video Animator / Player Timer synchronized with Voice
+  // Player Timer loop
   useEffect(() => {
     let timer: any = null;
     if (isPlaying && project && project.scenes.length > 0) {
-      // Fala a narração da cena atual
-      speakSceneNarration(project.scenes[currentSceneIdx]?.narration || '');
+      if (audioMode === 'music') {
+        playCinematicMusic();
+      } else if (audioMode === 'voice') {
+        stopCinematicMusic();
+        speakSceneNarration(project.scenes[currentSceneIdx]?.narration || '');
+      } else {
+        stopCinematicMusic();
+        window.speechSynthesis?.cancel();
+      }
 
       timer = setTimeout(() => {
         if (currentSceneIdx >= project.scenes.length - 1) {
           setIsPlaying(false);
+          stopCinematicMusic();
           window.speechSynthesis?.cancel();
           setCurrentSceneIdx(0);
         } else {
           setCurrentSceneIdx((prev) => prev + 1);
         }
-      }, 5500); // 5.5s por cena no preview
+      }, 5000);
     } else {
+      stopCinematicMusic();
       window.speechSynthesis?.cancel();
     }
     return () => {
       clearTimeout(timer);
     };
-  }, [isPlaying, currentSceneIdx, project, isAudioEnabled]);
+  }, [isPlaying, currentSceneIdx, project, audioMode]);
 
+  // Download do roteiro garantido
   const handleDownloadScript = () => {
     if (!project) return;
     const content = `🎬 NÚCLEO VIP — STUDIO PROMPT PRO
@@ -185,13 +252,23 @@ ${s.visualPrompt}
   .join('\n\n')}
 `;
 
-    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `video-dark-${project.topic.toLowerCase().replace(/[^a-z0-9]/g, '-')}.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
+    try {
+      const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `roteiro-video-dark-${project.topic.toLowerCase().replace(/[^a-z0-9]/g, '-')}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 200);
+      alert('✅ Arquivo de Roteiro (.TXT) baixado com sucesso!');
+    } catch (e) {
+      handleCopy(content, 'download-fallback');
+      alert('Roteiro copiado para a área de transferência!');
+    }
   };
 
   return (
@@ -206,7 +283,7 @@ ${s.visualPrompt}
           Gerador de <span className="gradient-text">Vídeos Dark & Virais</span>
         </h1>
         <p className="text-sm sm:text-base text-slate-600 max-w-2xl mx-auto">
-          Crie ganchos de alta retenção, roteiros narrados com voz sintetizada, títulos magnéticos de alto CTR e imagens cinematográficas instantâneas adaptadas para 9:16 ou 16:9.
+          Crie ganchos magnéticos, roteiro para narração, títulos de alto CTR e imagens cinematográficas instantâneas adaptadas para 9:16 ou 16:9.
         </p>
       </div>
 
@@ -361,14 +438,28 @@ ${s.visualPrompt}
               <p className="text-xs text-slate-500 mt-0.5">Duração estimada: {project.estimatedDuration} • {project.scenes.length} Cenas Geradas</p>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <button
                 type="button"
                 onClick={handleDownloadScript}
-                className="px-4 py-2 rounded-xl bg-white border border-slate-200 hover:border-indigo-300 text-slate-700 hover:text-indigo-600 font-bold text-xs shadow-xs flex items-center gap-1.5 transition cursor-pointer"
+                className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-500/20 flex items-center gap-1.5 transition cursor-pointer"
               >
-                <Download className="w-4 h-4 text-indigo-600" />
+                <Download className="w-4 h-4" />
                 <span>Baixar Roteiro (.TXT)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  handleCopy(
+                    `ROTEIRO PARA ELEVENLABS / LOCUÇÃO:\n\n${project.scenes.map((s) => s.narration).join('\n\n')}`,
+                    'copy-elevenlabs'
+                  )
+                }
+                className="px-4 py-2.5 rounded-xl bg-white border border-slate-200 hover:border-purple-300 text-purple-700 font-bold text-xs shadow-xs flex items-center gap-1.5 transition cursor-pointer"
+              >
+                <Mic className="w-4 h-4 text-purple-600" />
+                <span>{copiedKey === 'copy-elevenlabs' ? 'Texto Copiado!' : 'Copiar para ElevenLabs'}</span>
               </button>
             </div>
           </div>
@@ -396,7 +487,7 @@ ${s.visualPrompt}
               }`}
             >
               <Play className="w-4 h-4 text-emerald-600" />
-              <span>▶️ Prévia com Áudio & Locução</span>
+              <span>▶️ Prévia com Trilha Sonora</span>
             </button>
 
             <button
@@ -459,7 +550,7 @@ ${s.visualPrompt}
                         </span>
                       </div>
 
-                      {/* Scene Image Preview */}
+                      {/* Scene Image Preview with Direct Image Loader */}
                       <div className={`relative rounded-2xl overflow-hidden bg-slate-900 group shadow-inner ${
                         project.format === '9:16' ? 'aspect-[9/16] max-h-80 mx-auto w-48' : 'aspect-video w-full'
                       }`}>
@@ -468,7 +559,11 @@ ${s.visualPrompt}
                             src={scene.generatedImageUrl}
                             alt={`Cena ${scene.sceneNumber}`}
                             className="w-full h-full object-cover transition duration-500 group-hover:scale-105"
-                            loading="lazy"
+                            loading="eager"
+                            onError={(e: any) => {
+                              // Fallback suave
+                              e.currentTarget.src = getSceneImageUrl(`cinematic ${project.topic}`, project.format, scene.sceneNumber * 99);
+                            }}
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-slate-500 text-xs">
@@ -559,44 +654,71 @@ ${s.visualPrompt}
             </div>
           )}
 
-          {/* Tab 2: Interactive Video Simulator / Player WITH VOICE TTS */}
+          {/* Tab 2: Interactive Video Simulator / Player WITH SOUNDTRACK */}
           {activeResultTab === 'player' && (
             <div className="p-6 space-y-6 text-center">
               <div className="max-w-md mx-auto space-y-2">
-                <h3 className="font-bold text-slate-900 text-base">Simulador de Vídeo com Locução Neural</h3>
+                <h3 className="font-bold text-slate-900 text-base">Simulador de Vídeo com Trilha Sonora</h3>
                 <p className="text-xs text-slate-500">
-                  Assista às cenas em sequência animada com a locução do roteiro falada em tempo real em Português!
+                  Assista às cenas animadas com transições cinematográficas e trilha sonora épica de fundo!
                 </p>
               </div>
 
-              {/* Audio Toggle & Scene Indicators */}
-              <div className="flex items-center justify-center gap-3">
+              {/* Audio Mode Selectors */}
+              <div className="flex items-center justify-center gap-2 flex-wrap">
                 <button
                   type="button"
-                  onClick={() => setIsAudioEnabled(!isAudioEnabled)}
+                  onClick={() => setAudioMode('music')}
                   className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition cursor-pointer ${
-                    isAudioEnabled
-                      ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
-                      : 'bg-slate-100 border-slate-200 text-slate-500'
+                    audioMode === 'music'
+                      ? 'bg-purple-50 border-purple-300 text-purple-700 shadow-xs'
+                      : 'bg-slate-50 border-slate-200 text-slate-600'
                   }`}
                 >
-                  {isAudioEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
-                  <span>{isAudioEnabled ? 'Áudio / Voz Ativada' : 'Áudio Mudo'}</span>
+                  <Music className="w-3.5 h-3.5 text-purple-600" />
+                  <span>🎵 Trilha Sonora Épica</span>
                 </button>
 
-                <div className="flex gap-1.5 items-center">
-                  {project.scenes.map((_, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => setCurrentSceneIdx(idx)}
-                      className={`w-2.5 h-2.5 rounded-full transition-all ${
-                        currentSceneIdx === idx ? 'bg-indigo-600 scale-125' : 'bg-slate-300 hover:bg-slate-400'
-                      }`}
-                      title={`Ir para cena ${idx + 1}`}
-                    />
-                  ))}
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setAudioMode('voice')}
+                  className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition cursor-pointer ${
+                    audioMode === 'voice'
+                      ? 'bg-indigo-50 border-indigo-300 text-indigo-700 shadow-xs'
+                      : 'bg-slate-50 border-slate-200 text-slate-600'
+                  }`}
+                >
+                  <Volume2 className="w-3.5 h-3.5 text-indigo-600" />
+                  <span>🎙️ Locução Guiada</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setAudioMode('mute')}
+                  className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition cursor-pointer ${
+                    audioMode === 'mute'
+                      ? 'bg-slate-200 border-slate-300 text-slate-700 shadow-xs'
+                      : 'bg-slate-50 border-slate-200 text-slate-600'
+                  }`}
+                >
+                  <VolumeX className="w-3.5 h-3.5 text-slate-500" />
+                  <span>Mudo</span>
+                </button>
+              </div>
+
+              {/* Scene Indicators */}
+              <div className="flex gap-1.5 items-center justify-center">
+                {project.scenes.map((_, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setCurrentSceneIdx(idx)}
+                    className={`w-2.5 h-2.5 rounded-full transition-all ${
+                      currentSceneIdx === idx ? 'bg-indigo-600 scale-125' : 'bg-slate-300 hover:bg-slate-400'
+                    }`}
+                    title={`Ir para cena ${idx + 1}`}
+                  />
+                ))}
               </div>
 
               {/* Video Frame */}
@@ -634,7 +756,7 @@ ${s.visualPrompt}
                         "{project.scenes[currentSceneIdx]?.narration}"
                       </div>
                       <p className="text-[10px] text-amber-300 font-mono flex items-center justify-center gap-1">
-                        <Camera className="w-3 h-3" />
+                        <Camera className="w-3.5 h-3.5" />
                         {project.scenes[currentSceneIdx]?.cameraMovement}
                       </p>
                     </div>
@@ -688,33 +810,35 @@ ${s.visualPrompt}
           {/* Tab 3: Full Voiceover Script */}
           {activeResultTab === 'script' && (
             <div className="p-6 space-y-6">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
-                  <h3 className="font-bold text-slate-900 text-base">Roteiro Completo para Locução / TTS</h3>
-                  <p className="text-xs text-slate-500">Copie e cole direto no ElevenLabs, Clipchamp, CapCut ou leia na gravação.</p>
+                  <h3 className="font-bold text-slate-900 text-base">Roteiro Completo para Locução & ElevenLabs</h3>
+                  <p className="text-xs text-slate-500">Copie o roteiro pronto com pausas e entonação para gerar vozes humanas ultra-realistas.</p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() =>
-                    handleCopy(
-                      project.scenes.map((s) => s.narration).join('\n\n'),
-                      'full-script'
-                    )
-                  }
-                  className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-500/20 flex items-center gap-1.5 cursor-pointer"
-                >
-                  {copiedKey === 'full-script' ? (
-                    <>
-                      <Check className="w-4 h-4 text-emerald-300" />
-                      <span>Roteiro Copiado!</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-4 h-4" />
-                      <span>Copiar Roteiro Integral</span>
-                    </>
-                  )}
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleCopy(
+                        project.scenes.map((s) => s.narration).join('\n\n'),
+                        'full-script'
+                      )
+                    }
+                    className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-500/20 flex items-center gap-1.5 cursor-pointer"
+                  >
+                    {copiedKey === 'full-script' ? (
+                      <>
+                        <Check className="w-4 h-4 text-emerald-300" />
+                        <span>Roteiro Copiado!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-4 h-4" />
+                        <span>Copiar Roteiro Integral</span>
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
 
               <div className="space-y-4">
