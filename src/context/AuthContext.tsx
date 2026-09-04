@@ -98,7 +98,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  const plan: PlanType = user?.plan || 'trial';
+  // Listener de ativação pós-compra (Cakto / URL de redirecionamento)
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const urlPlan = params.get('plan') || params.get('plano');
+      const status = params.get('status') || params.get('payment_status') || 'approved';
+
+      if (urlPlan && (status === 'approved' || status === 'success' || status === 'paid' || status === 'pago')) {
+        let mappedPlan: PlanType = 'trial';
+        if (urlPlan.toLowerCase().includes('pro')) mappedPlan = 'pro';
+        else if (urlPlan.toLowerCase().includes('agency') || urlPlan.toLowerCase().includes('master')) mappedPlan = 'agency';
+        else if (urlPlan.toLowerCase().includes('starter') || urlPlan.toLowerCase().includes('trial')) mappedPlan = 'trial';
+
+        // Salva ativação para garantir mesmo se registrar depois
+        localStorage.setItem('prompt_studio_activated_plan', mappedPlan);
+
+        if (user) {
+          upgradePlan(mappedPlan);
+        }
+
+        // Limpa parâmetros da URL de forma elegante
+        const cleanUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
+      }
+    } catch (e) {
+      console.warn('Erro ao processar ativação de URL:', e);
+    }
+  }, [user]);
+
+  const plan: PlanType = user?.plan || (localStorage.getItem('prompt_studio_activated_plan') as PlanType) || 'trial';
   const maxDailyGenerations = 999999;
 
   const canGenerate = (): boolean => {
@@ -120,6 +149,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
     setUser(updatedUser);
     localStorage.setItem(LOCAL_AUTH_STORAGE_KEY, JSON.stringify(updatedUser));
+    localStorage.setItem('prompt_studio_activated_plan', newPlan);
 
     if (isSupabaseConfigured && supabase) {
       supabase.auth.updateUser({
