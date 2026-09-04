@@ -13,7 +13,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
   isOpen,
   onClose,
   reasonTitle = 'Desbloqueie o Poder Total do Núcleo VIP — Studio Prompt Pro',
-  reasonDescription = 'Escolha o plano ideal para você criar prompts profissionais sem limites para imagens e vídeos.',
+  reasonDescription = 'Escolha o plano ideal para você criar prompts profissionais e vídeos com IA.',
 }) => {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('yearly');
   const [selectedPlanId, setSelectedPlanId] = useState<'trial' | 'pro' | 'agency'>('pro');
@@ -21,11 +21,8 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
   if (!isOpen) return null;
 
   const currentPlan = PLANS_CONFIG.find((p) => p.id === selectedPlanId) || PLANS_CONFIG[1];
-  const isTrial = selectedPlanId === 'trial';
 
-  const price = isTrial
-    ? '2,99'
-    : billingCycle === 'monthly'
+  const price = billingCycle === 'monthly'
     ? currentPlan.monthlyPrice.toFixed(2).replace('.', ',')
     : (currentPlan.yearlyPrice / 12).toFixed(2).replace('.', ',');
 
@@ -100,7 +97,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
 
           {/* 3 Plan Cards Selector */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {/* TRIAL */}
+            {/* STARTER */}
             <div
               onClick={() => setSelectedPlanId('trial')}
               className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${
@@ -111,16 +108,18 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
             >
               <div>
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-slate-900 text-xs">Teste 7 Dias</span>
+                  <span className="font-bold text-slate-900 text-xs">Starter VIP</span>
                   <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">
-                    Degustação
+                    Econômico
                   </span>
                 </div>
                 <div className="mt-2">
-                  <span className="text-xl font-black text-slate-900">R$ 2,99</span>
-                  <span className="text-[10px] text-slate-500 font-medium"> /7 dias</span>
+                  <span className="text-xl font-black text-slate-900">
+                    R$ {billingCycle === 'monthly' ? '5,99' : '3,99'}
+                  </span>
+                  <span className="text-[10px] text-slate-500 font-medium"> /mês</span>
                 </div>
-                <p className="text-[11px] text-slate-500 mt-1">Taxa simbólica de teste.</p>
+                <p className="text-[11px] text-slate-500 mt-1">Acesso inicial completo.</p>
               </div>
             </div>
 
@@ -172,7 +171,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
                   </span>
                   <span className="text-[10px] text-slate-500 font-medium"> /mês</span>
                 </div>
-                <p className="text-[11px] text-slate-500 mt-1">Packs Bônus + Canais Dark.</p>
+                <p className="text-[11px] text-slate-500 mt-1">Packs Bônus + Código-Fonte.</p>
               </div>
             </div>
           </div>
@@ -201,9 +200,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
             >
               <Zap className="w-5 h-5 text-amber-300 fill-amber-300" />
               <span>
-                {isTrial
-                  ? 'Ativar Teste 7 Dias (R$ 2,99)'
-                  : `Assinar Agora (${billingCycle === 'monthly' ? `R$ ${price}/mês` : `R$ ${currentPlan.yearlyPrice.toFixed(2).replace('.', ',')}/ano`})`}
+                Assinar {currentPlan.name} ({billingCycle === 'monthly' ? `R$ ${price}/mês` : `R$ ${currentPlan.yearlyPrice.toFixed(2).replace('.', ',')}/ano`})
               </span>
               <ArrowRight className="w-5 h-5" />
             </button>
@@ -214,7 +211,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
                 Garantia incondicional de 7 dias
               </span>
               <span>•</span>
-              <span>Cancele quando quiser</span>
+              <span>Cancele quando quiser com 1 clique</span>
             </div>
           </div>
         </div>

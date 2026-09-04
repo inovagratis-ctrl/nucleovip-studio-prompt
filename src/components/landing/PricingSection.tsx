@@ -14,7 +14,6 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ onNavigateToSign
     if (checkoutUrl && !checkoutUrl.includes('exemplo-')) {
       window.open(checkoutUrl, '_blank');
     } else {
-      // Se ainda não tiver URL configurada, abre signup ou redireciona
       if (checkoutUrl) {
         window.open(checkoutUrl, '_blank');
       } else {
@@ -35,7 +34,7 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ onNavigateToSign
             Invista no seu poder criativo com IA
           </h2>
           <p className="text-slate-600 text-sm sm:text-base">
-            Escolha o plano ideal para suas produções. Cancele a qualquer momento com garantia incondicional.
+            Escolha o plano ideal para suas produções. Acesso imediato e cancelamento a qualquer momento com garantia incondicional.
           </p>
 
           {/* Billing Switcher */}
@@ -74,10 +73,8 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ onNavigateToSign
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch max-w-6xl mx-auto">
           {PLANS_CONFIG.map((plan) => {
             const isPro = plan.id === 'pro';
-            const isTrial = plan.id === 'trial';
-            const price = isTrial
-              ? '2,99'
-              : billingCycle === 'monthly'
+            const isStarter = plan.id === 'trial';
+            const price = billingCycle === 'monthly'
               ? plan.monthlyPrice.toFixed(2).replace('.', ',')
               : (plan.yearlyPrice / 12).toFixed(2).replace('.', ',');
 
@@ -87,7 +84,7 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ onNavigateToSign
                 className={`rounded-3xl p-8 flex flex-col justify-between transition-all duration-300 relative ${
                   isPro
                     ? 'bg-gradient-to-b from-indigo-50/90 via-white to-white border-2 border-indigo-500 shadow-2xl scale-100 lg:scale-105 z-10'
-                    : isTrial
+                    : isStarter
                     ? 'bg-gradient-to-b from-amber-50/40 via-white to-white border-2 border-amber-300 shadow-md'
                     : 'bg-slate-50 border border-slate-200 shadow-xs hover:border-slate-300 hover:shadow-md'
                 }`}
@@ -97,7 +94,7 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ onNavigateToSign
                   <div className={`absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-white text-[11px] font-black uppercase tracking-wider shadow-md ${
                     isPro
                       ? 'bg-gradient-to-r from-indigo-600 to-purple-600'
-                      : isTrial
+                      : isStarter
                       ? 'bg-gradient-to-r from-amber-500 to-orange-500'
                       : 'bg-slate-800'
                   }`}>
@@ -121,17 +118,16 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ onNavigateToSign
                         R$ {price}
                       </span>
                       <span className="text-xs font-semibold text-slate-500">
-                        {isTrial ? ' /7 dias' : '/mês'}
+                        /mês
                       </span>
                     </div>
-                    {!isTrial && billingCycle === 'yearly' && plan.yearlyPrice > 0 && (
+                    {billingCycle === 'yearly' && plan.yearlyPrice > 0 ? (
                       <p className="text-[11px] font-bold text-indigo-700 mt-1">
                         Faturado anualmente por R$ {plan.yearlyPrice.toFixed(2).replace('.', ',')}
                       </p>
-                    )}
-                    {isTrial && (
-                      <p className="text-[11px] font-bold text-amber-700 mt-1">
-                        Taxa única de teste • Sem renovação oculta
+                    ) : (
+                      <p className="text-[11px] font-bold text-slate-500 mt-1">
+                        Cobrança mensal sem fidelidade
                       </p>
                     )}
                   </div>
@@ -144,7 +140,7 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ onNavigateToSign
                     {plan.features.map((feat, idx) => (
                       <div key={idx} className="flex items-start gap-2.5 text-xs text-slate-700 font-medium">
                         <CheckCircle2 className={`w-4 h-4 shrink-0 mt-0.5 ${
-                          isTrial ? 'text-amber-600' : 'text-emerald-600'
+                          isStarter ? 'text-amber-600' : 'text-emerald-600'
                         }`} />
                         <span>{feat}</span>
                       </div>
@@ -160,15 +156,15 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ onNavigateToSign
                     className={`w-full py-3.5 px-4 rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-2 cursor-pointer ${
                       isPro
                         ? 'bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white shadow-lg shadow-indigo-500/25'
-                        : isTrial
+                        : isStarter
                         ? 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-white shadow-lg shadow-amber-500/20'
                         : 'bg-white hover:bg-slate-100 text-slate-800 border border-slate-300'
                     }`}
                   >
-                    {isTrial ? (
+                    {isStarter ? (
                       <>
                         <Zap className="w-4 h-4 text-white fill-white" />
-                        <span>Teste 7 dias por R$ 2,99</span>
+                        <span>Assinar Starter VIP (R$ {price}/mês)</span>
                       </>
                     ) : isPro ? (
                       <>
@@ -188,13 +184,13 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ onNavigateToSign
           })}
         </div>
 
-        {/* Transparency Box (Manus.ai Spec) */}
+        {/* Transparency Box */}
         <div className="mt-12 max-w-3xl mx-auto p-6 rounded-3xl bg-slate-50 border border-slate-200 text-center space-y-2">
           <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700">
-            Transparência & Condições do Teste de 7 Dias:
+            Transparência & Condições de Assinatura:
           </h4>
           <p className="text-xs text-slate-600 leading-relaxed">
-            Experimente o Studio Prompt Pro por apenas <strong>R$ 2,99</strong> e crie prompts adaptados para imagens, personagens, cenas e vídeos. Após os 7 dias, a assinatura será renovada automaticamente pelo plano escolhido no valor de <strong>R$ 14,99/mês</strong> (PRO) ou <strong>R$ 29,99/mês</strong> (Studio Master). Você pode cancelar a qualquer momento antes da renovação na sua área de conta com apenas 1 clique.
+            Tenha acesso completo ao Studio Prompt Pro a partir de apenas <strong>R$ 5,99/mês</strong>. Sem multas, sem taxas ocultas e com total liberdade para cancelar a qualquer momento diretamente pelo painel com apenas 1 clique.
           </p>
         </div>
 
@@ -205,9 +201,9 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ onNavigateToSign
             Pagamento 100% Seguro e Criptografado
           </span>
           <span>•</span>
-          <span>Garantia de 7 dias ou seu dinheiro de volta</span>
+          <span>Garantia incondicional de 7 dias</span>
           <span>•</span>
-          <span>Acesso imediato após o pagamento</span>
+          <span>Acesso imediato liberado após o pagamento</span>
         </div>
       </div>
     </section>

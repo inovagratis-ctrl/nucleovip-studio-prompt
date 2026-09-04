@@ -1,4 +1,4 @@
-export const TRIAL_DAYS = 7;
+export const TRIAL_DAYS = 30;
 
 export interface PlanPricing {
   id: 'trial' | 'pro' | 'agency' | 'free';
@@ -16,24 +16,26 @@ export interface PlanPricing {
 export const PLANS_CONFIG: PlanPricing[] = [
   {
     id: 'trial',
-    name: 'Teste 7 Dias',
-    badge: 'Degustação VIP',
-    description: 'Acesso completo de 7 dias para você testar e comprovar a qualidade sem compromisso.',
-    monthlyPrice: 2.99,
-    yearlyPrice: 2.99,
+    name: 'Starter VIP',
+    badge: 'Mais Acessível',
+    description: 'Ideal para quem quer começar a criar prompts profissionais e vídeos com IA com alto custo-benefício.',
+    monthlyPrice: 5.99,
+    yearlyPrice: 47.90, // ~R$ 3,99/mês
     features: [
-      '7 dias de acesso total à plataforma',
-      'Engenharia de prompts com IA Gemini Pro',
-      'Modelos de Imagem (ChatGPT DALL-E 3 e Nano Banana Flux/SDXL)',
-      '🩺 Prompt Doctor: Auditoria e diagnóstico de prompts fracos',
-      '📚 Biblioteca de Presets (seleção introdutória)',
+      'Acesso mensal completo à plataforma',
+      'Engenharia de prompts com IA Gemini AI',
+      'Modelos de Imagem: ChatGPT DALL-E 3 & Flux',
+      '🎬 Criador de Conteúdo em Vídeo & Shorts (9:16 e 16:9)',
+      '🩺 Prompt Doctor: Auditoria e otimização de prompts',
+      '📚 Biblioteca de Presets (+100 Prompts Validados)',
       'Categorias: Thumbnails, Personagens e Cenas',
-      'Histórico salvo na nuvem',
+      'Histórico completo salvo na nuvem',
+      '📥 Download de Roteiros e Materiais em (.TXT e PDF)',
       'Suporte por E-mail',
-      'Sem fidelidade: cancele quando quiser',
+      'Sem fidelidade: Cancele a qualquer momento com 1 clique',
     ],
-    checkoutUrlMonthly: import.meta.env.VITE_CHECKOUT_TRIAL || 'https://pay.kiwify.com.br/exemplo-trial-7dias',
-    checkoutUrlYearly: import.meta.env.VITE_CHECKOUT_TRIAL || 'https://pay.kiwify.com.br/exemplo-trial-7dias',
+    checkoutUrlMonthly: import.meta.env.VITE_CHECKOUT_TRIAL || 'https://kiwify.app/6bQUedT',
+    checkoutUrlYearly: import.meta.env.VITE_CHECKOUT_TRIAL || 'https://kiwify.app/6bQUedT',
   },
   {
     id: 'pro',
@@ -46,13 +48,13 @@ export const PLANS_CONFIG: PlanPricing[] = [
     features: [
       'Gerações de prompts ILIMITADAS todos os dias',
       'Todos os 5 Modelos de Imagem & Vídeo (Veo, Kling, Seedance, ChatGPT, Flux)',
-      '🎬 Video Prompt Lab: Estruturação avançada para vídeos (câmera, ritmo, ação)',
+      '🎬 Criador de Conteúdo em Vídeo Avançado + Exportação ElevenLabs',
       '🩺 Prompt Doctor: Auditoria completa e reescrita de prompts',
       '👤 Character Bible: Módulo de consistência para personagens',
       '⚡ Comparador Multi-IA: Geração simultânea lado a lado',
       '📚 Biblioteca Completa de Prompts & Presets (+500 Prompts)',
       'Sincronização ilimitada de histórico na nuvem (Supabase)',
-      'Suporte por E-mail',
+      'Suporte prioritário por E-mail',
     ],
     checkoutUrlMonthly: import.meta.env.VITE_CHECKOUT_PRO_MONTHLY || 'https://pay.kiwify.com.br/exemplo-pro-mensal',
     checkoutUrlYearly: import.meta.env.VITE_CHECKOUT_PRO_YEARLY || 'https://pay.kiwify.com.br/exemplo-pro-anual',
@@ -71,7 +73,8 @@ export const PLANS_CONFIG: PlanPricing[] = [
       '📦 Exportação Profissional em Lote (TXT, PDF, CSV, JSON)',
       '📁 Pacotes de Templates Comerciais (Anúncios, Meta Ads, E-commerce, Shorts/Reels)',
       '👥 Compartilhamento e duplicação de bibliotecas internas',
-      'Suporte Prioritário por E-mail',
+      '💻 Código-Fonte Completo do Projeto 3 (Python CLI + Automação)',
+      'Suporte VIP Prioritário por E-mail',
     ],
     checkoutUrlMonthly: import.meta.env.VITE_CHECKOUT_AGENCY_MONTHLY || 'https://pay.kiwify.com.br/exemplo-agency-mensal',
     checkoutUrlYearly: import.meta.env.VITE_CHECKOUT_AGENCY_YEARLY || 'https://pay.kiwify.com.br/exemplo-agency-anual',

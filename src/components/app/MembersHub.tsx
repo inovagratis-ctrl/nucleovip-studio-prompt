@@ -25,7 +25,7 @@ export const MEMBERS_RESOURCES: MemberResource[] = [
     fileFormat: 'PDF',
     downloadSize: '1.4 MB',
     iconName: 'BookOpen',
-    badge: 'Incluso no Teste',
+    badge: 'Starter VIP',
     previewContent: `GUIA RÁPIDO DE ENGENHARIA DE PROMPTS — NÚCLEO VIP
 1. A Fórmula de 5 Elementos: [Sujeito] + [Ação/Pose] + [Ambiente & Atmosfera] + [Iluminação] + [Câmera & Estilo Técnico].
 2. Como evitar dedos extras e aberrações visuais.
@@ -45,7 +45,7 @@ export const MEMBERS_RESOURCES: MemberResource[] = [
     fileFormat: 'TXT',
     downloadSize: '45 KB',
     iconName: 'FileText',
-    badge: 'Incluso no Teste',
+    badge: 'Starter VIP',
     previewContent: `PACK 50 PROMPTS VALIDADOS:
 01. High CTR YouTube Thumbnail - Shocked man pointing at glowing futuristic cube, dramatic rim lighting, 8k.
 02. Cinematic Medieval Castle at sunset, fog rolling over hills, 35mm cine lens.
@@ -66,7 +66,7 @@ export const MEMBERS_RESOURCES: MemberResource[] = [
     fileFormat: 'PDF',
     downloadSize: '820 KB',
     iconName: 'CheckCircle2',
-    badge: 'Incluso no Teste',
+    badge: 'Starter VIP',
     previewContent: `CHECKLIST DE OURO PARA PROMPTS:
 [ ] 1. Sujeito principal definido com clareza (sem termos vagos)?
 [ ] 2. Tipo de lente e enquadramento especificados (ex: 35mm, 85mm portrait, wide shot)?
