@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AppNavbar } from './AppNavbar';
 import { CategorySelector } from './CategorySelector';
 import { AIModelSelector } from './AIModelSelector';
@@ -19,7 +19,7 @@ import confetti from 'canvas-confetti';
 
 export const StudioPromptProApp: React.FC = () => {
   const { history, addToHistory } = useHistory();
-  const { plan, canGenerate, incrementGenerationCount } = useAuth();
+  const { canGenerate, incrementGenerationCount } = useAuth();
   const [activeTab, setActiveTab] = useState<ActiveTab>(() => {
     // Se acabou de vir da Cakto, abre direto na Área de Membros
     if (localStorage.getItem('prompt_studio_just_purchased')) {
