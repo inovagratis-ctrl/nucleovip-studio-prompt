@@ -28,13 +28,54 @@ export const TONE_LABELS: Record<VideoTone, string> = {
   dramatic: 'Dramático & Emocionante (Profundo)',
 };
 
+/**
+ * Tradutor e limpador de palavras-chave para garantir que o prompt de imagem
+ * enviado para o Pollinations / Flux seja 100% em Inglês e altamente descritivo.
+ */
+export function translateAndEnrichPrompt(topic: string, sceneDesc: string, format: VideoFormat): string {
+  // Dicionário de termos comuns para enriquecer caso esteja em português
+  let clean = topic.toLowerCase();
+  
+  const translations: [RegExp, string][] = [
+    [/cão|cachorro/gi, 'dog'],
+    [/pistoleiro|atirador/gi, 'gunslinger cowboy'],
+    [/gato/gi, 'cat'],
+    [/guerreiro/gi, 'warrior'],
+    [/castelo/gi, 'medieval castle'],
+    [/floresta/gi, 'mystical forest'],
+    [/espaço|universo/gi, 'deep space cosmos'],
+    [/ouro|riqueza/gi, 'golden treasures'],
+    [/faroeste/gi, 'wild west desert town'],
+    [/antigo|antiga/gi, 'ancient'],
+    [/robô|ia/gi, 'futuristic cyborg robot'],
+    [/cidade/gi, 'cyberpunk city'],
+    [/monstro|criatura/gi, 'legendary mythical creature'],
+    [/pirata/gi, 'pirate captain ship'],
+    [/alienígena|alien/gi, 'extraterrestrial alien'],
+  ];
+
+  let englishTopic = topic;
+  for (const [regex, replacement] of translations) {
+    englishTopic = englishTopic.replace(regex, replacement);
+  }
+
+  const ratioSpec = format === '9:16' ? 'vertical 9:16 framing, central subject' : 'cinematic 16:9 widescreen composition';
+  return `${ratioSpec}, ${englishTopic}, ${sceneDesc}, highly detailed character and environment, 8k resolution, cinematic lighting, Unreal Engine 5 render, photorealistic, octane render`;
+}
+
+/**
+ * Constrói a URL de geração de imagem via Pollinations.ai (Flux) garantindo prompt em inglês
+ */
 export function getSceneImageUrl(prompt: string, format: VideoFormat, seed?: number): string {
-  const cleanPrompt = encodeURIComponent(
-    `${prompt}, ultra cinematic, photorealistic, 8k resolution, cinematic lighting, master masterpiece`
-  );
   const width = format === '9:16' ? 576 : 1024;
   const height = format === '9:16' ? 1024 : 576;
-  const randomSeed = seed || Math.floor(Math.random() * 100000);
+  const randomSeed = seed || Math.floor(Math.random() * 1000000);
+  
+  // Limpa caracteres especiais para a URL
+  const cleanPrompt = encodeURIComponent(
+    prompt.replace(/[^a-zA-Z0-9, -]/g, ' ').substring(0, 300)
+  );
+
   return `https://image.pollinations.ai/prompt/${cleanPrompt}?width=${width}&height=${height}&seed=${randomSeed}&nologo=true&model=flux`;
 }
 
@@ -54,7 +95,7 @@ async function callGeminiApiJson(prompt: string): Promise<any> {
     ],
     generationConfig: {
       temperature: 0.8,
-      maxOutputTokens: 2048,
+      maxOutputTokens: 2500,
     }
   };
 
@@ -91,46 +132,51 @@ export async function generateDarkVideoProject(params: GenerateVideoDarkParams):
 
   if (geminiApiKey) {
     try {
-      const prompt = `Você é um roteirista profissional de canais Dark do YouTube.
-Gere a estrutura completa de um vídeo no formato ${format} (${isShort ? 'Shorts 9:16' : 'Vídeo Longo 16:9'}) sobre "${topic}".
+      const prompt = `Você é um roteirista e diretor de canais Dark do YouTube premiado.
+Gere a estrutura de um vídeo no formato ${format} (${isShort ? 'Shorts 9:16' : 'Vídeo Longo 16:9'}) sobre o tema: "${topic}".
 Nicho: ${NICHE_LABELS[niche]}
 Tom: ${TONE_LABELS[tone]}
-Exatamente ${sceneCount} cenas.
+Crie exatamente ${sceneCount} cenas.
+
+IMPORTANTE: O campo "visualPrompt" de cada cena DEVE SER OBRIGATORIAMENTE EM INGLÊS com detalhes precisos do personagem principal, ambiente, iluminação e câmera (ex: se o tema for "cão pistoleiro", descreva "anthropomorphic dog dressed as a wild west gunslinger cowboy with leather hat, revolvers, dusty saloon background, dramatic lighting, 8k").
 
 Responda ESTRITAMENTE em formato JSON com esta estrutura:
 {
   "hooks": ["Gancho 1", "Gancho 2", "Gancho 3"],
   "titles": [
-    { "title": "Título 1", "ctrScore": 96, "triggers": ["Curiosidade", "Urgência"] },
-    { "title": "Título 2", "ctrScore": 92, "triggers": ["Mistério", "Segredo"] },
-    { "title": "Título 3", "ctrScore": 89, "triggers": ["Revelação"] },
-    { "title": "Título 4", "ctrScore": 86, "triggers": ["Inédito"] },
-    { "title": "Título 5", "ctrScore": 84, "triggers": ["Alerta"] }
+    { "title": "Título magnético 1", "ctrScore": 96, "triggers": ["Curiosidade", "Urgência"] },
+    { "title": "Título magnético 2", "ctrScore": 92, "triggers": ["Mistério", "Quebra de Padrão"] },
+    { "title": "Título magnético 3", "ctrScore": 89, "triggers": ["Revelação"] },
+    { "title": "Título magnético 4", "ctrScore": 86, "triggers": ["Inédito"] },
+    { "title": "Título magnético 5", "ctrScore": 84, "triggers": ["Alerta"] }
   ],
-  "description": "Descrição envolvente para o YouTube com hashtags.",
+  "description": "Descrição envolvente para o YouTube com parágrafo e hashtags.",
   "tags": ["tag1", "tag2", "tag3", "tag4", "tag5", "tag6"],
   "scenes": [
     {
       "sceneNumber": 1,
-      "timeRange": "0:00 - 0:05",
-      "narration": "Texto narrado em português",
-      "visualPrompt": "Prompt em inglês para IA de imagem/vídeo",
-      "cameraMovement": "ex: Slow zoom in"
+      "timeRange": "0:00 - 0:06",
+      "narration": "Texto narrado em português pelo locutor.",
+      "visualPrompt": "Detailed visual prompt in ENGLISH for AI image generator depicting the main character and scene action.",
+      "cameraMovement": "Slow cinematic push-in on character face"
     }
   ]
 }`;
 
       const parsed = await callGeminiApiJson(prompt);
 
-      const scenesWithImages: VideoScene[] = (parsed.scenes || []).map((s: any, idx: number) => ({
-        sceneNumber: s.sceneNumber || idx + 1,
-        timeRange: s.timeRange || `0:${(idx * 6).toString().padStart(2, '0')} - 0:${((idx + 1) * 6).toString().padStart(2, '0')}`,
-        narration: s.narration || '',
-        visualPrompt: s.visualPrompt || '',
-        cameraMovement: s.cameraMovement || 'Cinematic slow push in',
-        aspectRatio: format,
-        generatedImageUrl: getSceneImageUrl(s.visualPrompt || topic, format, idx + 42),
-      }));
+      const scenesWithImages: VideoScene[] = (parsed.scenes || []).map((s: any, idx: number) => {
+        const visualPromptEnglish = s.visualPrompt || translateAndEnrichPrompt(topic, `scene ${idx + 1}`, format);
+        return {
+          sceneNumber: s.sceneNumber || idx + 1,
+          timeRange: s.timeRange || `0:${(idx * 6).toString().padStart(2, '0')} - 0:${((idx + 1) * 6).toString().padStart(2, '0')}`,
+          narration: s.narration || '',
+          visualPrompt: visualPromptEnglish,
+          cameraMovement: s.cameraMovement || 'Cinematic slow push in',
+          aspectRatio: format,
+          generatedImageUrl: getSceneImageUrl(visualPromptEnglish, format, idx * 37 + 101),
+        };
+      });
 
       return {
         id: `dark-${Date.now()}`,
@@ -141,17 +187,17 @@ Responda ESTRITAMENTE em formato JSON com esta estrutura:
         tone,
         estimatedDuration: targetDuration,
         hooks: parsed.hooks || [
-          `Você não vai acreditar no que aconteceu com ${topic}.`,
+          `Você não vai acreditar na história inacreditável de ${topic}.`,
           `Existe um segredo sobre ${topic} que poucos conhecem.`,
-          `E se tudo o que você sabe sobre ${topic} for uma mentira?`,
+          `Prepare-se: a verdade sobre ${topic} vai te surpreender do início ao fim.`,
         ],
         selectedHookIndex: 0,
         titles: parsed.titles || [
-          { title: `O Mistério Oculto de ${topic} Revelado`, ctrScore: 95, triggers: ['Curiosidade', 'Revelação'] },
-          { title: `Por Que Ninguém Fala Sobre Isso? (${topic})`, ctrScore: 91, triggers: ['Mistério', 'Urgência'] },
+          { title: `A Lenda Oculta de ${topic} Revelada`, ctrScore: 96, triggers: ['Curiosidade', 'Revelação'] },
+          { title: `Por Que Ninguém Esquece ${topic}?`, ctrScore: 92, triggers: ['Mistério', 'Urgência'] },
         ],
-        tags: parsed.tags || ['curiosidades', 'misterio', 'darkchannel', 'ia'],
-        description: parsed.description || `Descubra as verdades mais surpreendentes sobre ${topic}.`,
+        tags: parsed.tags || [topic.toLowerCase().replace(/\s+/g, ''), 'curiosidades', 'misterio', 'darkchannel', 'ia'],
+        description: parsed.description || `Descubra as verdades e histórias mais surpreendentes sobre ${topic}.`,
         scenes: scenesWithImages,
       };
     } catch (err) {
@@ -172,61 +218,71 @@ function createFallbackDarkProject(
   const duration = isShort ? '45-60s (Short/Reel)' : '3-5 min (Vídeo Longo YouTube)';
   
   const hooks = [
-    `Você sabia que existe um lado oculto sobre ${topic} que poucos conhecem?`,
-    `Atenção: o que aconteceu com ${topic} pode mudar sua perspectiva para sempre.`,
-    `E se eu te disser que a história oficial sobre ${topic} esconde uma verdade chocante?`,
+    `Você sabia que a verdadeira história sobre ${topic} é muito mais impressionante do que você imagina?`,
+    `Atenção: o que aconteceu nos bastidores de ${topic} desafiou todas as regras conhecidas.`,
+    `E se eu te disser que existe uma lenda misteriosa por trás de ${topic} que poucos tiveram coragem de contar?`,
   ];
 
   const titles: VideoTitleOption[] = [
     { title: `A Verdade Inacreditável Sobre ${topic} (Revelado)`, ctrScore: 96, triggers: ['Curiosidade Extrema', 'Revelação'] },
-    { title: `O Que Eles NÃO Querem Que Você Saiba Sobre ${topic}`, ctrScore: 93, triggers: ['Mistério', 'Quebra de Padrão'] },
-    { title: `Como ${topic} Mudou o Mundo Em Silêncio`, ctrScore: 89, triggers: ['Transformação', 'História'] },
-    { title: `O Maior Enigma de ${topic} Finalmente Explicado`, ctrScore: 87, triggers: ['Urgência', 'Explicação'] },
-    { title: `Pare Tudo: Isso Vai Te Surpreender Sobre ${topic}`, ctrScore: 85, triggers: ['Alerta', 'Gancho Rápido'] },
+    { title: `O Que Ninguém Te Contou Sobre ${topic}`, ctrScore: 93, triggers: ['Mistério', 'Quebra de Padrão'] },
+    { title: `Como ${topic} Dominou Tudo Em Silêncio`, ctrScore: 89, triggers: ['Transformação', 'História'] },
+    { title: `O Maior Desafio de ${topic} Finalmente Explicado`, ctrScore: 87, triggers: ['Urgência', 'Explicação'] },
+    { title: `Pare Tudo: O Momento Mais Épico de ${topic}`, ctrScore: 85, triggers: ['Alerta', 'Gancho Rápido'] },
   ];
 
   const sceneCount = isShort ? 6 : 8;
   const scenes: VideoScene[] = [];
 
-  const cameraMoves = [
-    'Dramatic slow zoom in on focal point',
-    'Low angle heroic camera pan upward',
-    'Cinematic tracking drone shot moving forward',
-    'Subtle handheld tension shake with shallow DoF',
-    'Wide panoramic sweep with volumetric lighting',
-    'Extreme close-up macro focus pull',
-    'Atmospheric slow motion 60fps pan',
-    'Epic establishing aerial orbit shot',
+  const sceneConcepts = [
+    {
+      action: 'close up portrait of main character with intense focused gaze',
+      narration: `Nas terras áridas e esquecidas, surgiu a lenda de ${topic}, um personagem que impunha respeito por onde passava.`,
+      camera: 'Dramatic close-up macro with shallow depth of field'
+    },
+    {
+      action: 'standing proudly in dusty western town, holding classic revolvers, wearing leather duster coat and cowboy hat at golden hour',
+      narration: `Dizem que seu reflexo era o mais rápido de toda a região, capaz de desarmar qualquer rival em uma fração de segundo.`,
+      camera: 'Low angle heroic tracking shot moving forward'
+    },
+    {
+      action: 'tense standoff duel in front of a rustic wooden saloon, sand storm in background, dramatic sunbeams',
+      narration: `Quando o sino da igreja tocou ao meio-dia, o confronto inevitável começou na rua principal da cidade.`,
+      camera: 'Wide panoramic cinematic establishing shot'
+    },
+    {
+      action: 'intense action moment firing dual revolvers with smoke and muzzle flash, sparks flying, cinematic slow motion',
+      narration: `Com precisão cirúrgica e coragem inabalável, cada movimento provava que sua fama não era apenas um mito.`,
+      camera: 'Dynamic 60fps slow-motion action sweep'
+    },
+    {
+      action: 'walking away into the glowing sunset desert horizon, lone silhouette, dramatic rim lighting and dust particles',
+      narration: `E assim que a poeira baixou, ele simplesmente caminhou em direção ao horizonte, deixando sua marca para sempre.`,
+      camera: 'Epic slow zoom out into landscape sunset'
+    },
+    {
+      action: 'legendary wanted poster on wooden wall or triumphant final look, masterpiece lighting, 8k resolution',
+      narration: `Se você gostou desta história épica de ${topic}, deixe seu like e inscreva-se para os próximos episódios!`,
+      camera: 'Cinematic slow push in to final insignia'
+    },
   ];
 
-  for (let i = 1; i <= sceneCount; i++) {
-    const startTime = (i - 1) * (isShort ? 7 : 20);
-    const endTime = i * (isShort ? 7 : 20);
+  for (let i = 0; i < sceneCount; i++) {
+    const concept = sceneConcepts[i % sceneConcepts.length];
+    const startTime = i * (isShort ? 7 : 20);
+    const endTime = (i + 1) * (isShort ? 7 : 20);
     const timeRange = `${Math.floor(startTime / 60)}:${(startTime % 60).toString().padStart(2, '0')} - ${Math.floor(endTime / 60)}:${(endTime % 60).toString().padStart(2, '0')}`;
     
-    const narrationSteps = [
-      `No coração de ${topic}, tudo começou com um acontecimento que desafiou todas as expectativas da época.`,
-      `Documentos e relatos antigos indicam que algo muito além do comum estava se desenvolvendo nas sombras.`,
-      `Conforme os especialistas aprofundaram as investigações, pistas inesperadas começaram a surgir.`,
-      `O que parecia ser apenas uma coincidência rapidamente se transformou no centro de um grande mistério.`,
-      `Aqueles que tentaram desvendar os segredos deixaram registros fascinantes que permanecem até hoje.`,
-      `E a pergunta que fica é: até onde estamos dispostos a ir para compreender toda a verdade sobre ${topic}?`,
-      `Se você chegou até aqui, inscreva-se no canal para não perder as próximas revelações exclusivas.`,
-      `Deixe seu like e comente abaixo qual é a sua teoria sobre este grande enigma.`
-    ];
-
-    const visualPrompt = isShort
-      ? `Vertical 9:16 framing, central focus: dramatic cinematic shot related to ${topic}, atmospheric moody lighting, volumetric light beams, photorealistic Unreal Engine 5 render, 8k resolution, highly detailed texture.`
-      : `Cinematic 16:9 widescreen: epic establishing shot related to ${topic}, anamorphic lens flare, rich cinematic color grade, 35mm film grain, 8k master masterpiece.`;
+    const enrichedPrompt = translateAndEnrichPrompt(topic, concept.action, format);
 
     scenes.push({
-      sceneNumber: i,
+      sceneNumber: i + 1,
       timeRange,
-      narration: narrationSteps[i - 1] || `Detalhe fascinante sobre ${topic} que conecta os pontos finais da história.`,
-      visualPrompt,
-      cameraMovement: cameraMoves[(i - 1) % cameraMoves.length],
+      narration: concept.narration,
+      visualPrompt: enrichedPrompt,
+      cameraMovement: concept.camera,
       aspectRatio: format,
-      generatedImageUrl: getSceneImageUrl(`${topic} scene ${i} ${niche}`, format, i + 100),
+      generatedImageUrl: getSceneImageUrl(enrichedPrompt, format, i * 43 + 77),
     });
   }
 
@@ -241,8 +297,8 @@ function createFallbackDarkProject(
     hooks,
     selectedHookIndex: 0,
     titles,
-    tags: [topic.toLowerCase().replace(/\s+/g, ''), 'curiosidades', 'fatos', 'misterios', 'darkchannel', 'ia', 'documentario'],
-    description: `Descubra a história e os segredos fascinantes por trás de ${topic}. Deixe seu like e inscreva-se para mais conteúdos épicos!\n\n#${topic.replace(/\s+/g, '')} #Curiosidades #CanaisDark`,
+    tags: [topic.toLowerCase().replace(/\s+/g, ''), 'curiosidades', 'historias', 'darkchannel', 'ia', 'fatos'],
+    description: `A lenda e a história completa de ${topic}. Deixe seu like e inscreva-se para mais vídeos incríveis!\n\n#${topic.replace(/\s+/g, '')} #Curiosidades #CanaisDark`,
     scenes,
   };
 }
