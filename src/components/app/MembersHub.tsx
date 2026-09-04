@@ -2,17 +2,7 @@ import React, { useState } from 'react';
 import {
   Crown,
   Download,
-  FileText,
   Lock,
-  Sparkles,
-  BookOpen,
-  Film,
-  Layers,
-  FolderArchive,
-  Code2,
-  CheckCircle2,
-  ExternalLink,
-  ShieldAlert,
   Search,
   Zap,
   ArrowRight

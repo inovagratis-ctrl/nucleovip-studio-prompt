@@ -1,8 +1,6 @@
-import { GoogleGenAI } from '@google/genai';
 import type { VideoDarkProject, VideoFormat, VideoNiche, VideoTone, VideoScene, VideoTitleOption } from '../types';
 
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY || '';
-const ai = API_KEY ? new GoogleGenAI({ apiKey: API_KEY }) : null;
+const geminiApiKey = import.meta.env.VITE_GEMINI_API_KEY || '';
 
 interface GenerateVideoDarkParams {
   topic: string;
@@ -40,67 +38,93 @@ export function getSceneImageUrl(prompt: string, format: VideoFormat, seed?: num
   return `https://image.pollinations.ai/prompt/${cleanPrompt}?width=${width}&height=${height}&seed=${randomSeed}&nologo=true&model=flux`;
 }
 
+async function callGeminiApiJson(prompt: string): Promise<any> {
+  if (!geminiApiKey || (geminiApiKey.startsWith('AQ.') === false && geminiApiKey.length < 20)) {
+    throw new Error('Chave do Gemini não configurada.');
+  }
+
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`;
+
+  const payload = {
+    contents: [
+      {
+        role: 'user',
+        parts: [{ text: prompt }]
+      }
+    ],
+    generationConfig: {
+      temperature: 0.8,
+      maxOutputTokens: 2048,
+    }
+  };
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    throw new Error(`Erro na API Gemini: ${response.status}`);
+  }
+
+  const data = await response.json();
+  const textOutput = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!textOutput) {
+    throw new Error('Resposta vazia da API do Gemini.');
+  }
+
+  const jsonMatch = textOutput.match(/\{[\s\S]*\}/);
+  if (jsonMatch) {
+    return JSON.parse(jsonMatch[0]);
+  }
+  return JSON.parse(textOutput);
+}
+
 export async function generateDarkVideoProject(params: GenerateVideoDarkParams): Promise<VideoDarkProject> {
   const { topic, format, niche, tone } = params;
   const isShort = format === '9:16';
   const targetDuration = isShort ? '45-60 segundos (Short/Reel)' : '3 a 5 minutos (Vídeo Longo YouTube)';
-  const sceneCount = isShort ? 6 : 10;
+  const sceneCount = isShort ? 6 : 8;
 
-  const systemInstruction = `Você é o maior roteirista e diretor de Canais Dark do YouTube mundial, especialista em retenção de audiência, ganchos psicológicos e cinematografia de IA.
-Sua missão é criar a estrutura de produção completa para um vídeo do nicho "${NICHE_LABELS[niche]}" no tom "${TONE_LABELS[tone]}".
-Formato de Vídeo: ${format} (${isShort ? 'Vertical 9:16 para Shorts/Reels/TikTok' : 'Widescreen 16:9 para YouTube Vídeos Longos'}).
-Duração Alvo: ${targetDuration}.
-Quantidade de Cenas: exatamente ${sceneCount} cenas.
+  if (geminiApiKey) {
+    try {
+      const prompt = `Você é um roteirista profissional de canais Dark do YouTube.
+Gere a estrutura completa de um vídeo no formato ${format} (${isShort ? 'Shorts 9:16' : 'Vídeo Longo 16:9'}) sobre "${topic}".
+Nicho: ${NICHE_LABELS[niche]}
+Tom: ${TONE_LABELS[tone]}
+Exatamente ${sceneCount} cenas.
 
-Para o formato ${format}:
-- Se for 9:16: Enquadramentos verticais, assuntos centralizados, ritmo frenético de 4 a 6 segundos por cena.
-- Se for 16:9: Enquadramentos panorâmicos (cinematic wide shot, medium shot, close up), profundidade de campo, transições fluidas e desenvolvimento de narrativa em 3 atos.
-
-Você DEVE responder ESTRITAMENTE em formato JSON VÁLIDO com esta estrutura exata:
+Responda ESTRITAMENTE em formato JSON com esta estrutura:
 {
-  "hooks": [
-    "Gancho 1 de alta retenção (3 a 5s)",
-    "Gancho 2 provocador com pergunta ou mistério",
-    "Gancho 3 de choque ou revelação inacreditável"
-  ],
+  "hooks": ["Gancho 1", "Gancho 2", "Gancho 3"],
   "titles": [
-    { "title": "Título magnético 1", "ctrScore": 96, "triggers": ["Curiosidade", "Urgência"] },
-    { "title": "Título magnético 2", "ctrScore": 92, "triggers": ["Mistério", "Quebra de Padrão"] },
-    { "title": "Título magnético 3", "ctrScore": 89, "triggers": ["Autoridade", "Revelação"] },
-    { "title": "Título magnético 4", "ctrScore": 87, "triggers": ["Medo de Perder", "Exclusividade"] },
-    { "title": "Título magnético 5", "ctrScore": 85, "triggers": ["Transformação", "Segredo"] }
+    { "title": "Título 1", "ctrScore": 96, "triggers": ["Curiosidade", "Urgência"] },
+    { "title": "Título 2", "ctrScore": 92, "triggers": ["Mistério", "Segredo"] },
+    { "title": "Título 3", "ctrScore": 89, "triggers": ["Revelação"] },
+    { "title": "Título 4", "ctrScore": 86, "triggers": ["Inédito"] },
+    { "title": "Título 5", "ctrScore": 84, "triggers": ["Alerta"] }
   ],
-  "description": "Descrição envolvente para o YouTube com parágrafo inicial magnético, tópicos e chamada para inscrição.",
-  "tags": ["tag1", "tag2", "tag3", "tag4", "tag5", "tag6", "tag7", "tag8"],
+  "description": "Descrição envolvente para o YouTube com hashtags.",
+  "tags": ["tag1", "tag2", "tag3", "tag4", "tag5", "tag6"],
   "scenes": [
     {
       "sceneNumber": 1,
       "timeRange": "0:00 - 0:05",
-      "narration": "Texto exato que o narrador fala nesta cena (em Português).",
-      "visualPrompt": "Prompt em INGLÊS ultra detalhado para o gerador de imagem/vídeo de IA descrevendo sujeito, ambiente, luz, lente, ângulo e movimento cinematográfico.",
-      "cameraMovement": "ex: Slow zoom in, Orbit shot, Drone pan, Static cinematic shot"
+      "narration": "Texto narrado em português",
+      "visualPrompt": "Prompt em inglês para IA de imagem/vídeo",
+      "cameraMovement": "ex: Slow zoom in"
     }
   ]
 }`;
 
-  if (ai) {
-    try {
-      const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: `Tema do Vídeo Dark: "${topic}"\nNicho: ${niche}\nFormato: ${format}\nTom: ${tone}`,
-        config: {
-          systemInstruction,
-          responseMimeType: 'application/json',
-          temperature: 0.8,
-        },
-      });
-
-      const responseText = response.text || '';
-      const parsed = JSON.parse(responseText);
+      const parsed = await callGeminiApiJson(prompt);
 
       const scenesWithImages: VideoScene[] = (parsed.scenes || []).map((s: any, idx: number) => ({
         sceneNumber: s.sceneNumber || idx + 1,
-        timeRange: s.timeRange || `0:${(idx * 5).toString().padStart(2, '0')} - 0:${((idx + 1) * 5).toString().padStart(2, '0')}`,
+        timeRange: s.timeRange || `0:${(idx * 6).toString().padStart(2, '0')} - 0:${((idx + 1) * 6).toString().padStart(2, '0')}`,
         narration: s.narration || '',
         visualPrompt: s.visualPrompt || '',
         cameraMovement: s.cameraMovement || 'Cinematic slow push in',
@@ -117,17 +141,17 @@ Você DEVE responder ESTRITAMENTE em formato JSON VÁLIDO com esta estrutura exa
         tone,
         estimatedDuration: targetDuration,
         hooks: parsed.hooks || [
-          `Você não vai acreditar no que a ciência acabou de descobrir sobre ${topic}.`,
-          `Existe um segredo sobre ${topic} que ninguém tem coragem de falar abertamente.`,
-          `E se tudo o que você aprendeu sobre ${topic} for uma mentira completa?`,
+          `Você não vai acreditar no que aconteceu com ${topic}.`,
+          `Existe um segredo sobre ${topic} que poucos conhecem.`,
+          `E se tudo o que você sabe sobre ${topic} for uma mentira?`,
         ],
         selectedHookIndex: 0,
         titles: parsed.titles || [
-          { title: `O Segredo Obscuro de ${topic} Que Você Precisa Saber`, ctrScore: 95, triggers: ['Curiosidade', 'Revelação'] },
+          { title: `O Mistério Oculto de ${topic} Revelado`, ctrScore: 95, triggers: ['Curiosidade', 'Revelação'] },
           { title: `Por Que Ninguém Fala Sobre Isso? (${topic})`, ctrScore: 91, triggers: ['Mistério', 'Urgência'] },
         ],
-        tags: parsed.tags || ['curiosidades', 'misterio', 'historia', 'ciencia', 'documentario', 'ia'],
-        description: parsed.description || `Neste vídeo exploramos as verdades mais surpreendentes sobre ${topic}.`,
+        tags: parsed.tags || ['curiosidades', 'misterio', 'darkchannel', 'ia'],
+        description: parsed.description || `Descubra as verdades mais surpreendentes sobre ${topic}.`,
         scenes: scenesWithImages,
       };
     } catch (err) {

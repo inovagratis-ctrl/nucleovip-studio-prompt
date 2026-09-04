@@ -12,15 +12,10 @@ import {
   Tag,
   Film,
   Camera,
-  Layers,
-  ChevronRight,
-  Maximize2,
   RefreshCw,
-  Sliders,
   Volume2,
   Tv,
   Smartphone,
-  Info,
   ArrowRight
 } from 'lucide-react';
 import type { VideoDarkProject, VideoFormat, VideoNiche, VideoTone } from '../../types';
@@ -28,7 +23,7 @@ import { generateDarkVideoProject, NICHE_LABELS, TONE_LABELS } from '../../servi
 import confetti from 'canvas-confetti';
 
 interface VideoDarkStudioProps {
-  onOpenUpgrade?: () => void;
+  onOpenUpgrade?: (title?: string, description?: string) => void;
 }
 
 export const VideoDarkStudio: React.FC<VideoDarkStudioProps> = () => {
@@ -656,7 +651,7 @@ ${s.visualPrompt}
                     {/* Top time & badge */}
                     <div className="flex items-center justify-between text-white text-[11px] font-bold">
                       <span className="px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-xs">
-                        Cena {currentSceneIdx + 1} / {project.scenes.length}
+                        Cena ${currentSceneIdx + 1} / ${project.scenes.length}
                       </span>
                       <span className="px-2 py-0.5 rounded-md bg-red-600 font-black tracking-wider uppercase text-[10px]">
                         LIVE PREVIEW
