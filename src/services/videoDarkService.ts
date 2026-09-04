@@ -129,7 +129,7 @@ export async function generateDarkVideoProject(params: GenerateVideoDarkParams):
 
   if (geminiApiKey) {
     try {
-      const prompt = `Você é um roteirista e diretor de canais Dark do YouTube premiado.
+      const prompt = `Você é um roteirista e diretor de conteúdo em vídeo, YouTube e Shorts premiado.
 Gere a estrutura de um vídeo no formato ${format} (${isShort ? 'Shorts 9:16' : 'Vídeo Longo 16:9'}) sobre o tema: "${topic}".
 Nicho: ${NICHE_LABELS[niche]}
 Tom: ${TONE_LABELS[tone]}

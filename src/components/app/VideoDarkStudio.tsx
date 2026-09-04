@@ -1,9 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import {
   Clapperboard,
   Sparkles,
-  Play,
-  Pause,
   Copy,
   Check,
   Download,
@@ -14,16 +12,13 @@ import {
   Camera,
   RefreshCw,
   Volume2,
-  VolumeX,
   Tv,
   Smartphone,
   ArrowRight,
-  Maximize2,
   Mic,
-  Music
 } from 'lucide-react';
 import type { VideoDarkProject, VideoFormat, VideoNiche, VideoTone } from '../../types';
-import { generateDarkVideoProject, getSceneImageUrl, NICHE_LABELS, TONE_LABELS } from '../../services/videoDarkService';
+import { generateDarkVideoProject, NICHE_LABELS, TONE_LABELS } from '../../services/videoDarkService';
 import confetti from 'canvas-confetti';
 
 interface VideoDarkStudioProps {
@@ -37,19 +32,10 @@ export const VideoDarkStudio: React.FC<VideoDarkStudioProps> = () => {
   const [tone, setTone] = useState<VideoTone>('cinematic');
   const [isLoading, setIsLoading] = useState(false);
   const [project, setProject] = useState<VideoDarkProject | null>(null);
-
-  // Player preview & Audio modes
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [audioMode, setAudioMode] = useState<'music' | 'voice' | 'mute'>('music');
-  const [currentSceneIdx, setCurrentSceneIdx] = useState(0);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
-  const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
 
   // Active view tab inside project results
-  const [activeResultTab, setActiveResultTab] = useState<'storyboard' | 'player' | 'script' | 'titles'>('storyboard');
-
-  const audioCtxRef = useRef<AudioContext | null>(null);
-  const oscillatorNodesRef = useRef<any[]>([]);
+  const [activeResultTab, setActiveResultTab] = useState<'storyboard' | 'script' | 'titles'>('storyboard');
 
   const handleCopy = (text: string, key: string) => {
     navigator.clipboard.writeText(text);
@@ -60,10 +46,6 @@ export const VideoDarkStudio: React.FC<VideoDarkStudioProps> = () => {
   const handleGenerate = async () => {
     if (!topic.trim() || isLoading) return;
     setIsLoading(true);
-    setIsPlaying(false);
-    stopCinematicMusic();
-    window.speechSynthesis?.cancel();
-    setCurrentSceneIdx(0);
 
     try {
       const generated = await generateDarkVideoProject({
@@ -84,146 +66,26 @@ export const VideoDarkStudio: React.FC<VideoDarkStudioProps> = () => {
         });
       } catch (e) {}
     } catch (err: any) {
-      alert(err.message || 'Erro ao gerar projeto de vídeo.');
+      alert(err.message || 'Erro ao criar conteúdo de vídeo.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Web Audio API: Gerador de Trilha Sonora Épica Cinematográfica
-  const playCinematicMusic = () => {
-    try {
-      if (!audioCtxRef.current) {
-        audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
-      }
-      const ctx = audioCtxRef.current;
-      if (ctx.state === 'suspended') {
-        ctx.resume();
-      }
-
-      stopCinematicMusic();
-
-      const chords = [130.81, 164.81, 196.00, 261.63]; // C minor cinematic chords
-      const nodes: any[] = [];
-
-      chords.forEach((freq, i) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-
-        osc.type = i % 2 === 0 ? 'sine' : 'triangle';
-        osc.frequency.setValueAtTime(freq + (i * 1.5), ctx.currentTime);
-
-        gain.gain.setValueAtTime(0.01, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.06, ctx.currentTime + 1.5);
-
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start();
-        nodes.push({ osc, gain });
-      });
-
-      oscillatorNodesRef.current = nodes;
-    } catch (e) {
-      console.warn('Web Audio não suportado ou bloqueado:', e);
-    }
-  };
-
-  const stopCinematicMusic = () => {
-    if (oscillatorNodesRef.current.length > 0) {
-      oscillatorNodesRef.current.forEach(({ osc, gain }) => {
-        try {
-          if (audioCtxRef.current) {
-            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtxRef.current.currentTime + 0.4);
-            setTimeout(() => osc.stop(), 450);
-          } else {
-            osc.stop();
-          }
-        } catch (e) {}
-      });
-      oscillatorNodesRef.current = [];
-    }
-  };
-
-  // Regenerar imagem de uma cena específica
-  const handleRegenerateSceneImage = (sceneNumber: number) => {
-    if (!project) return;
-    const newSeed = Math.floor(Math.random() * 1000000);
-    const updatedScenes = project.scenes.map((s) => {
-      if (s.sceneNumber === sceneNumber) {
-        return {
-          ...s,
-          generatedImageUrl: getSceneImageUrl(s.visualPrompt, project.format, newSeed),
-        };
-      }
-      return s;
-    });
-    setProject({ ...project, scenes: updatedScenes });
-  };
-
-  // Fala a narração (apenas se o usuário escolher 'voice')
-  const speakSceneNarration = (text: string) => {
-    if (audioMode !== 'voice' || !window.speechSynthesis) return;
-    window.speechSynthesis.cancel();
-
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'pt-BR';
-    utterance.rate = 1.0;
-    utterance.pitch = 1.0;
-
-    const voices = window.speechSynthesis.getVoices();
-    const ptVoice = voices.find((v) => v.lang.includes('pt') || v.lang.includes('BR'));
-    if (ptVoice) utterance.voice = ptVoice;
-
-    window.speechSynthesis.speak(utterance);
-  };
-
-  // Player Timer loop
-  useEffect(() => {
-    let timer: any = null;
-    if (isPlaying && project && project.scenes.length > 0) {
-      if (audioMode === 'music') {
-        playCinematicMusic();
-      } else if (audioMode === 'voice') {
-        stopCinematicMusic();
-        speakSceneNarration(project.scenes[currentSceneIdx]?.narration || '');
-      } else {
-        stopCinematicMusic();
-        window.speechSynthesis?.cancel();
-      }
-
-      timer = setTimeout(() => {
-        if (currentSceneIdx >= project.scenes.length - 1) {
-          setIsPlaying(false);
-          stopCinematicMusic();
-          window.speechSynthesis?.cancel();
-          setCurrentSceneIdx(0);
-        } else {
-          setCurrentSceneIdx((prev) => prev + 1);
-        }
-      }, 5000);
-    } else {
-      stopCinematicMusic();
-      window.speechSynthesis?.cancel();
-    }
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [isPlaying, currentSceneIdx, project, audioMode]);
-
   // Download do roteiro garantido
   const handleDownloadScript = () => {
     if (!project) return;
     const content = `🎬 NÚCLEO VIP — STUDIO PROMPT PRO
-ESTRUTURA COMPLETA DE VÍDEO DARK & YOUTUBE
+ESTRUTURA COMPLETA DE VÍDEO & SHORTS
 =====================================================
 TEMA: ${project.topic}
-FORMATO: ${project.format} (${project.format === '9:16' ? 'Shorts / Reels (9:16)' : 'Vídeo Longo YouTube (16:9)'})
+FORMATO: ${project.format} (${project.format === '9:16' ? 'Shorts / Reels / TikTok (9:16)' : 'Vídeo Longo YouTube (16:9)'})
 NICHO: ${NICHE_LABELS[project.niche]}
 TOM: ${TONE_LABELS[project.tone]}
 DURAÇÃO ESTIMADA: ${project.estimatedDuration}
 =====================================================
 
-🎯 GANCHOS VIRAIS SUGERIDOS:
+🎯 GANCHOS VIRAIS DE RETENÇÃO (0:00 - 0:04):
 ${project.hooks.map((h, i) => `[Opção ${i + 1}] ${h}`).join('\n')}
 
 📈 TÍTULOS MAGNÉTICOS DE ALTO CTR:
@@ -232,7 +94,7 @@ ${project.titles.map((t) => `[${t.ctrScore}% CTR] ${t.title} (Gatilhos: ${t.trig
 🏷️ TAGS YOUTUBE:
 ${project.tags.join(', ')}
 
-📝 DESCRIÇÃO:
+📝 DESCRIÇÃO SUGERIDA:
 ${project.description}
 
 =====================================================
@@ -242,9 +104,9 @@ ${project.description}
 ${project.scenes
   .map(
     (s) => `--- CENA ${s.sceneNumber} (${s.timeRange}) ---
-[Movimento de Câmera]: ${s.cameraMovement}
-[Roteiro de Voz]: ${s.narration}
-[Prompt IA (${s.aspectRatio})]:
+[Direção de Câmera]: ${s.cameraMovement}
+[Locução / Voz]: ${s.narration}
+[Prompt de Imagem/Vídeo IA (${s.aspectRatio})]:
 ${s.visualPrompt}
 `
   )
@@ -256,7 +118,7 @@ ${s.visualPrompt}
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `roteiro-video-dark-${project.topic.toLowerCase().replace(/[^a-z0-9]/g, '-')}.txt`;
+      a.download = `roteiro-conteudo-${project.topic.toLowerCase().replace(/[^a-z0-9]/g, '-')}.txt`;
       document.body.appendChild(a);
       a.click();
       setTimeout(() => {
@@ -276,13 +138,13 @@ ${s.visualPrompt}
       <div className="text-center space-y-3">
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-purple-50 border border-purple-200 text-purple-700 text-xs font-bold shadow-2xs">
           <Clapperboard className="w-3.5 h-3.5 text-purple-600" />
-          <span>YouTube Dark & Shorts Studio</span>
+          <span>Criador de Conteúdo em Vídeo & Shorts</span>
         </div>
         <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
-          Gerador de <span className="gradient-text">Vídeos Dark & Virais</span>
+          Criador de <span className="gradient-text">Conteúdo em Vídeo & Shorts</span>
         </h1>
         <p className="text-sm sm:text-base text-slate-600 max-w-2xl mx-auto">
-          Crie ganchos magnéticos, roteiro para narração, títulos de alto CTR e imagens cinematográficas instantâneas adaptadas para 9:16 ou 16:9.
+          Gere roteiros completos, ganchos virais de retenção, títulos de alto CTR e prompts cinematográficos cena a cena prontos para Midjourney, Flux, Kling, Veo e ElevenLabs.
         </p>
       </div>
 
@@ -291,7 +153,7 @@ ${s.visualPrompt}
         {/* Step 1: Format Selector (9:16 vs 16:9) */}
         <div>
           <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2.5">
-            1. Escolha o Formato do Vídeo:
+            1. Escolha o Formato do Conteúdo:
           </label>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <button
@@ -346,12 +208,12 @@ ${s.visualPrompt}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
-              2. Nicho do Canal Dark:
+              2. Nicho do Conteúdo:
             </label>
             <select
               value={niche}
               onChange={(e) => setNiche(e.target.value as VideoNiche)}
-              className="w-full p-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs sm:text-sm font-medium focus:bg-white focus:outline-none focus:border-indigo-500 transition"
+              className="w-full p-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs sm:text-sm font-medium focus:bg-white focus:outline-none focus:border-indigo-500 transition cursor-pointer"
             >
               {Object.entries(NICHE_LABELS).map(([key, label]) => (
                 <option key={key} value={key}>
@@ -363,12 +225,12 @@ ${s.visualPrompt}
 
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
-              3. Tom da Narrativa & Voz:
+              3. Tom da Narrativa & Locução:
             </label>
             <select
               value={tone}
               onChange={(e) => setTone(e.target.value as VideoTone)}
-              className="w-full p-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs sm:text-sm font-medium focus:bg-white focus:outline-none focus:border-indigo-500 transition"
+              className="w-full p-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs sm:text-sm font-medium focus:bg-white focus:outline-none focus:border-indigo-500 transition cursor-pointer"
             >
               {Object.entries(TONE_LABELS).map(([key, label]) => (
                 <option key={key} value={key}>
@@ -382,14 +244,14 @@ ${s.visualPrompt}
         {/* Step 3: Topic Input & Generate */}
         <div>
           <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
-            4. Tema ou Personagem Central do Vídeo:
+            4. Tema, Personagem ou Ideia Central:
           </label>
           <div className="relative">
             <textarea
               rows={3}
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
-              placeholder="Ex: Um cão pistoleiro solitário no velho oeste enfrentando um bando de coiotes no meio do deserto..."
+              placeholder="Ex: Como a inteligência artificial vai mudar os empregos nos próximos 5 anos / Ou: A incrível história do guerreiro solitário..."
               className="w-full p-4 rounded-2xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 text-sm focus:bg-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition resize-none leading-relaxed"
             />
           </div>
@@ -406,12 +268,12 @@ ${s.visualPrompt}
             {isLoading ? (
               <>
                 <RefreshCw className="w-5 h-5 animate-spin" />
-                <span>Roteirizando e gerando imagens cinematográficas com IA...</span>
+                <span>Criando roteiro, ganchos e prompts cinematográficos...</span>
               </>
             ) : (
               <>
                 <Sparkles className="w-5 h-5 text-amber-300" />
-                <span>Gerar Vídeo Dark & Cenas em IA</span>
+                <span>Criar Conteúdo em Vídeo com IA</span>
                 <ArrowRight className="w-5 h-5" />
               </>
             )}
@@ -427,14 +289,14 @@ ${s.visualPrompt}
             <div>
               <div className="flex items-center gap-2">
                 <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-indigo-100 text-indigo-800">
-                  {project.format === '9:16' ? '📱 Formato 9:16 (Shorts)' : '🖥️ Formato 16:9 (Longo)'}
+                  {project.format === '9:16' ? '📱 Formato 9:16 (Shorts)' : '🖥️ Formato 16:9 (Vídeo Longo)'}
                 </span>
                 <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-800">
                   {NICHE_LABELS[project.niche]}
                 </span>
               </div>
               <h2 className="text-xl font-black text-slate-900 mt-1">{project.topic}</h2>
-              <p className="text-xs text-slate-500 mt-0.5">Duração estimada: {project.estimatedDuration} • {project.scenes.length} Cenas Geradas</p>
+              <p className="text-xs text-slate-500 mt-0.5">Duração estimada: {project.estimatedDuration} • {project.scenes.length} Cenas Planejadas</p>
             </div>
 
             <div className="flex items-center gap-2 flex-wrap">
@@ -474,19 +336,7 @@ ${s.visualPrompt}
               }`}
             >
               <Film className="w-4 h-4" />
-              <span>🎬 Storyboard & Imagens ({project.scenes.length})</span>
-            </button>
-
-            <button
-              onClick={() => setActiveResultTab('player')}
-              className={`py-3.5 px-4 border-b-2 transition flex items-center gap-2 whitespace-nowrap cursor-pointer ${
-                activeResultTab === 'player'
-                  ? 'border-indigo-600 text-indigo-700 bg-white shadow-2xs'
-                  : 'border-transparent text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <Play className="w-4 h-4 text-emerald-600" />
-              <span>▶️ Prévia com Trilha Sonora</span>
+              <span>🎬 Storyboard & Prompts das Cenas ({project.scenes.length})</span>
             </button>
 
             <button
@@ -498,7 +348,7 @@ ${s.visualPrompt}
               }`}
             >
               <Volume2 className="w-4 h-4" />
-              <span>🎙️ Roteiro de Voz Narrado</span>
+              <span>🎙️ Roteiro de Locução Formatado</span>
             </button>
 
             <button
@@ -518,134 +368,123 @@ ${s.visualPrompt}
           {activeResultTab === 'storyboard' && (
             <div className="p-6 space-y-6">
               {/* Viral Hook Highlight */}
-              <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200 flex items-start gap-3">
-                <Flame className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-                <div className="space-y-1">
-                  <span className="text-[11px] font-black uppercase tracking-wider text-amber-900">
-                    Gancho de Retenção Recomendado (0:00 - 0:04):
-                  </span>
-                  <p className="text-sm font-semibold text-slate-800 italic">
-                    "{project.hooks[0]}"
-                  </p>
+              <div className="p-4 rounded-2xl bg-amber-50/80 border border-amber-200 flex items-start justify-between gap-3">
+                <div className="flex items-start gap-3">
+                  <Flame className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                  <div className="space-y-1">
+                    <span className="text-[11px] font-black uppercase tracking-wider text-amber-900">
+                      Gancho de Retenção Recomendado (0:00 - 0:04):
+                    </span>
+                    <p className="text-sm font-semibold text-slate-800 italic">
+                      "{project.hooks[0]}"
+                    </p>
+                  </div>
                 </div>
+                <button
+                  type="button"
+                  onClick={() => handleCopy(project.hooks[0], 'top-hook')}
+                  className="px-3 py-1.5 rounded-lg bg-white border border-amber-200 text-amber-800 text-xs font-bold cursor-pointer shrink-0"
+                >
+                  {copiedKey === 'top-hook' ? 'Copiado!' : 'Copiar Gancho'}
+                </button>
               </div>
 
               {/* Grid of Scenes */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-5">
                 {project.scenes.map((scene) => (
                   <div
                     key={scene.sceneNumber}
-                    className="p-5 rounded-2xl border border-slate-200 bg-white hover:border-indigo-200 hover:shadow-md transition space-y-4 flex flex-col justify-between"
+                    className="p-6 rounded-2xl border border-slate-200 bg-white hover:border-indigo-200 hover:shadow-md transition space-y-4"
                   >
-                    <div className="space-y-4">
-                      {/* Scene header */}
-                      <div className="flex items-center justify-between">
-                        <span className="px-2.5 py-0.5 rounded-lg bg-indigo-50 text-indigo-700 font-bold text-xs border border-indigo-100">
-                          Cena {scene.sceneNumber} • {scene.timeRange}
+                    {/* Scene header */}
+                    <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-100">
+                      <div className="flex items-center gap-2">
+                        <span className="px-3 py-1 rounded-xl bg-indigo-600 text-white font-black text-xs shadow-xs">
+                          CENA {scene.sceneNumber}
                         </span>
-                        <span className="text-[11px] font-semibold text-slate-500 flex items-center gap-1">
-                          <Camera className="w-3.5 h-3.5 text-slate-400" />
-                          {scene.cameraMovement}
+                        <span className="px-2.5 py-0.5 rounded-lg bg-slate-100 text-slate-700 font-bold text-xs">
+                          ⏱️ {scene.timeRange}
+                        </span>
+                        <span className="px-2.5 py-0.5 rounded-lg bg-purple-50 text-purple-700 font-bold text-xs border border-purple-100">
+                          {project.format === '9:16' ? 'Proporção 9:16 (Vertical)' : 'Proporção 16:9 (Widescreen)'}
                         </span>
                       </div>
+                      <span className="text-xs font-semibold text-slate-600 flex items-center gap-1.5 bg-slate-50 px-3 py-1 rounded-lg border border-slate-200">
+                        <Camera className="w-3.5 h-3.5 text-indigo-600" />
+                        <span>Câmera: <strong>{scene.cameraMovement}</strong></span>
+                      </span>
+                    </div>
 
-                      {/* Scene Image Preview with Direct Image Loader */}
-                      <div className={`relative rounded-2xl overflow-hidden bg-slate-900 group shadow-inner ${
-                        project.format === '9:16' ? 'aspect-[9/16] max-h-80 mx-auto w-48' : 'aspect-video w-full'
-                      }`}>
-                        {scene.generatedImageUrl ? (
-                          <img
-                            src={scene.generatedImageUrl}
-                            alt={`Cena ${scene.sceneNumber}`}
-                            className="w-full h-full object-cover transition duration-500 group-hover:scale-105"
-                            loading="eager"
-                            onError={(e: any) => {
-                              // Fallback suave
-                              e.currentTarget.src = getSceneImageUrl(`cinematic ${project.topic}`, project.format, scene.sceneNumber * 99);
-                            }}
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-slate-500 text-xs">
-                            Gerando imagem...
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      {/* Left: Narration voice */}
+                      <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col justify-between space-y-3">
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1">
+                              <Volume2 className="w-3.5 h-3.5 text-indigo-600" />
+                              Roteiro de Voz / Locução:
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleCopy(scene.narration, `narration-${scene.sceneNumber}`)}
+                              className="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 cursor-pointer"
+                            >
+                              {copiedKey === `narration-${scene.sceneNumber}` ? (
+                                <>
+                                  <Check className="w-3.5 h-3.5 text-emerald-600" />
+                                  <span className="text-emerald-600">Copiado!</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Copy className="w-3.5 h-3.5" />
+                                  <span>Copiar Voz</span>
+                                </>
+                              )}
+                            </button>
                           </div>
-                        )}
-
-                        {/* Top action badges on hover */}
-                        <div className="absolute top-2 right-2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition">
-                          <button
-                            type="button"
-                            onClick={() => scene.generatedImageUrl && setFullscreenImage(scene.generatedImageUrl)}
-                            className="p-1.5 rounded-lg bg-black/70 hover:bg-black text-white text-xs cursor-pointer"
-                            title="Expandir imagem"
-                          >
-                            <Maximize2 className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleRegenerateSceneImage(scene.sceneNumber)}
-                            className="p-1.5 rounded-lg bg-indigo-600/80 hover:bg-indigo-600 text-white text-xs cursor-pointer flex items-center gap-1"
-                            title="Regenerar variação desta cena"
-                          >
-                            <RefreshCw className="w-3.5 h-3.5" />
-                          </button>
+                          <p className="text-sm text-slate-800 font-medium leading-relaxed italic bg-white p-3.5 rounded-xl border border-slate-200/70 shadow-2xs">
+                            "{scene.narration}"
+                          </p>
                         </div>
-
-                        {/* Subtitle bar */}
-                        <div className="absolute bottom-2 left-2 right-2 p-2 rounded-lg bg-slate-950/85 backdrop-blur-xs text-white text-[10px] line-clamp-2 leading-tight">
-                          {scene.narration}
+                        <div className="text-[10px] text-slate-400 font-medium">
+                          💡 Ideal para colar no ElevenLabs, Clipchamp ou CapCut
                         </div>
                       </div>
 
-                      {/* Narration voice */}
-                      <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 space-y-1">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                          Texto Narrado:
-                        </span>
-                        <p className="text-xs text-slate-800 font-medium leading-relaxed">
-                          "{scene.narration}"
-                        </p>
-                      </div>
-
-                      {/* AI Prompt Box */}
-                      <div className="space-y-1.5">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-600">
-                            Prompt em Inglês ({project.format}):
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => handleCopy(scene.visualPrompt, `prompt-${scene.sceneNumber}`)}
-                            className="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 cursor-pointer"
-                          >
-                            {copiedKey === `prompt-${scene.sceneNumber}` ? (
-                              <>
-                                <Check className="w-3.5 h-3.5 text-emerald-600" />
-                                <span className="text-emerald-600">Copiado!</span>
-                              </>
-                            ) : (
-                              <>
-                                <Copy className="w-3.5 h-3.5" />
-                                <span>Copiar</span>
-                              </>
-                            )}
-                          </button>
+                      {/* Right: AI Visual Prompt for Generators */}
+                      <div className="p-4 rounded-2xl bg-slate-900 text-slate-100 flex flex-col justify-between space-y-3 shadow-sm">
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-300 flex items-center gap-1">
+                              <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                              Prompt IA para Geradores de Vídeo/Imagem:
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleCopy(scene.visualPrompt, `prompt-${scene.sceneNumber}`)}
+                              className="text-[11px] font-bold text-indigo-300 hover:text-white flex items-center gap-1 cursor-pointer"
+                            >
+                              {copiedKey === `prompt-${scene.sceneNumber}` ? (
+                                <>
+                                  <Check className="w-3.5 h-3.5 text-emerald-400" />
+                                  <span className="text-emerald-400">Copiado!</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Copy className="w-3.5 h-3.5" />
+                                  <span>Copiar Prompt</span>
+                                </>
+                              )}
+                            </button>
+                          </div>
+                          <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-[11px] font-mono leading-relaxed text-slate-200 select-all">
+                            {scene.visualPrompt}
+                          </div>
                         </div>
-                        <div className="p-3 rounded-xl bg-slate-900 text-slate-100 text-[11px] font-mono leading-relaxed select-all">
-                          {scene.visualPrompt}
+                        <div className="flex items-center justify-between text-[10px] text-slate-400">
+                          <span>Compatível com Midjourney, Flux, Kling, Veo, Luma & Runway</span>
                         </div>
                       </div>
-                    </div>
-
-                    {/* Quick Regenerate Button at Bottom */}
-                    <div className="pt-2">
-                      <button
-                        type="button"
-                        onClick={() => handleRegenerateSceneImage(scene.sceneNumber)}
-                        className="w-full py-2 px-3 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer"
-                      >
-                        <RefreshCw className="w-3.5 h-3.5 text-indigo-600" />
-                        <span>Gerar Nova Variação da Imagem</span>
-                      </button>
                     </div>
                   </div>
                 ))}
@@ -653,160 +492,7 @@ ${s.visualPrompt}
             </div>
           )}
 
-          {/* Tab 2: Interactive Video Simulator / Player WITH SOUNDTRACK */}
-          {activeResultTab === 'player' && (
-            <div className="p-6 space-y-6 text-center">
-              <div className="max-w-md mx-auto space-y-2">
-                <h3 className="font-bold text-slate-900 text-base">Simulador de Vídeo com Trilha Sonora</h3>
-                <p className="text-xs text-slate-500">
-                  Assista às cenas animadas com transições cinematográficas e trilha sonora épica de fundo!
-                </p>
-              </div>
-
-              {/* Audio Mode Selectors */}
-              <div className="flex items-center justify-center gap-2 flex-wrap">
-                <button
-                  type="button"
-                  onClick={() => setAudioMode('music')}
-                  className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition cursor-pointer ${
-                    audioMode === 'music'
-                      ? 'bg-purple-50 border-purple-300 text-purple-700 shadow-xs'
-                      : 'bg-slate-50 border-slate-200 text-slate-600'
-                  }`}
-                >
-                  <Music className="w-3.5 h-3.5 text-purple-600" />
-                  <span>🎵 Trilha Sonora Épica</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setAudioMode('voice')}
-                  className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition cursor-pointer ${
-                    audioMode === 'voice'
-                      ? 'bg-indigo-50 border-indigo-300 text-indigo-700 shadow-xs'
-                      : 'bg-slate-50 border-slate-200 text-slate-600'
-                  }`}
-                >
-                  <Volume2 className="w-3.5 h-3.5 text-indigo-600" />
-                  <span>🎙️ Locução Guiada</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setAudioMode('mute')}
-                  className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition cursor-pointer ${
-                    audioMode === 'mute'
-                      ? 'bg-slate-200 border-slate-300 text-slate-700 shadow-xs'
-                      : 'bg-slate-50 border-slate-200 text-slate-600'
-                  }`}
-                >
-                  <VolumeX className="w-3.5 h-3.5 text-slate-500" />
-                  <span>Mudo</span>
-                </button>
-              </div>
-
-              {/* Scene Indicators */}
-              <div className="flex gap-1.5 items-center justify-center">
-                {project.scenes.map((_, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => setCurrentSceneIdx(idx)}
-                    className={`w-2.5 h-2.5 rounded-full transition-all ${
-                      currentSceneIdx === idx ? 'bg-indigo-600 scale-125' : 'bg-slate-300 hover:bg-slate-400'
-                    }`}
-                    title={`Ir para cena ${idx + 1}`}
-                  />
-                ))}
-              </div>
-
-              {/* Video Frame */}
-              <div className="flex justify-center">
-                <div
-                  className={`relative rounded-3xl overflow-hidden bg-slate-950 border-4 border-slate-800 shadow-2xl transition-all ${
-                    project.format === '9:16' ? 'w-80 h-[540px]' : 'w-full max-w-2xl aspect-video'
-                  }`}
-                >
-                  {project.scenes[currentSceneIdx]?.generatedImageUrl && (
-                    <img
-                      key={project.scenes[currentSceneIdx].generatedImageUrl}
-                      src={project.scenes[currentSceneIdx].generatedImageUrl}
-                      alt="Cena atual"
-                      className="w-full h-full object-cover transition-all duration-1000 transform scale-105"
-                    />
-                  )}
-
-                  {/* Gradient Overlay for subtitles & badges */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-transparent to-black/40 flex flex-col justify-between p-5">
-                    {/* Top time & badge */}
-                    <div className="flex items-center justify-between text-white text-[11px] font-bold">
-                      <span className="px-2.5 py-1 rounded-md bg-black/70 backdrop-blur-xs border border-white/10">
-                        Cena {currentSceneIdx + 1} de {project.scenes.length} ({project.scenes[currentSceneIdx]?.timeRange})
-                      </span>
-                      <span className="px-2.5 py-0.5 rounded-md bg-red-600 font-black tracking-wider uppercase text-[10px] flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
-                        PREVIEW
-                      </span>
-                    </div>
-
-                    {/* Subtitle narration bar */}
-                    <div className="space-y-2 text-center pb-2">
-                      <div className="inline-block px-4 py-2.5 rounded-2xl bg-black/85 backdrop-blur-md border border-white/20 text-white text-xs sm:text-sm font-bold shadow-2xl leading-relaxed">
-                        "{project.scenes[currentSceneIdx]?.narration}"
-                      </div>
-                      <p className="text-[10px] text-amber-300 font-mono flex items-center justify-center gap-1">
-                        <Camera className="w-3.5 h-3.5" />
-                        {project.scenes[currentSceneIdx]?.cameraMovement}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Controls */}
-              <div className="flex items-center justify-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setCurrentSceneIdx((prev) => (prev > 0 ? prev - 1 : project.scenes.length - 1));
-                  }}
-                  className="p-3.5 rounded-2xl bg-white border border-slate-200 hover:border-indigo-300 text-slate-700 shadow-xs cursor-pointer font-bold text-xs"
-                >
-                  ◀ Cena Anterior
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setIsPlaying(!isPlaying)}
-                  className="px-8 py-3.5 rounded-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 text-white font-black text-sm shadow-xl shadow-indigo-500/25 flex items-center gap-2 cursor-pointer transition transform active:scale-95"
-                >
-                  {isPlaying ? (
-                    <>
-                      <Pause className="w-4 h-4 fill-white" />
-                      <span>Pausar Vídeo</span>
-                    </>
-                  ) : (
-                    <>
-                      <Play className="w-4 h-4 fill-white" />
-                      <span>Dar Play no Vídeo</span>
-                    </>
-                  )}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setCurrentSceneIdx((prev) => (prev < project.scenes.length - 1 ? prev + 1 : 0));
-                  }}
-                  className="p-3.5 rounded-2xl bg-white border border-slate-200 hover:border-indigo-300 text-slate-700 shadow-xs cursor-pointer font-bold text-xs"
-                >
-                  Próxima Cena ▶
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Tab 3: Full Voiceover Script */}
+          {/* Tab 2: Full Voiceover Script */}
           {activeResultTab === 'script' && (
             <div className="p-6 space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -861,7 +547,7 @@ ${s.visualPrompt}
             </div>
           )}
 
-          {/* Tab 4: Viral Hooks & CTR Titles */}
+          {/* Tab 3: Viral Hooks & CTR Titles */}
           {activeResultTab === 'titles' && (
             <div className="p-6 space-y-8">
               {/* Hooks */}
@@ -940,7 +626,7 @@ ${s.visualPrompt}
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
                     <Tag className="w-3.5 h-3.5 text-indigo-600" />
-                    Tags Otimizadas para YouTube:
+                    Tags Otimizadas para YouTube / Shorts:
                   </span>
                   <button
                     type="button"
@@ -960,24 +646,6 @@ ${s.visualPrompt}
               </div>
             </div>
           )}
-        </div>
-      )}
-
-      {/* Fullscreen Image Modal */}
-      {fullscreenImage && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md cursor-pointer animate-fadeIn"
-          onClick={() => setFullscreenImage(null)}
-        >
-          <div className="relative max-w-4xl max-h-[90vh] rounded-2xl overflow-hidden border border-white/20 shadow-2xl">
-            <img src={fullscreenImage} alt="Fullscreen" className="w-full h-full object-contain" />
-            <button
-              onClick={() => setFullscreenImage(null)}
-              className="absolute top-4 right-4 p-2 rounded-full bg-black/70 text-white font-bold text-sm hover:bg-black transition"
-            >
-              ✕ Fechar
-            </button>
-          </div>
         </div>
       )}
     </div>
