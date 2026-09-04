@@ -32,15 +32,8 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
   const checkoutUrl = billingCycle === 'monthly' ? currentPlan.checkoutUrlMonthly : currentPlan.checkoutUrlYearly;
 
   const handleSimulatePayment = () => {
-    if (checkoutUrl && !checkoutUrl.includes('exemplo-')) {
+    if (checkoutUrl) {
       window.open(checkoutUrl, '_blank');
-      onClose();
-    } else {
-      // Quando os links reais da Kiwify forem adicionados nas variáveis de ambiente
-      alert(`🔗 Redirecionando para o Checkout Seguro (${currentPlan.name}).\n\nApós a conclusão do pagamento, seu acesso será liberado automaticamente.`);
-      if (checkoutUrl) {
-        window.open(checkoutUrl, '_blank');
-      }
       onClose();
     }
   };

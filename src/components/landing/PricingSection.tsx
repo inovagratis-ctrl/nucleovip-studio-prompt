@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { CheckCircle2, Zap, Shield, ArrowRight } from 'lucide-react';
-import { PLANS_CONFIG } from '../../config/plans';
+import { PLANS_CONFIG, type PlanPricing } from '../../config/plans';
 
 interface PricingSectionProps {
   onNavigateToSignup: () => void;
@@ -8,6 +8,20 @@ interface PricingSectionProps {
 
 export const PricingSection: React.FC<PricingSectionProps> = ({ onNavigateToSignup }) => {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('yearly');
+
+  const handlePlanCheckout = (plan: PlanPricing) => {
+    const checkoutUrl = billingCycle === 'monthly' ? plan.checkoutUrlMonthly : plan.checkoutUrlYearly;
+    if (checkoutUrl && !checkoutUrl.includes('exemplo-')) {
+      window.open(checkoutUrl, '_blank');
+    } else {
+      // Se ainda não tiver URL configurada, abre signup ou redireciona
+      if (checkoutUrl) {
+        window.open(checkoutUrl, '_blank');
+      } else {
+        onNavigateToSignup();
+      }
+    }
+  };
 
   return (
     <section id="planos" className="py-20 sm:py-28 bg-white relative overflow-hidden border-t border-slate-200">
@@ -142,7 +156,7 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ onNavigateToSign
                 <div>
                   <button
                     type="button"
-                    onClick={onNavigateToSignup}
+                    onClick={() => handlePlanCheckout(plan)}
                     className={`w-full py-3.5 px-4 rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-2 cursor-pointer ${
                       isPro
                         ? 'bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white shadow-lg shadow-indigo-500/25'
