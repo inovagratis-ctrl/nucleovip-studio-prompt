@@ -7,6 +7,7 @@ import { MultiAiSection } from './MultiAiSection';
 import { ComparativeSection } from './ComparativeSection';
 import { BeforeAfterSection } from './BeforeAfterSection';
 import { PricingSection } from './PricingSection';
+import { FaqSection } from './FaqSection';
 import { FinalCta } from './FinalCta';
 import { Footer } from './Footer';
 
@@ -33,6 +34,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         <ComparativeSection />
         <BeforeAfterSection />
         <PricingSection onNavigateToSignup={onNavigateToSignup} />
+        <FaqSection />
         <FinalCta onNavigateToSignup={onNavigateToSignup} />
       </main>
       <Footer

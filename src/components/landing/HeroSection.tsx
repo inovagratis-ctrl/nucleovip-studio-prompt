@@ -20,29 +20,33 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigateToSignup }) 
 
         {/* Main Headline */}
         <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black text-slate-900 tracking-tight leading-[1.1] max-w-4xl mx-auto">
-          Transforme Suas Ideias em{' '}
-          <span className="gradient-text">Prompts Profissionais</span> com IA
+          Crie imagens e vídeos de IA mais <span className="gradient-text">consistentes e cinematográficos</span>
         </h1>
 
         {/* Subheadline */}
         <p className="mt-6 text-base sm:text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed font-normal">
-          Crie prompts otimizados para imagens, personagens, cenas e vídeos em segundos com um{' '}
-          <strong className="text-slate-900 font-semibold">Engenheiro de Prompts</strong> desenvolvido para diferentes modelos de IA.
+          Transforme uma ideia simples em prompts adaptados para diferentes modelos de imagem e vídeo, com controle de composição, câmera, iluminação, movimento e estilo — <strong className="text-slate-900 font-semibold">sem passar horas testando prompts às cegas</strong>.
         </p>
 
+        {/* Transparent Disclaimer Box */}
+        <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-indigo-50/70 border border-indigo-100/80 text-indigo-900 text-xs font-medium max-w-2xl mx-auto text-center">
+          <span>💡</span>
+          <span><strong>Como funciona:</strong> O Studio Prompt Pro cria a engenharia exata do prompt. Você copia e cola com 1 clique no modelo de IA da sua escolha (ChatGPT/DALL-E 3, Midjourney, Flux, Veo, Kling ou Seedance).</span>
+        </div>
+
         {/* CTA Container */}
-        <div className="mt-10 flex flex-col items-center justify-center gap-3">
+        <div className="mt-8 flex flex-col items-center justify-center gap-3">
           <button
             onClick={onNavigateToSignup}
             className="px-8 py-4 rounded-2xl text-base font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white shadow-xl shadow-indigo-500/25 flex items-center gap-3 transition-all transform hover:-translate-y-0.5 active:scale-95 cursor-pointer"
           >
             <Sparkles className="w-5 h-5 text-indigo-100" />
-            <span>Testar 7 Dias por R$ 2,99</span>
+            <span>Testar por 7 dias por R$ 2,99</span>
             <ArrowRight className="w-5 h-5" />
           </button>
 
           <p className="text-xs sm:text-sm text-slate-500 font-medium">
-            Acesso imediato • Planos a partir de R$ 14,99/mês • Cancele quando quiser
+            Acesso imediato ao teste • Planos a partir de R$ 14,99/mês • Cancele quando quiser
           </p>
         </div>
 

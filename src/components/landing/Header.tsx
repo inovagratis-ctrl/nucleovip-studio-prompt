@@ -62,9 +62,15 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
           <button
             onClick={() => scrollToSection('planos')}
+            className="text-slate-600 hover:text-indigo-600 transition cursor-pointer font-semibold"
+          >
+            Planos
+          </button>
+          <button
+            onClick={() => scrollToSection('faq')}
             className="text-indigo-600 hover:text-indigo-800 transition font-bold cursor-pointer"
           >
-            Planos & Preços
+            Dúvidas (FAQ)
           </button>
         </nav>
 
