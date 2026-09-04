@@ -154,7 +154,7 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ onNavigateToSign
                     {isTrial ? (
                       <>
                         <Zap className="w-4 h-4 text-white fill-white" />
-                        <span>Experimentar por R$ 2,99</span>
+                        <span>Começar teste por R$ 2,99</span>
                       </>
                     ) : isPro ? (
                       <>
@@ -172,6 +172,16 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ onNavigateToSign
               </div>
             );
           })}
+        </div>
+
+        {/* Transparency Box (Manus.ai Spec) */}
+        <div className="mt-12 max-w-3xl mx-auto p-6 rounded-3xl bg-slate-50 border border-slate-200 text-center space-y-2">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700">
+            Transparência & Condições do Teste de 7 Dias:
+          </h4>
+          <p className="text-xs text-slate-600 leading-relaxed">
+            Experimente o Studio Prompt Pro por apenas <strong>R$ 2,99</strong> e crie prompts adaptados para imagens, personagens, cenas e vídeos. Após os 7 dias, a assinatura será renovada automaticamente pelo plano escolhido no valor de <strong>R$ 14,99/mês</strong> (PRO) ou <strong>R$ 29,99/mês</strong> (Studio Master). Você pode cancelar a qualquer momento antes da renovação na sua área de conta com apenas 1 clique.
+          </p>
         </div>
 
         {/* Security and Guarantees */}
