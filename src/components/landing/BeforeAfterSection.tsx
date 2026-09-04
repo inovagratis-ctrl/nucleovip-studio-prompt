@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sparkles, ArrowRight, Wand2, Eye, Video, UserCheck, Flame } from 'lucide-react';
+import { Sparkles, Wand2, Eye, Video, UserCheck, Flame } from 'lucide-react';
 
 interface DemoCase {
   id: string;
