@@ -8,20 +8,20 @@ interface FaqItem {
 
 const FAQ_ITEMS: FaqItem[] = [
   {
-    question: 'Como funciona o Teste de 7 Dias por R$ 2,99?',
-    answer: 'Você paga uma taxa simbólica única de apenas R$ 2,99 para ter acesso liberado à plataforma durante 7 dias corridos. Durante esse período, você pode testar a engenharia de prompts, gerar prompts para imagens e vídeos, experimentar o comparador multi-IA e avaliar a qualidade na prática sem compromisso.',
+    question: 'Como funciona o Plano Starter VIP por R$ 5,99/mês?',
+    answer: 'O Starter VIP é o plano de entrada completo para quem quer criar prompts profissionais e vídeos com IA com o menor investimento do mercado. Você tem acesso mensal contínuo à engenharia de prompts com IA Gemini, modelos ChatGPT DALL-E 3 e Flux, criador de vídeo, biblioteca com +100 presets validados e downloads de materiais em TXT e PDF sem fidelidade.',
   },
   {
     question: 'O Studio Prompt Pro gera a imagem/vídeo ou cria o prompt?',
     answer: 'O Studio Prompt Pro é um software especializado em Engenharia de Prompts com IA. Ele analisa sua ideia e constrói a instrução técnica perfeita (composição, lentes, iluminação cinematográfica, parâmetros técnicos e sintaxe ideal). Em seguida, você copia o prompt com 1 clique e cola no gerador de sua preferência (como ChatGPT/DALL-E 3, Midjourney, Flux, Veo, Kling, Seedance, etc.), garantindo resultados profissionais na primeira tentativa.',
   },
   {
-    question: 'Como funciona a renovação após o período de 7 dias?',
-    answer: 'Após os 7 dias de teste, caso você deseje continuar com acesso ilimitado, a assinatura é continuada no plano escolhido (Plano PRO por apenas R$ 14,99/mês ou Plano Studio Master por R$ 29,99/mês). Você pode cancelar a qualquer momento antes da renovação diretamente no seu painel.',
+    question: 'Posso cancelar minha assinatura a qualquer momento?',
+    answer: 'Sim! Nossos planos não possuem fidelidade ou multas de cancelamento. Você pode cancelar sua assinatura mensal a qualquer momento com apenas 1 clique diretamente na Cakto ou na área da sua conta.',
   },
   {
-    question: 'Como faço para cancelar minha assinatura?',
-    answer: 'O cancelamento é 100% simples e sem burocracia. Você pode cancelar a qualquer momento com apenas 1 clique diretamente na área de configurações da sua conta ou enviando uma mensagem para o nosso suporte.',
+    question: 'Como recebo o acesso após o pagamento na Cakto?',
+    answer: 'A liberação é instantânea e 100% automática. Assim que seu pagamento no PIX ou Cartão é aprovado na Cakto, você é redirecionado automaticamente para dentro da plataforma já logado com o nível VIP correspondente e todos os materiais desbloqueados para download.',
   },
   {
     question: 'Posso usar os prompts gerados comercialmente?',
@@ -29,11 +29,11 @@ const FAQ_ITEMS: FaqItem[] = [
   },
   {
     question: 'Quais modelos de IA são suportados?',
-    answer: 'Suportamos os principais modelos de ponta do mercado: ChatGPT Images (DALL-E 3), Nano Banana (SDXL, Flux, Midjourney), Google Veo, Kling AI, Seedance Video, além de atualizações contínuas para novos modelos de IA que forem lançados.',
+    answer: 'Suportamos os principais modelos de ponta do mercado: Gemini AI, ChatGPT Images (DALL-E 3), Flux, Google Veo, Kling AI, Seedance Video, além de atualizações contínuas para novos modelos de IA que forem lançados.',
   },
   {
     question: 'Existe garantia de reembolso?',
-    answer: 'Sim! Oferecemos garantia incondicional de 7 dias. Se por qualquer motivo você não ficar satisfeito com a qualidade da ferramenta, basta solicitar e devolveremos 100% do seu investimento sem perguntas.',
+    answer: 'Sim! Oferecemos garantia incondicional de 7 dias protegida por lei. Se por qualquer motivo você não ficar satisfeito com a plataforma, basta solicitar e devolveremos 100% do seu valor.',
   },
 ];
 
@@ -59,7 +59,7 @@ export const FaqSection: React.FC = () => {
           </h2>
 
           <p className="text-slate-600 text-sm sm:text-base max-w-xl mx-auto">
-            Tudo o que você precisa saber sobre o teste de R$ 2,99, planos, modelos de IA e cancelamento.
+            Tudo o que você precisa saber sobre os planos, modelos de IA, pagamentos e cancelamento.
           </p>
         </div>
 

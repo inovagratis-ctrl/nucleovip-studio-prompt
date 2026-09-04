@@ -72,8 +72,8 @@ export const StudioPromptProApp: React.FC = () => {
 
     if (!canGenerate()) {
       handleOpenUpgrade(
-        'Limite do Período de Teste Atingido',
-        'Você usou seu limite de prompts diários do plano de teste. Faça upgrade para o PRO Creator VIP ou Studio Master para ter gerações ilimitadas sem restrições!'
+        'Faça Upgrade para Acesso Ilimitado',
+        'Faça upgrade para o PRO Creator VIP ou Studio Master para desbloquear todos os modelos de vídeo (Veo, Kling, Seedance) e gerações ilimitadas sem restrições!'
       );
       return;
     }

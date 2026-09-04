@@ -43,7 +43,7 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({
                   ? 'bg-amber-50 text-amber-700 border-amber-200'
                   : 'bg-slate-100 text-slate-600 border-slate-200'
               }`}>
-                {plan === 'agency' ? 'STUDIO MASTER' : plan === 'pro' ? 'PRO VIP' : plan === 'trial' ? 'TESTE 7 DIAS' : 'DEGUSTAÇÃO'}
+                {plan === 'agency' ? 'STUDIO MASTER' : plan === 'pro' ? 'PRO VIP' : 'STARTER VIP'}
               </span>
             </div>
             <p className="text-[11px] text-slate-500 font-medium hidden sm:block">Engenheiro de Prompts Multi-IA</p>

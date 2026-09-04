@@ -76,7 +76,7 @@ export const Footer: React.FC<FooterProps> = ({
               </li>
               <li>
                 <button onClick={onNavigateToSignup} className="hover:text-indigo-600 transition cursor-pointer">
-                  Teste 7 dias por R$ 2,99
+                  Starter VIP (R$ 5,99/mês)
                 </button>
               </li>
             </ul>
