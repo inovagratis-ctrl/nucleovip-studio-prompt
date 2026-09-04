@@ -7,6 +7,8 @@ import { ResultCard } from './ResultCard';
 import { RefinementBox } from './RefinementBox';
 import { OptimizePromptTool } from './OptimizePromptTool';
 import { ComparativeMode } from './ComparativeMode';
+import { VideoDarkStudio } from './VideoDarkStudio';
+import { MembersHub } from './MembersHub';
 import { HistoryDrawer } from './HistoryDrawer';
 import { UpgradeModal } from './UpgradeModal';
 import type { ActiveTab, AIModelType, CategoryType, GeneratedPromptResult } from '../../types';
@@ -180,6 +182,14 @@ export const StudioPromptProApp: React.FC = () => {
         {activeTab === 'optimize' && <OptimizePromptTool />}
 
         {activeTab === 'compare' && <ComparativeMode />}
+
+        {activeTab === 'videodark' && (
+          <VideoDarkStudio onOpenUpgrade={(t, d) => handleOpenUpgrade(t, d)} />
+        )}
+
+        {activeTab === 'members' && (
+          <MembersHub onOpenUpgrade={(t, d) => handleOpenUpgrade(t, d)} />
+        )}
       </main>
 
       {/* History Drawer */}

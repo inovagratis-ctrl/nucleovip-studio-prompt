@@ -51,44 +51,65 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({
         </div>
 
         {/* Navigation Tabs */}
-        <nav className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-bold">
+        <nav className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-bold overflow-x-auto">
           <button
             onClick={() => onTabChange('generate')}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition cursor-pointer whitespace-nowrap ${
               activeTab === 'generate'
                 ? 'bg-white text-indigo-700 shadow-xs border border-slate-200/60'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             <Wand2 className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Gerar Prompt</span>
-            <span className="sm:hidden">Gerar</span>
+            <span>Gerar Prompt</span>
+          </button>
+
+          <button
+            onClick={() => onTabChange('videodark')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition cursor-pointer whitespace-nowrap ${
+              activeTab === 'videodark'
+                ? 'bg-white text-purple-700 shadow-xs border border-slate-200/60'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <Sparkles className="w-3.5 h-3.5 text-purple-600" />
+            <span>🎬 Vídeos Dark</span>
+          </button>
+
+          <button
+            onClick={() => onTabChange('members')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition cursor-pointer whitespace-nowrap ${
+              activeTab === 'members'
+                ? 'bg-white text-amber-700 shadow-xs border border-slate-200/60'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <Crown className="w-3.5 h-3.5 text-amber-500" />
+            <span>💎 Central de Membros</span>
           </button>
 
           <button
             onClick={() => onTabChange('optimize')}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition cursor-pointer ${
+            className={`hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition cursor-pointer whitespace-nowrap ${
               activeTab === 'optimize'
                 ? 'bg-white text-indigo-700 shadow-xs border border-slate-200/60'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             <SlidersHorizontal className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Otimizar Prompt</span>
-            <span className="sm:hidden">Otimizar</span>
+            <span>Otimizar</span>
           </button>
 
           <button
             onClick={() => onTabChange('compare')}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition cursor-pointer ${
+            className={`hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition cursor-pointer whitespace-nowrap ${
               activeTab === 'compare'
                 ? 'bg-white text-indigo-700 shadow-xs border border-slate-200/60'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             <ArrowLeftRight className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Modo Comparativo</span>
-            <span className="sm:hidden">Comparar</span>
+            <span>Comparar</span>
           </button>
         </nav>
 
