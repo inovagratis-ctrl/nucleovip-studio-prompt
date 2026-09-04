@@ -20,8 +20,7 @@ import {
   ArrowRight,
   Maximize2,
   Mic,
-  Music,
-  ExternalLink
+  Music
 } from 'lucide-react';
 import type { VideoDarkProject, VideoFormat, VideoNiche, VideoTone } from '../../types';
 import { generateDarkVideoProject, getSceneImageUrl, NICHE_LABELS, TONE_LABELS } from '../../services/videoDarkService';

@@ -73,7 +73,7 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({
             }`}
           >
             <Sparkles className="w-3.5 h-3.5 text-purple-600" />
-            <span>🎬 Vídeos Dark</span>
+            <span>🎬 Criador de Conteúdo</span>
           </button>
 
           <button
