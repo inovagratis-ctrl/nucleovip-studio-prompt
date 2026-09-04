@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { X, CheckCircle2, Crown, Zap, Shield, ArrowRight } from 'lucide-react';
 import { PLANS_CONFIG } from '../../config/plans';
-import { useAuth } from '../../context/AuthContext';
-import confetti from 'canvas-confetti';
 
 interface UpgradeModalProps {
   isOpen: boolean;
@@ -17,7 +15,6 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
   reasonTitle = 'Desbloqueie o Poder Total do Núcleo VIP — Studio Prompt Pro',
   reasonDescription = 'Escolha o plano ideal para você criar prompts profissionais sem limites para imagens e vídeos.',
 }) => {
-  const { upgradePlan } = useAuth();
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('yearly');
   const [selectedPlanId, setSelectedPlanId] = useState<'trial' | 'pro' | 'agency'>('pro');
 
@@ -37,17 +34,13 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
   const handleSimulatePayment = () => {
     if (checkoutUrl && !checkoutUrl.includes('exemplo-')) {
       window.open(checkoutUrl, '_blank');
+      onClose();
     } else {
-      upgradePlan(selectedPlanId);
-      try {
-        confetti({
-          particleCount: 80,
-          spread: 70,
-          origin: { y: 0.6 },
-          colors: ['#4F46E5', '#7C3AED', '#06B6D4', '#F59E0B'],
-        });
-      } catch (e) {}
-      alert(`🎉 Parabéns! Seu plano foi ativado com sucesso: ${currentPlan.name}!`);
+      // Quando os links reais da Kiwify forem adicionados nas variáveis de ambiente
+      alert(`🔗 Redirecionando para o Checkout Seguro (${currentPlan.name}).\n\nApós a conclusão do pagamento, seu acesso será liberado automaticamente.`);
+      if (checkoutUrl) {
+        window.open(checkoutUrl, '_blank');
+      }
       onClose();
     }
   };

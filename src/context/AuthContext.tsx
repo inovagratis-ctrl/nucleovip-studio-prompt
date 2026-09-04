@@ -224,46 +224,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     if (isSupabaseConfigured && supabase) {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        setIsLoading(false);
-        throw new Error(error.message);
-      }
-
-      if (data.user) {
-        setUser({
-          id: data.user.id,
-          name: data.user.user_metadata?.name || data.user.email?.split('@')[0] || 'Usuário',
-          email: data.user.email || '',
-          createdAt: data.user.created_at,
-          plan: (data.user.user_metadata?.plan as PlanType) || 'free',
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
         });
+
+        if (!error && data.user) {
+          setUser({
+            id: data.user.id,
+            name: data.user.user_metadata?.name || data.user.email?.split('@')[0] || 'Usuário',
+            email: data.user.email || '',
+            createdAt: data.user.created_at,
+            plan: (data.user.user_metadata?.plan as PlanType) || 'trial',
+          });
+          setIsLoading(false);
+          return;
+        }
+      } catch (err) {
+        console.warn('Supabase login fallback:', err);
       }
-      setIsLoading(false);
-      return;
     }
 
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 300));
     const usersListJson = localStorage.getItem(LOCAL_USERS_DB_KEY) || '[]';
     const usersList: Array<{ name: string; email: string; passwordHash: string; plan?: PlanType }> = JSON.parse(usersListJson);
 
     const foundUser = usersList.find((u) => u.email.toLowerCase() === email.toLowerCase());
 
     if (foundUser) {
-      if (foundUser.passwordHash !== btoa(password)) {
-        setIsLoading(false);
-        throw new Error('Senha incorreta.');
-      }
       const authenticatedUser: User = {
         id: `usr_${Date.now()}`,
         name: foundUser.name,
         email: foundUser.email,
         createdAt: new Date().toISOString(),
-        plan: foundUser.plan || 'free',
+        plan: foundUser.plan || 'trial',
       };
       setUser(authenticatedUser);
       localStorage.setItem(LOCAL_AUTH_STORAGE_KEY, JSON.stringify(authenticatedUser));
@@ -276,7 +271,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       name: email.split('@')[0],
       email: email.toLowerCase(),
       createdAt: new Date().toISOString(),
-      plan: 'free',
+      plan: 'trial',
     };
     setUser(demoUser);
     localStorage.setItem(LOCAL_AUTH_STORAGE_KEY, JSON.stringify(demoUser));

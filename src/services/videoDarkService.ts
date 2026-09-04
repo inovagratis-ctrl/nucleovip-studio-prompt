@@ -33,9 +33,6 @@ export const TONE_LABELS: Record<VideoTone, string> = {
  * enviado para o Pollinations / Flux seja 100% em Inglês e altamente descritivo.
  */
 export function translateAndEnrichPrompt(topic: string, sceneDesc: string, format: VideoFormat): string {
-  // Dicionário de termos comuns para enriquecer caso esteja em português
-  let clean = topic.toLowerCase();
-  
   const translations: [RegExp, string][] = [
     [/cão|cachorro/gi, 'dog'],
     [/pistoleiro|atirador/gi, 'gunslinger cowboy'],

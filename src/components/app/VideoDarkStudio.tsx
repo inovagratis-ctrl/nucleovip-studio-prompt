@@ -18,10 +18,9 @@ import {
   Tv,
   Smartphone,
   ArrowRight,
-  Maximize2,
-  Wand2
+  Maximize2
 } from 'lucide-react';
-import type { VideoDarkProject, VideoFormat, VideoNiche, VideoTone, VideoScene } from '../../types';
+import type { VideoDarkProject, VideoFormat, VideoNiche, VideoTone } from '../../types';
 import { generateDarkVideoProject, getSceneImageUrl, NICHE_LABELS, TONE_LABELS } from '../../services/videoDarkService';
 import confetti from 'canvas-confetti';
 
