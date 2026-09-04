@@ -154,7 +154,7 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ onNavigateToSign
                     {isTrial ? (
                       <>
                         <Zap className="w-4 h-4 text-white fill-white" />
-                        <span>Começar teste por R$ 2,99</span>
+                        <span>Teste 7 dias por R$ 2,99</span>
                       </>
                     ) : isPro ? (
                       <>

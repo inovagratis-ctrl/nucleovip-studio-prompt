@@ -29,7 +29,7 @@ export const FinalCta: React.FC<FinalCtaProps> = ({ onNavigateToSignup }) => {
               className="px-8 py-4 rounded-2xl text-base font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white shadow-xl shadow-indigo-500/25 flex items-center gap-3 transition-all transform hover:-translate-y-0.5 active:scale-95 cursor-pointer"
             >
               <Sparkles className="w-5 h-5 text-indigo-100" />
-              <span>Testar 7 Dias por R$ 2,99</span>
+              <span>Teste 7 dias por R$ 2,99</span>
               <ArrowRight className="w-5 h-5" />
             </button>
           </div>

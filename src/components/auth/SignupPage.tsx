@@ -86,7 +86,7 @@ export const SignupPage: React.FC<SignupPageProps> = ({
           </div>
 
           <h1 className="text-3xl font-black tracking-tight text-slate-900 mb-2">
-            Criar sua <span className="gradient-text">Conta Grátis</span>
+            Criar sua <span className="gradient-text">Conta VIP</span>
           </h1>
           <p className="text-sm text-slate-600">
             Comece a gerar prompts ultra-otimizados no <span className="text-indigo-600 font-bold">Núcleo VIP — Studio Prompt Pro</span> agora mesmo.
@@ -204,7 +204,7 @@ export const SignupPage: React.FC<SignupPageProps> = ({
                   </>
                 ) : (
                   <>
-                    <span>Criar Conta Grátis</span>
+                    <span>Criar Conta & Iniciar</span>
                     <ArrowRight className="w-4 h-4" />
                   </>
                 )}

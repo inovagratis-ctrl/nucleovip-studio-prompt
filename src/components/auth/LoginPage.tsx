@@ -182,7 +182,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                 onClick={onNavigateToSignup}
                 className="text-indigo-600 hover:text-indigo-700 font-bold ml-1 underline-offset-2 hover:underline cursor-pointer"
               >
-                Criar conta grátis.
+                Teste 7 dias por R$ 2,99.
               </button>
             </p>
           </div>
