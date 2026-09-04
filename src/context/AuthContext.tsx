@@ -185,6 +185,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       throw new Error('As senhas não coincidem.');
     }
 
+    const activatedPlan = (localStorage.getItem('prompt_studio_activated_plan') as PlanType) || 'trial';
+
     if (isSupabaseConfigured && supabase) {
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -192,7 +194,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         options: {
           data: {
             name,
-            plan: 'free',
+            plan: activatedPlan,
           },
         },
       });
@@ -208,7 +210,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           name,
           email,
           createdAt: data.user.created_at,
-          plan: 'free',
+          plan: activatedPlan,
         };
         setUser(newUser);
       }
@@ -230,7 +232,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       name,
       email: email.toLowerCase(),
       passwordHash: btoa(password),
-      plan: 'free' as PlanType,
+      plan: activatedPlan,
     };
     usersList.push(newUserObj);
     localStorage.setItem(LOCAL_USERS_DB_KEY, JSON.stringify(usersList));
@@ -240,7 +242,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       name,
       email: email.toLowerCase(),
       createdAt: new Date().toISOString(),
-      plan: 'free',
+      plan: activatedPlan,
     };
 
     setUser(authenticatedUser);
