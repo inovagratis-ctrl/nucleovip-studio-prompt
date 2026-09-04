@@ -29,154 +29,169 @@ export const TONE_LABELS: Record<VideoTone, string> = {
 };
 
 /**
- * Tradutor e limpador de palavras-chave para garantir que o prompt de imagem
- * enviado para o Pollinations / Flux seja 100% em Inglês e altamente descritivo.
+ * Modelos suportados da API Gemini em ordem de prioridade e performance
  */
-export function translateAndEnrichPrompt(topic: string, sceneDesc: string, format: VideoFormat): string {
-  const translations: [RegExp, string][] = [
-    [/cão|cachorro/gi, 'dog'],
-    [/pistoleiro|atirador/gi, 'gunslinger cowboy'],
-    [/gato/gi, 'cat'],
-    [/guerreiro/gi, 'warrior'],
-    [/castelo/gi, 'medieval castle'],
-    [/floresta/gi, 'mystical forest'],
-    [/espaço|universo/gi, 'deep space cosmos'],
-    [/ouro|riqueza/gi, 'golden treasures'],
-    [/faroeste/gi, 'wild west desert town'],
-    [/antigo|antiga/gi, 'ancient'],
-    [/robô|ia/gi, 'futuristic cyborg robot'],
-    [/cidade/gi, 'cyberpunk city'],
-    [/monstro|criatura/gi, 'legendary mythical creature'],
-    [/pirata/gi, 'pirate captain ship'],
-    [/alienígena|alien/gi, 'extraterrestrial alien'],
-  ];
+const GEMINI_MODELS = [
+  'gemini-3.5-flash',
+  'gemini-3.7-flash',
+  'gemini-3.1-flash-lite',
+  'gemini-flash-latest',
+  'gemini-3.5-flash-lite',
+];
 
-  let englishTopic = topic;
-  for (const [regex, replacement] of translations) {
-    englishTopic = englishTopic.replace(regex, replacement);
+/**
+ * Extrator e saneador robusto de JSON
+ */
+function extractJsonFromText(text: string): any {
+  if (!text) throw new Error('Resposta vazia da IA.');
+  let clean = text.trim();
+
+  if (clean.startsWith('```')) {
+    clean = clean.replace(/^```[a-z]*\s*/i, '').replace(/\s*```$/i, '').trim();
   }
 
-  const ratioSpec = format === '9:16' ? 'vertical 9:16 framing, central subject' : 'cinematic 16:9 widescreen composition';
-  return `${ratioSpec}, ${englishTopic}, ${sceneDesc}, highly detailed character and environment, 8k resolution, cinematic lighting, Unreal Engine 5 render, photorealistic, octane render`;
+  const match = clean.match(/\{[\s\S]*\}/);
+  if (match) {
+    clean = match[0];
+  }
+
+  return JSON.parse(clean);
 }
 
 /**
- * Constrói a URL de geração de imagem via Pollinations.ai (Flux) garantindo prompt em inglês
+ * Chamada à API Gemini com fallback automático entre múltiplos modelos
  */
-export function getSceneImageUrl(prompt: string, format: VideoFormat, seed?: number): string {
-  const width = format === '9:16' ? 576 : 1024;
-  const height = format === '9:16' ? 1024 : 576;
-  const randomSeed = seed || Math.floor(Math.random() * 1000000);
-  
-  // Limpa caracteres especiais para a URL
-  const cleanPrompt = encodeURIComponent(
-    prompt.replace(/[^a-zA-Z0-9, -]/g, ' ').substring(0, 300)
-  );
-
-  return `https://image.pollinations.ai/prompt/${cleanPrompt}?width=${width}&height=${height}&seed=${randomSeed}&nologo=true&model=flux`;
-}
-
-async function callGeminiApiJson(prompt: string): Promise<any> {
+async function callGeminiApiWithFallback(prompt: string): Promise<any> {
   if (!geminiApiKey || (geminiApiKey.startsWith('AQ.') === false && geminiApiKey.length < 20)) {
     throw new Error('Chave do Gemini não configurada.');
   }
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`;
+  let lastError: any = null;
 
-  const payload = {
-    contents: [
-      {
-        role: 'user',
-        parts: [{ text: prompt }]
+  for (const model of GEMINI_MODELS) {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`;
+    const payload = {
+      contents: [
+        {
+          role: 'user',
+          parts: [{ text: prompt }]
+        }
+      ],
+      generationConfig: {
+        temperature: 0.85,
+        maxOutputTokens: 6000,
       }
-    ],
-    generationConfig: {
-      temperature: 0.8,
-      maxOutputTokens: 2500,
+    };
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const textOutput = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (textOutput) {
+          return extractJsonFromText(textOutput);
+        }
+      } else {
+        lastError = new Error(`Erro no modelo ${model}: ${response.status}`);
+      }
+    } catch (err) {
+      lastError = err;
     }
-  };
-
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(payload)
-  });
-
-  if (!response.ok) {
-    throw new Error(`Erro na API Gemini: ${response.status}`);
   }
 
-  const data = await response.json();
-  const textOutput = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!textOutput) {
-    throw new Error('Resposta vazia da API do Gemini.');
-  }
-
-  const jsonMatch = textOutput.match(/\{[\s\S]*\}/);
-  if (jsonMatch) {
-    return JSON.parse(jsonMatch[0]);
-  }
-  return JSON.parse(textOutput);
+  throw lastError || new Error('Todos os modelos da API do Gemini falharam.');
 }
 
+/**
+ * Construtor Master de Produção Audiovisual & Prompts
+ */
 export async function generateDarkVideoProject(params: GenerateVideoDarkParams): Promise<VideoDarkProject> {
   const { topic, format, niche, tone } = params;
   const isShort = format === '9:16';
-  const targetDuration = isShort ? '45-60 segundos (Short/Reel)' : '3 a 5 minutos (Vídeo Longo YouTube)';
+  const targetDuration = isShort ? '45-60 segundos (Shorts / Reels / TikTok)' : '3 a 5 minutos (Vídeo Longo YouTube)';
   const sceneCount = isShort ? 6 : 8;
 
   if (geminiApiKey) {
     try {
-      const prompt = `Você é um roteirista e diretor de conteúdo em vídeo, YouTube e Shorts premiado.
-Gere a estrutura de um vídeo no formato ${format} (${isShort ? 'Shorts 9:16' : 'Vídeo Longo 16:9'}) sobre o tema: "${topic}".
+      const prompt = `Você é um Diretor de Cinema premiado, Roteirista Viral de Shorts/YouTube e Especialista em Engenharia de Prompts de IA (Midjourney v6, Flux.1, Kling, Sora, Runway, Veo) de padrão internacional.
+
+Sua missão é criar uma produção audiovisual COMPLETA, CINEMATOGRÁFICA e HIPERDETALHADA sobre o tema: "${topic}".
+Formato: ${format} (${isShort ? 'Shorts / Reels / TikTok (9:16)' : 'Vídeo Longo YouTube (16:9)'}).
 Nicho: ${NICHE_LABELS[niche]}
 Tom: ${TONE_LABELS[tone]}
-Crie exatamente ${sceneCount} cenas.
+Crie exatamente ${sceneCount} cenas sequenciais.
 
-IMPORTANTE: O campo "visualPrompt" de cada cena DEVE SER OBRIGATORIAMENTE EM INGLÊS com detalhes precisos do personagem principal, ambiente, iluminação e câmera (ex: se o tema for "cão pistoleiro", descreva "anthropomorphic dog dressed as a wild west gunslinger cowboy with leather hat, revolvers, dusty saloon background, dramatic lighting, 8k").
+DIRETRIZES FUNDAMENTAIS DE QUALIDADE MÁXIMA:
+
+1. 🎙️ ROTEIRO NARRADO (LOCUÇÃO PARA ELEVENLABS / LOCUTOR PROFISSIONAL):
+- Crie storytelling real, dramático e cinematográfico! NUNCA use frases clichês ou copie o tema cru.
+- Use pausas dramáticas (...), frases curtas e quebras de linha que criam cadência e retenção máxima nos primeiros segundos.
+- Estrutura narrativa sequencial:
+  * Cena 1: Abertura cinematográfica que prende a atenção e introduz o mistério/lenda.
+  * Cena 2: Revelação do protagonista, reputação e habilidades temidas.
+  * Cena 3: O desafio / momento de confronto tenso iminente.
+  * Cena 4: O clímax / a ação decisiva em fração de segundo.
+  * Cena 5: A resolução épica e o mito que ficou gravado para sempre.
+  * Cena 6: Fechamento marcante e chamada para inscrição (CTA) natural.
+
+2. 🎨 PROMPTS DAS CENAS DE IMAGEM E VÍDEO (OBRIGATORIAMENTE EM INGLÊS, PADRÃO MASTER MIDJOURNEY V6 / FLUX / KLING):
+- O prompt visual DE CADA CENA deve ser uma ARQUITETURA COMPLETA E HIPERDETALHADA (15 a 25 linhas) contendo:
+  - Formato: ${isShort ? 'VERTICAL 9:16' : 'WIDESCREEN 16:9'}
+  - Sujeito e Personagem: Descrição física e anatômica precisa (se for animal, ex: "original anthropomorphic male adult stray dog gunslinger named DOG THE KID", detalhes de pelagem, olhos inteligentes e expressivos, cicatrizes). Vestimentas ricas e gastas (chapéu de couro velho oeste desgastado, colete de couro preto, camisa bege de linho, bandana vermelha no pescoço, cinto com coldre vintage e revólveres clássicos).
+  - Enquadramento & Câmera: Tipo de plano (CLOSE-UP PORTRAIT, Low-angle Hero Shot, Over-the-shoulder, Wide Panoramic), lente (85mm / 35mm anamorphic), profundidade de campo (shallow depth of field, creamy background bokeh).
+  - Cenário / Background: Elementos táteis do ambiente (saloon rústico de madeira envelhecida, balcão, garrafas de vidro, mesas de madeira, silhuetas de outros personagens ao fundo).
+  - Iluminação & Atmosfera: Luz dourada de pôr do sol (golden hour) entrando pelas janelas, raios volumétricos de luz (god rays), partículas de poeira suspensas no ar, iluminação de borda dramática (rim lighting) destacando chapéu e ombros, sombras profundas e contrastantes.
+  - Composição e Estilo: photorealistic, ultra-detailed realistic textures and fur, cinematic color grading, Unreal Engine 5 render, Octane render, 8k resolution, award-winning cinematography.
+  - Restrições Negativas: NO TEXT, NO TITLE, NO LOGO, NO WATERMARK, NO deformed anatomy, NO extra limbs, NO human face (se for animal), NO cartoon style.
+
+3. 🎯 GANCHOS VIRAIS (HOOKS): 3 ganchos magnéticos para os primeiros 3 segundos.
+4. 📈 TÍTULOS DE ALTO CTR: 5 títulos magnéticos com análise de CTR (%) e gatilhos mentais.
 
 Responda ESTRITAMENTE em formato JSON com esta estrutura:
 {
-  "hooks": ["Gancho 1", "Gancho 2", "Gancho 3"],
+  "hooks": ["Gancho viral 1", "Gancho viral 2", "Gancho viral 3"],
   "titles": [
-    { "title": "Título magnético 1", "ctrScore": 96, "triggers": ["Curiosidade", "Urgência"] },
-    { "title": "Título magnético 2", "ctrScore": 92, "triggers": ["Mistério", "Quebra de Padrão"] },
-    { "title": "Título magnético 3", "ctrScore": 89, "triggers": ["Revelação"] },
-    { "title": "Título magnético 4", "ctrScore": 86, "triggers": ["Inédito"] },
-    { "title": "Título magnético 5", "ctrScore": 84, "triggers": ["Alerta"] }
+    { "title": "Título magnético 1", "ctrScore": 98, "triggers": ["Curiosidade", "Quebra de Padrão"] },
+    { "title": "Título magnético 2", "ctrScore": 95, "triggers": ["Mistério", "Urgência"] },
+    { "title": "Título magnético 3", "ctrScore": 91, "triggers": ["Lenda", "Ação"] },
+    { "title": "Título magnético 4", "ctrScore": 88, "triggers": ["Revelação"] },
+    { "title": "Título magnético 5", "ctrScore": 85, "triggers": ["Impacto"] }
   ],
-  "description": "Descrição envolvente para o YouTube com parágrafo e hashtags.",
+  "description": "Descrição magnética para o YouTube com parágrafos, hashtags e chamada para ação.",
   "tags": ["tag1", "tag2", "tag3", "tag4", "tag5", "tag6"],
   "scenes": [
     {
       "sceneNumber": 1,
-      "timeRange": "0:00 - 0:06",
-      "narration": "Texto narrado em português pelo locutor.",
-      "visualPrompt": "Detailed visual prompt in ENGLISH for AI image generator depicting the main character and scene action.",
-      "cameraMovement": "Slow cinematic push-in on character face"
+      "timeRange": "0:00 - 0:08",
+      "narration": "Nas terras áridas e esquecidas do Velho Oeste... onde a poeira escondia segredos e o perigo espreitava a cada esquina... surgiu uma lenda.\n\nSeu nome era DOG THE KID.\n\nA pata mais rápida do Oeste.",
+      "visualPrompt": "VERTICAL 9:16, cinematic character portrait of an original anthropomorphic male adult stray dog gunslinger named DOG THE KID, standing inside a dusty wooden western saloon...",
+      "cameraMovement": "Slow cinematic push-in on protagonist face with shallow depth of field"
     }
   ]
 }`;
 
-      const parsed = await callGeminiApiJson(prompt);
+      const parsed = await callGeminiApiWithFallback(prompt);
 
-      const scenesWithImages: VideoScene[] = (parsed.scenes || []).map((s: any, idx: number) => {
-        const visualPromptEnglish = s.visualPrompt || translateAndEnrichPrompt(topic, `scene ${idx + 1}`, format);
+      const formattedScenes: VideoScene[] = (parsed.scenes || []).map((s: any, idx: number) => {
         return {
           sceneNumber: s.sceneNumber || idx + 1,
-          timeRange: s.timeRange || `0:${(idx * 6).toString().padStart(2, '0')} - 0:${((idx + 1) * 6).toString().padStart(2, '0')}`,
+          timeRange: s.timeRange || `0:${(idx * 7).toString().padStart(2, '0')} - 0:${((idx + 1) * 7).toString().padStart(2, '0')}`,
           narration: s.narration || '',
-          visualPrompt: visualPromptEnglish,
-          cameraMovement: s.cameraMovement || 'Cinematic slow push in',
+          visualPrompt: s.visualPrompt || '',
+          cameraMovement: s.cameraMovement || 'Cinematic slow push-in with shallow depth of field',
           aspectRatio: format,
-          generatedImageUrl: getSceneImageUrl(visualPromptEnglish, format, idx * 37 + 101),
         };
       });
 
       return {
-        id: `dark-${Date.now()}`,
+        id: `video-${Date.now()}`,
         timestamp: Date.now(),
         topic,
         format,
@@ -184,18 +199,18 @@ Responda ESTRITAMENTE em formato JSON com esta estrutura:
         tone,
         estimatedDuration: targetDuration,
         hooks: parsed.hooks || [
-          `Você não vai acreditar na história inacreditável de ${topic}.`,
-          `Existe um segredo sobre ${topic} que poucos conhecem.`,
-          `Prepare-se: a verdade sobre ${topic} vai te surpreender do início ao fim.`,
+          `Você sabia que a verdadeira história por trás de ${topic} desafiou todas as regras?`,
+          `Eles tentaram apagar essa lenda, mas o que aconteceu aqui jamais será esquecido.`,
+          `Prepare-se: em menos de um minuto, você vai entender o porquê de ${topic} ser tão temido.`,
         ],
         selectedHookIndex: 0,
         titles: parsed.titles || [
-          { title: `A Lenda Oculta de ${topic} Revelada`, ctrScore: 96, triggers: ['Curiosidade', 'Revelação'] },
-          { title: `Por Que Ninguém Esquece ${topic}?`, ctrScore: 92, triggers: ['Mistério', 'Urgência'] },
+          { title: `A Verdade Oculta Sobre ${topic} Revelada`, ctrScore: 98, triggers: ['Curiosidade', 'Quebra de Padrão'] },
+          { title: `Por Que Ninguém Tem Coragem de Falar Sobre ${topic}?`, ctrScore: 94, triggers: ['Mistério', 'Urgência'] },
         ],
-        tags: parsed.tags || [topic.toLowerCase().replace(/\s+/g, ''), 'curiosidades', 'misterio', 'darkchannel', 'ia'],
-        description: parsed.description || `Descubra as verdades e histórias mais surpreendentes sobre ${topic}.`,
-        scenes: scenesWithImages,
+        tags: parsed.tags || [topic.toLowerCase().replace(/[^a-z0-9]/g, ''), 'curiosidades', 'historias', 'cinema', 'ia'],
+        description: parsed.description || `Conheça a história cinematográfica e épica de ${topic}. Deixe seu like e inscreva-se no canal para mais produções!`,
+        scenes: formattedScenes,
       };
     } catch (err) {
       console.warn('Fallback para gerador interno estruturado:', err);
@@ -205,6 +220,9 @@ Responda ESTRITAMENTE em formato JSON com esta estrutura:
   return createFallbackDarkProject(topic, format, niche, tone);
 }
 
+/**
+ * Gerador de Alta Fidelidade Local (Fallback Offline de Nível Master)
+ */
 function createFallbackDarkProject(
   topic: string,
   format: VideoFormat,
@@ -212,79 +230,88 @@ function createFallbackDarkProject(
   tone: VideoTone
 ): VideoDarkProject {
   const isShort = format === '9:16';
-  const duration = isShort ? '45-60s (Short/Reel)' : '3-5 min (Vídeo Longo YouTube)';
-  
+  const duration = isShort ? '45-60s (Shorts / Reels / TikTok)' : '3-5 min (Vídeo Longo YouTube)';
+  const ratioLabel = isShort ? 'VERTICAL 9:16' : 'WIDESCREEN 16:9';
+
   const hooks = [
-    `Você sabia que a verdadeira história sobre ${topic} é muito mais impressionante do que você imagina?`,
-    `Atenção: o que aconteceu nos bastidores de ${topic} desafiou todas as regras conhecidas.`,
-    `E se eu te disser que existe uma lenda misteriosa por trás de ${topic} que poucos tiveram coragem de contar?`,
+    `No lugar onde poucos tinham coragem de pisar... apenas um nome impunha respeito absoluto.`,
+    `Diziam que era impossível acompanhar seus movimentos. E quem duvidou... não viveu para contar.`,
+    `A lenda que você está prestes a conhecer desafiou todas as leis do Oeste.`,
   ];
 
   const titles: VideoTitleOption[] = [
-    { title: `A Verdade Inacreditável Sobre ${topic} (Revelado)`, ctrScore: 96, triggers: ['Curiosidade Extrema', 'Revelação'] },
-    { title: `O Que Ninguém Te Contou Sobre ${topic}`, ctrScore: 93, triggers: ['Mistério', 'Quebra de Padrão'] },
-    { title: `Como ${topic} Dominou Tudo Em Silêncio`, ctrScore: 89, triggers: ['Transformação', 'História'] },
-    { title: `O Maior Desafio de ${topic} Finalmente Explicado`, ctrScore: 87, triggers: ['Urgência', 'Explicação'] },
-    { title: `Pare Tudo: O Momento Mais Épico de ${topic}`, ctrScore: 85, triggers: ['Alerta', 'Gancho Rápido'] },
+    { title: `A Lenda Oculta de ${topic} (A História Completa)`, ctrScore: 98, triggers: ['Curiosidade Extrema', 'Quebra de Padrão'] },
+    { title: `Por Que Todos Temiam ${topic}? O Confronto Final`, ctrScore: 95, triggers: ['Mistério', 'Urgência'] },
+    { title: `O Momento Em Que ${topic} Fez História`, ctrScore: 91, triggers: ['Ação', 'Transformação'] },
+    { title: `O Segredo Que Ninguém Te Contou Sobre ${topic}`, ctrScore: 88, triggers: ['Revelação', 'Exclusividade'] },
+    { title: `Apenas 1% Conhece a Verdadeira História de ${topic}`, ctrScore: 85, triggers: ['Alerta', 'Desafio'] },
   ];
 
   const sceneCount = isShort ? 6 : 8;
-  const scenes: VideoScene[] = [];
 
-  const sceneConcepts = [
+  const dynamicStory = [
     {
-      action: 'close up portrait of main character with intense focused gaze',
-      narration: `Nas terras áridas e esquecidas, surgiu a lenda de ${topic}, um personagem que impunha respeito por onde passava.`,
-      camera: 'Dramatic close-up macro with shallow depth of field'
+      narration: `Nas terras áridas e esquecidas do Velho Oeste, onde a poeira escondia segredos e o perigo espreitava a cada esquina...\n\nsurgiu uma lenda.\n\nSeu nome era lendário em cada saloon da fronteira.`,
+      camera: 'Low-angle cinematic slow push-in, shallow depth of field',
+      promptSubject: 'cinematic character portrait of main character, legendary outlaw standing inside a dusty wooden western saloon with weathered dark brown cowboy hat, worn black leather vest, beige shirt, red bandana, and vintage holster'
     },
     {
-      action: 'standing proudly in dusty western town, holding classic revolvers, wearing leather duster coat and cowboy hat at golden hour',
-      narration: `Dizem que seu reflexo era o mais rápido de toda a região, capaz de desarmar qualquer rival em uma fração de segundo.`,
-      camera: 'Low angle heroic tracking shot moving forward'
+      narration: `Diziam que ninguém era capaz de acompanhar seus movimentos.\n\nUm simples olhar...\n\num pequeno movimento...\n\ne quando o rival percebia, já era tarde demais.`,
+      camera: 'Extreme close-up macro on eyes and weathered face, intense dramatic gaze',
+      promptSubject: 'extreme close-up portrait of character with intense intelligent eyes, detailed textures, battle scars, rim lighting highlighting the cowboy hat and silhouette'
     },
     {
-      action: 'tense standoff duel in front of a rustic wooden saloon, sand storm in background, dramatic sunbeams',
-      narration: `Quando o sino da igreja tocou ao meio-dia, o confronto inevitável começou na rua principal da cidade.`,
-      camera: 'Wide panoramic cinematic establishing shot'
+      narration: `Naquele dia, porém, o desafio chegou ao saloon.\n\nO relógio marcou meio-dia.\n\nO silêncio tomou conta da cidade.\n\nE na rua principal, os olhares se cruzaram em um duelo inevitável.`,
+      camera: 'Over-the-shoulder wide angle cinematic establishing duel shot',
+      promptSubject: 'dramatic standoff duel scene outside the saloon, high noon sunlight, dramatic shadow on the dusty street, atmospheric wind blowing dust clouds'
     },
     {
-      action: 'intense action moment firing dual revolvers with smoke and muzzle flash, sparks flying, cinematic slow motion',
-      narration: `Com precisão cirúrgica e coragem inabalável, cada movimento provava que sua fama não era apenas um mito.`,
-      camera: 'Dynamic 60fps slow-motion action sweep'
+      narration: `A poeira começou a subir.\n\nEm uma fração de segundo, tudo terminou com precisão cirúrgica.\n\nO som do disparo ecoou pelas montanhas como um trovão.`,
+      camera: 'Dynamic 60fps slow-motion action sweep with muzzle flash sparks',
+      promptSubject: 'dynamic high-speed action shot firing dual revolvers, realistic smoke and muzzle flash, floating dust particles, explosive volumetric lighting'
     },
     {
-      action: 'walking away into the glowing sunset desert horizon, lone silhouette, dramatic rim lighting and dust particles',
-      narration: `E assim que a poeira baixou, ele simplesmente caminhou em direção ao horizonte, deixando sua marca para sempre.`,
-      camera: 'Epic slow zoom out into landscape sunset'
+      narration: `Quando a poeira finalmente baixou...\n\nele simplesmente ajeitou o chapéu...\n\ndeu meia-volta...\n\ne caminhou tranquilamente em direção ao pôr do sol.`,
+      camera: 'Epic wide landscape zoom-out into the glowing golden sunset horizon',
+      promptSubject: 'lone hero walking away into the glowing sunset horizon, dramatic backlighting, golden hour volumetric sun rays, long cinematic shadow on the desert sand'
     },
     {
-      action: 'legendary wanted poster on wooden wall or triumphant final look, masterpiece lighting, 8k resolution',
-      narration: `Se você gostou desta história épica de ${topic}, deixe seu like e inscreva-se para os próximos episódios!`,
-      camera: 'Cinematic slow push in to final insignia'
-    },
+      narration: `Porque naquele lugar, muitos eram perigosos.\n\nMas apenas uma lenda ficou gravada para sempre.\n\nSe você curtiu essa história épica, deixe o like e inscreva-se para o próximo episódio!`,
+      camera: 'Cinematic slow push in to vintage wanted poster and final insignia',
+      promptSubject: 'vintage aged parchment wanted poster on rustic saloon wooden wall, warm golden lantern light, award-winning cinematic still, 8k resolution'
+    }
   ];
 
+  const scenes: VideoScene[] = [];
+
   for (let i = 0; i < sceneCount; i++) {
-    const concept = sceneConcepts[i % sceneConcepts.length];
-    const startTime = i * (isShort ? 7 : 20);
-    const endTime = (i + 1) * (isShort ? 7 : 20);
-    const timeRange = `${Math.floor(startTime / 60)}:${(startTime % 60).toString().padStart(2, '0')} - ${Math.floor(endTime / 60)}:${(endTime % 60).toString().padStart(2, '0')}`;
-    
-    const enrichedPrompt = translateAndEnrichPrompt(topic, concept.action, format);
+    const item = dynamicStory[i % dynamicStory.length];
+    const startTime = i * 7;
+    const endTime = (i + 1) * 7;
+    const timeRange = `0:${startTime.toString().padStart(2, '0')} - 0:${endTime.toString().padStart(2, '0')}`;
+
+    const masterPrompt = `${ratioLabel}, ${item.promptSubject}, related to ${topic}.
+
+BACKGROUND & LIGHTING:
+A crowded fictional Old West saloon with aged wooden walls, wooden bar counter, rustic tables, hanging lanterns, glass bottles, and dusty atmosphere. Warm golden sunset light entering through windows, volumetric rays of light (god rays), floating dust particles, dramatic rim lighting around the cowboy hat and shoulders, realistic fabric and leather textures, deep cinematic shadows.
+
+COMPOSITION & VISUAL STYLE:
+Strong visual hierarchy, cinematic portrait composition, shallow depth of field, creamy background bokeh, photorealistic, ultra-detailed realistic textures, physically accurate lighting, cinematic color grading, Unreal Engine 5 quality, Octane render, 8k resolution, masterwork cinematography.
+
+NO TEXT, NO TITLE, NO LOGO, NO WATERMARK, NO SUBTITLES, NO deformed anatomy, NO extra limbs, NO cartoon style, NO childish appearance.`;
 
     scenes.push({
       sceneNumber: i + 1,
       timeRange,
-      narration: concept.narration,
-      visualPrompt: enrichedPrompt,
-      cameraMovement: concept.camera,
+      narration: item.narration,
+      visualPrompt: masterPrompt,
+      cameraMovement: item.camera,
       aspectRatio: format,
-      generatedImageUrl: getSceneImageUrl(enrichedPrompt, format, i * 43 + 77),
     });
   }
 
   return {
-    id: `dark-${Date.now()}`,
+    id: `video-${Date.now()}`,
     timestamp: Date.now(),
     topic,
     format,
@@ -294,8 +321,8 @@ function createFallbackDarkProject(
     hooks,
     selectedHookIndex: 0,
     titles,
-    tags: [topic.toLowerCase().replace(/\s+/g, ''), 'curiosidades', 'historias', 'darkchannel', 'ia', 'fatos'],
-    description: `A lenda e a história completa de ${topic}. Deixe seu like e inscreva-se para mais vídeos incríveis!\n\n#${topic.replace(/\s+/g, '')} #Curiosidades #CanaisDark`,
+    tags: [topic.toLowerCase().replace(/[^a-z0-9]/g, ''), 'curiosidades', 'historias', 'shorts', 'youtube', 'ia'],
+    description: `A história épica e cinematográfica de ${topic}. Deixe seu like e inscreva-se no canal para não perder os próximos lançamentos!\n\n#${topic.replace(/\s+/g, '')} #Shorts #YouTube`,
     scenes,
   };
 }
