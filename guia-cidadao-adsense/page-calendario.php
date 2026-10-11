@@ -51,7 +51,7 @@ get_header();
 
 							<div class="calc-field">
 								<label for="cal-digito" id="label-cal-digito">2. Último dígito do NIS (1 a 0)</label>
-								<select id="cal-digito">
+								<select id="cal-digito" onchange="consultarCalendarioBeneficios2026(false)">
 									<option value="1">Final 1</option>
 									<option value="2">Final 2</option>
 									<option value="3">Final 3</option>
@@ -66,7 +66,7 @@ get_header();
 							</div>
 						</div>
 
-						<button type="button" class="calc-btn" onclick="consultarCalendarioBeneficios2026()">Ver Datas Oficiais de Pagamento em 2026</button>
+						<button type="button" class="calc-btn" onclick="consultarCalendarioBeneficios2026(true)">Ver Datas Oficiais de Pagamento em 2026</button>
 
 						<div class="calc-result" id="resultado-calendario" style="display:block;">
 							<span id="cal-titulo-resultado" style="font-weight:700; color:#102b57; font-size:1.05rem;">Selecione o programa e clique para exibir o cronograma completo de 2026.</span>
@@ -97,6 +97,10 @@ get_header();
 </main>
 
 <script>
+var urlGuiaPIS = <?php echo wp_json_encode( get_permalink( 23 ) ); ?>;
+var urlGuiaBolsaFamilia = <?php echo wp_json_encode( get_permalink( 11 ) ); ?>;
+var urlGuiaMeuINSS = <?php echo wp_json_encode( get_permalink( 10 ) ); ?>;
+
 function atualizarOpcoesCalendario2026() {
 	var prog = document.getElementById('cal-programa').value;
 	var selectDig = document.getElementById('cal-digito');
@@ -142,12 +146,13 @@ function atualizarOpcoesCalendario2026() {
 			selectDig.appendChild(opt);
 		});
 	}
-	consultarCalendarioBeneficios2026();
+	consultarCalendarioBeneficios2026(false);
 }
 
-function consultarCalendarioBeneficios2026() {
+function consultarCalendarioBeneficios2026(destacar) {
 	var prog = document.getElementById('cal-programa').value;
 	var dig = document.getElementById('cal-digito').value;
+	var boxRes = document.getElementById('resultado-calendario');
 	var titulo = document.getElementById('cal-titulo-resultado');
 	var container = document.getElementById('cal-tabela-container');
 
@@ -204,59 +209,64 @@ function consultarCalendarioBeneficios2026() {
 
 	if (prog === 'pis_pasep') {
 		var info = pisPasep2026[dig] || pisPasep2026['1'];
-		titulo.innerHTML = 'Abono Salarial PIS/PASEP 2026 — Nascidos em <strong>' + info.nome + '</strong>:';
+		titulo.innerHTML = '✔ Abono Salarial PIS/PASEP 2026 — Nascidos em <strong>' + info.nome + '</strong>:';
 		container.innerHTML =
-			'<div style="background:#fff; border:1px solid #cbd5e1; border-radius:10px; padding:1rem; margin-bottom:0.75rem;">' +
+			'<div style="background:#fff; border:1px solid #cbd5e1; border-radius:10px; padding:1rem; margin-bottom:0.85rem;">' +
 			'<p style="margin:0 0 0.4rem 0; font-size:0.95rem;"><strong>Data de Liberação do Depósito/Saque:</strong> <span style="color:#178b4b; font-weight:800; font-size:1.15rem;">A partir de ' + info.inicio + '</span></p>' +
 			'<p style="margin:0 0 0.4rem 0; font-size:0.9rem;"><strong>Prazo Final para Saque:</strong> ' + info.limite + ' (após essa data, o valor retorna ao FAT e exige recurso administrativo).</p>' +
 			'<p style="margin:0; font-size:0.82rem; color:#475569;"><strong>Fonte oficial:</strong> Resolução CODEFAT / Ministério do Trabalho e Emprego (MTE). Consulta individual no App Carteira de Trabalho Digital.</p>' +
 			'</div>' +
-			'<a href="<?php echo esc_url( home_url( '/abono-salarial-pis-pasep-quem-tem-direito-consultar/' ) ); ?>" style="font-weight:700; color:#178b4b;">Ler guia completo do Abono Salarial PIS/PASEP 2026 &rarr;</a>';
-		return;
-	}
-
-	var lista = [];
-	var fonte = '';
-	var linkGuia = '';
-	var textoLink = '';
-
-	if (prog === 'bolsa_familia') {
-		lista = bfDatas2026[dig] || bfDatas2026['1'];
-		titulo.innerHTML = 'Calendário Bolsa Família 2026 — <strong>NIS Final ' + dig + '</strong>:';
-		fonte = 'Ministério do Desenvolvimento e Assistência Social, Família e Combate à Fome (MDS) e Caixa Econômica Federal.';
-		linkGuia = '<?php echo esc_url( home_url( '/bolsa-familia-e-cadastro-unico-cadunico-quem-tem-direito/' ) ); ?>';
-		textoLink = 'Ler guia completo do Bolsa Família e CadÚnico &rarr;';
-	} else if (prog === 'inss_ate_1sm') {
-		lista = inssAte1SM[dig] || inssAte1SM['1'];
-		titulo.innerHTML = 'Calendário INSS e BPC/LOAS 2026 (Até 1 Salário Mínimo) — <strong>Final ' + dig + '</strong>:';
-		fonte = 'Instituto Nacional do Seguro Social (INSS) / Ministério da Previdência Social.';
-		linkGuia = '<?php echo esc_url( home_url( '/meu-inss-como-consultar-beneficios-cnis-pericia/' ) ); ?>';
-		textoLink = 'Ler guia passo a passo do Meu INSS &rarr;';
+			'<a href="' + urlGuiaPIS + '" style="background:#178b4b; color:#ffffff !important; padding:0.55rem 1.1rem; border-radius:8px; font-weight:700; font-size:0.88rem; text-decoration:none !important; display:inline-block;">Abrir Guia Completo do Abono Salarial PIS/PASEP 2026 &rarr;</a>';
 	} else {
-		lista = inssAcima1SM[dig] || inssAcima1SM['1_6'];
-		var rotulo = dig.replace('_', ' e ');
-		titulo.innerHTML = 'Calendário INSS 2026 (Acima de 1 Salário Mínimo) — <strong>Finais ' + rotulo + '</strong>:';
-		fonte = 'Instituto Nacional do Seguro Social (INSS) / Ministério da Previdência Social.';
-		linkGuia = '<?php echo esc_url( home_url( '/meu-inss-como-consultar-beneficios-cnis-pericia/' ) ); ?>';
-		textoLink = 'Ler guia passo a passo do Meu INSS &rarr;';
+		var lista = [];
+		var fonte = '';
+		var linkGuia = '';
+		var textoLink = '';
+
+		if (prog === 'bolsa_familia') {
+			lista = bfDatas2026[dig] || bfDatas2026['1'];
+			titulo.innerHTML = '✔ Calendário Bolsa Família 2026 — <strong>NIS Final ' + dig + '</strong>:';
+			fonte = 'Ministério do Desenvolvimento e Assistência Social, Família e Combate à Fome (MDS) e Caixa Econômica Federal.';
+			linkGuia = urlGuiaBolsaFamilia;
+			textoLink = 'Abrir Guia Completo do Bolsa Família e CadÚnico &rarr;';
+		} else if (prog === 'inss_ate_1sm') {
+			lista = inssAte1SM[dig] || inssAte1SM['1'];
+			titulo.innerHTML = '✔ Calendário INSS e BPC/LOAS 2026 (Até 1 Salário Mínimo) — <strong>Final ' + dig + '</strong>:';
+			fonte = 'Instituto Nacional do Seguro Social (INSS) / Ministério da Previdência Social.';
+			linkGuia = urlGuiaMeuINSS;
+			textoLink = 'Abrir Guia Passo a Passo do Meu INSS &rarr;';
+		} else {
+			lista = inssAcima1SM[dig] || inssAcima1SM['1_6'];
+			var rotulo = dig.replace('_', ' e ');
+			titulo.innerHTML = '✔ Calendário INSS 2026 (Acima de 1 Salário Mínimo) — <strong>Finais ' + rotulo + '</strong>:';
+			fonte = 'Instituto Nacional do Seguro Social (INSS) / Ministério da Previdência Social.';
+			linkGuia = urlGuiaMeuINSS;
+			textoLink = 'Abrir Guia Passo a Passo do Meu INSS &rarr;';
+		}
+
+		var gridHtml = '<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(145px, 1fr)); gap:0.6rem; margin-bottom:0.85rem;">';
+		for (var i = 0; i < 12; i++) {
+			gridHtml += '<div style="background:#fff; border:1px solid #dbe5ef; border-radius:8px; padding:0.6rem 0.75rem;">' +
+				'<span style="display:block; font-size:0.75rem; color:#64748b; text-transform:uppercase; font-weight:700;">' + nomesMeses[i] + '/2026</span>' +
+				'<strong style="font-size:1rem; color:#102b57;">' + lista[i] + '</strong>' +
+				'</div>';
+		}
+		gridHtml += '</div>';
+		gridHtml += '<p style="font-size:0.8rem; color:#475569; margin:0 0 0.75rem 0;"><strong>Fonte oficial:</strong> ' + fonte + ' • <em>Revisado em Outubro/2026</em></p>';
+		gridHtml += '<a href="' + linkGuia + '" style="background:#178b4b; color:#ffffff !important; padding:0.55rem 1.1rem; border-radius:8px; font-weight:700; font-size:0.88rem; text-decoration:none !important; display:inline-block;">' + textoLink + '</a>';
+
+		container.innerHTML = gridHtml;
 	}
 
-	var gridHtml = '<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(145px, 1fr)); gap:0.6rem; margin-bottom:0.85rem;">';
-	for (var i = 0; i < 12; i++) {
-		gridHtml += '<div style="background:#fff; border:1px solid #dbe5ef; border-radius:8px; padding:0.6rem 0.75rem;">' +
-			'<span style="display:block; font-size:0.75rem; color:#64748b; text-transform:uppercase; font-weight:700;">' + nomesMeses[i] + '/2026</span>' +
-			'<strong style="font-size:1rem; color:#102b57;">' + lista[i] + '</strong>' +
-			'</div>';
+	if (destacar && boxRes) {
+		boxRes.style.borderColor = '#178b4b';
+		boxRes.style.boxShadow = '0 0 0 3px rgba(23, 139, 75, 0.25)';
+		boxRes.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 	}
-	gridHtml += '</div>';
-	gridHtml += '<p style="font-size:0.8rem; color:#475569; margin:0 0 0.5rem 0;"><strong>Fonte oficial:</strong> ' + fonte + ' • <em>Revisado em Outubro/2026</em></p>';
-	gridHtml += '<a href="' + linkGuia + '" style="font-weight:700; color:#178b4b;">' + textoLink + '</a>';
-
-	container.innerHTML = gridHtml;
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-	consultarCalendarioBeneficios2026();
+	consultarCalendarioBeneficios2026(false);
 });
 </script>
 

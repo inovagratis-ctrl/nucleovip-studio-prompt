@@ -1039,6 +1039,15 @@ add_shortcode( 'infografico_consulta_segura', 'guia_cidadao_shortcode_infografic
  * 10. ROTEIRO INTERATIVO "ONDE RESOLVER?" (TRIAGEM DE ATENDIMENTO E LINKS OFICIAIS)
  */
 function guia_cidadao_shortcode_onde_resolver() {
+	$url_cadunico = get_permalink( 119 ) ? get_permalink( 119 ) : get_permalink( 11 );
+	$url_inss     = get_permalink( 10 );
+	$url_cin      = get_permalink( 12 );
+	$url_cpf      = get_permalink( 14 );
+	$url_fgts     = get_permalink( 9 );
+	$url_cnh      = get_permalink( 25 );
+	$url_mei      = get_permalink( 26 );
+	$url_svr      = get_permalink( 15 );
+
 	ob_start();
 	?>
 	<div class="calc-box" id="box-onde-resolver" style="border-left: 5px solid #178b4b;">
@@ -1059,88 +1068,104 @@ function guia_cidadao_shortcode_onde_resolver() {
 				<option value="svr_bc">Consultar Dinheiro Esquecido no Sistema Valores a Receber (Banco Central)</option>
 			</select>
 		</div>
-		<div class="calc-result" id="resultado-onde-resolver" style="display:block; background:#ffffff;"></div>
+		<div class="calc-result" id="resultado-onde-resolver" style="display:block; background:#ffffff; margin-top:0.5rem; margin-bottom:0.85rem;"></div>
+		<button type="button" class="calc-btn" id="btn-abrir-guia-onde-resolver" onclick="abrirGuiaSelecionadoOndeResolver()">Abrir Guia Passo a Passo da Tarefa Selecionada &rarr;</button>
 	</div>
 	<script>
+	var dadosOndeResolver = {
+		'cadunico': {
+			orgao: 'CRAS (Centro de Referência de Assistência Social) da prefeitura ou Posto do Cadastro Único',
+			docs: 'CPF ou Título de Eleitor do Responsável Familiar + documento com foto e CPF/Certidão de TODOS os moradores da casa + comprovante de endereço recente e declaração escolar das crianças.',
+			canalUrl: 'https://meucadunico.cidadania.gov.br/',
+			canalNome: 'Portal/App Meu CadÚnico (gov.br)',
+			guiaUrl: <?php echo wp_json_encode( $url_cadunico ); ?>,
+			guiaNome: 'Abrir Guia Prático do CadÚnico e CRAS →'
+		},
+		'inss_bpc': {
+			orgao: 'Instituto Nacional do Seguro Social (Meu INSS ou Central Telefônica 135)',
+			docs: 'Conta Gov.br (nível Prata ou Ouro para serviços completos), CPF, documentos médicos/laudos (para perícia) e CadÚnico atualizado há menos de 2 anos (no caso de BPC/LOAS).',
+			canalUrl: 'https://meu.inss.gov.br/',
+			canalNome: 'Portal Oficial Meu INSS (meu.inss.gov.br)',
+			guiaUrl: <?php echo wp_json_encode( $url_inss ); ?>,
+			guiaNome: 'Abrir Guia Passo a Passo do Meu INSS →'
+		},
+		'cin_rg': {
+			orgao: 'Instituto de Identificação Civil do seu Estado (Poupatempo, DETRAN, SAC, Vapt Vupt, Tudo Fácil)',
+			docs: 'CPF regularizado na Receita Federal + Certidão de Nascimento (se solteiro) ou Certidão de Casamento (original ou cópia autenticada legível). A 1ª via em papel e digital é gratuita por lei.',
+			canalUrl: 'https://www.gov.br/governodigital/pt-br/identidade/identificacao-do-cidadao-e-carteira-de-identidade-nacional',
+			canalNome: 'Página Oficial da CIN no Gov.br',
+			guiaUrl: <?php echo wp_json_encode( $url_cin ); ?>,
+			guiaNome: 'Abrir Guia da Nova Carteira de Identidade (CIN) →'
+		},
+		'cpf_receita': {
+			orgao: 'Secretaria Especial da Receita Federal do Brasil (Atendimento Virtual e-CAC / Portal RFB)',
+			docs: 'Número do CPF, data de nascimento, nome da mãe e Título de Eleitor (para regularização cadastral online gratuita).',
+			canalUrl: 'https://servicos.receita.fazenda.gov.br/Servicos/CPF/ConsultaSituacao/ConsultaPublica.asp',
+			canalNome: 'Consulta Oficial de CPF na Receita Federal',
+			guiaUrl: <?php echo wp_json_encode( $url_cpf ); ?>,
+			guiaNome: 'Abrir Guia de Regularização de CPF e Certidão →'
+		},
+		'fgts_seguro': {
+			orgao: 'Caixa Econômica Federal (App FGTS) e Ministério do Trabalho (App Carteira de Trabalho Digital)',
+			docs: 'Acesso com login Gov.br; para Seguro-Desemprego, tenha o número do Requerimento entregue pelo empregador (10 dígitos) e o TRCT.',
+			canalUrl: 'https://www.gov.br/pt-br/servicos/solicitar-o-seguro-desemprego',
+			canalNome: 'Serviço Oficial Seguro-Desemprego / FGTS no Gov.br',
+			guiaUrl: <?php echo wp_json_encode( $url_fgts ); ?>,
+			guiaNome: 'Abrir Guia do FGTS e Saque-Aniversário →'
+		},
+		'cnh_detran': {
+			orgao: 'SENATRAN / Ministério dos Transportes (Aplicativo Carteira Digital de Trânsito — CDT)',
+			docs: 'Conta Gov.br nível Prata ou Ouro + CNH física que possua QR Code impresso no verso.',
+			canalUrl: 'https://portalservicos.senatran.serpro.gov.br/',
+			canalNome: 'Portal de Serviços SENATRAN (gov.br)',
+			guiaUrl: <?php echo wp_json_encode( $url_cnh ); ?>,
+			guiaNome: 'Abrir Guia da CNH Digital no Celular →'
+		},
+		'mei_das': {
+			orgao: 'Portal do Empreendedor / Simples Nacional (Receita Federal)',
+			docs: 'Número do CNPJ MEI e CPF do titular. Para a declaração anual (DASN-SIMEI), o relatório de faturamento bruto do ano anterior.',
+			canalUrl: 'https://www.gov.br/empresas-e-negocios/pt-br/empreendedor',
+			canalNome: 'Portal do Empreendedor Oficial (gov.br)',
+			guiaUrl: <?php echo wp_json_encode( $url_mei ); ?>,
+			guiaNome: 'Abrir Guia do MEI (DAS e Declaração Anual) →'
+		},
+		'svr_bc': {
+			orgao: 'Banco Central do Brasil (Sistema de Valores a Receber — SVR)',
+			docs: 'CPF e data de nascimento para consulta inicial; Conta Gov.br nível Prata ou Ouro e chave PIX para solicitar o resgate gratuito.',
+			canalUrl: 'https://valoresareceber.bcb.gov.br/',
+			canalNome: 'Site Único Oficial: valoresareceber.bcb.gov.br',
+			guiaUrl: <?php echo wp_json_encode( $url_svr ); ?>,
+			guiaNome: 'Abrir Guia do Valores a Receber (BC) →'
+		}
+	};
+
 	function mostrarRoteiroOndeResolver() {
 		var el = document.getElementById('or-tarefa');
 		var out = document.getElementById('resultado-onde-resolver');
+		var btn = document.getElementById('btn-abrir-guia-onde-resolver');
 		if (!el || !out) return;
-		var dados = {
-			'cadunico': {
-				orgao: 'CRAS (Centro de Referência de Assistência Social) da prefeitura ou Posto do Cadastro Único',
-				docs: 'CPF ou Título de Eleitor do Responsável Familiar + documento com foto e CPF/Certidão de TODOS os moradores da casa + comprovante de endereço recente e declaração escolar das crianças.',
-				canalUrl: 'https://meucadunico.cidadania.gov.br/',
-				canalNome: 'Portal/App Meu CadÚnico (gov.br)',
-				guiaUrl: '<?php echo esc_url( home_url( '/guia-pratico-cadunico-cras-documentos-onde-atualizar/' ) ); ?>',
-				guiaNome: 'Abrir Guia Prático do CadÚnico e CRAS →'
-			},
-			'inss_bpc': {
-				orgao: 'Instituto Nacional do Seguro Social (Meu INSS ou Central Telefônica 135)',
-				docs: 'Conta Gov.br (nível Prata ou Ouro para serviços completos), CPF, documentos médicos/laudos (para perícia) e CadÚnico atualizado há menos de 2 anos (no caso de BPC/LOAS).',
-				canalUrl: 'https://meu.inss.gov.br/',
-				canalNome: 'Portal Oficial Meu INSS (meu.inss.gov.br)',
-				guiaUrl: '<?php echo esc_url( home_url( '/meu-inss-como-consultar-beneficios-cnis-pericia/' ) ); ?>',
-				guiaNome: 'Abrir Guia Passo a Passo do Meu INSS →'
-			},
-			'cin_rg': {
-				orgao: 'Instituto de Identificação Civil do seu Estado (Poupatempo, DETRAN, SAC, Vapt Vupt, Tudo Fácil)',
-				docs: 'CPF regularizado na Receita Federal + Certidão de Nascimento (se solteiro) ou Certidão de Casamento (original ou cópia autenticada legível). A 1ª via em papel e digital é gratuita por lei.',
-				canalUrl: 'https://www.gov.br/governodigital/pt-br/identidade/identificacao-do-cidadao-e-carteira-de-identidade-nacional',
-				canalNome: 'Página Oficial da CIN no Gov.br',
-				guiaUrl: '<?php echo esc_url( home_url( '/nova-carteira-identidade-nacional-cin-agendar-primeira-via-gratuita/' ) ); ?>',
-				guiaNome: 'Abrir Guia da Nova Carteira de Identidade (CIN) →'
-			},
-			'cpf_receita': {
-				orgao: 'Secretaria Especial da Receita Federal do Brasil (Atendimento Virtual e-CAC / Portal RFB)',
-				docs: 'Número do CPF, data de nascimento, nome da mãe e Título de Eleitor (para regularização cadastral online gratuita).',
-				canalUrl: 'https://servicos.receita.fazenda.gov.br/Servicos/CPF/ConsultaSituacao/ConsultaPublica.asp',
-				canalNome: 'Consulta Oficial de CPF na Receita Federal',
-				guiaUrl: '<?php echo esc_url( home_url( '/certidao-negativa-debitos-situacao-cadastral-cpf-receita-federal/' ) ); ?>',
-				guiaNome: 'Abrir Guia de Regularização de CPF e Certidão →'
-			},
-			'fgts_seguro': {
-				orgao: 'Caixa Econômica Federal (App FGTS) e Ministério do Trabalho (App Carteira de Trabalho Digital)',
-				docs: 'Acesso com login Gov.br; para Seguro-Desemprego, tenha o número do Requerimento entregue pelo empregador (10 dígitos) e o TRCT.',
-				canalUrl: 'https://www.gov.br/pt-br/servicos/solicitar-o-seguro-desemprego',
-				canalNome: 'Serviço Oficial Seguro-Desemprego / FGTS no Gov.br',
-				guiaUrl: '<?php echo esc_url( home_url( '/como-consultar-fgts-pelo-cpf-aplicativo-saque-aniversario/' ) ); ?>',
-				guiaNome: 'Abrir Guia do FGTS e Saque-Aniversário →'
-			},
-			'cnh_detran': {
-				orgao: 'SENATRAN / Ministério dos Transportes (Aplicativo Carteira Digital de Trânsito — CDT)',
-				docs: 'Conta Gov.br nível Prata ou Ouro + CNH física que possua QR Code impresso no verso.',
-				canalUrl: 'https://portalservicos.senatran.serpro.gov.br/',
-				canalNome: 'Portal de Serviços SENATRAN (gov.br)',
-				guiaUrl: '<?php echo esc_url( home_url( '/cnh-digital-celular-como-baixar-carteira-digital-transito/' ) ); ?>',
-				guiaNome: 'Abrir Guia da CNH Digital no Celular →'
-			},
-			'mei_das': {
-				orgao: 'Portal do Empreendedor / Simples Nacional (Receita Federal)',
-				docs: 'Número do CNPJ MEI e CPF do titular. Para a declaração anual (DASN-SIMEI), o relatório de faturamento bruto do ano anterior.',
-				canalUrl: 'https://www.gov.br/empresas-e-negocios/pt-br/empreendedor',
-				canalNome: 'Portal do Empreendedor Oficial (gov.br)',
-				guiaUrl: '<?php echo esc_url( home_url( '/portal-do-empreendedor-mei-emitir-das-declaracao-anual/' ) ); ?>',
-				guiaNome: 'Abrir Guia do MEI (DAS e Declaração Anual) →'
-			},
-			'svr_bc': {
-				orgao: 'Banco Central do Brasil (Sistema de Valores a Receber — SVR)',
-				docs: 'CPF e data de nascimento para consulta inicial; Conta Gov.br nível Prata ou Ouro e chave PIX para solicitar o resgate gratuito.',
-				canalUrl: 'https://valoresareceber.bcb.gov.br/',
-				canalNome: 'Site Único Oficial: valoresareceber.bcb.gov.br',
-				guiaUrl: '<?php echo esc_url( home_url( '/sistema-valores-a-receber-banco-central-consultar-dinheiro-esquecido/' ) ); ?>',
-				guiaNome: 'Abrir Guia do Valores a Receber (BC) →'
-			}
-		};
-		var item = dados[el.value] || dados['cadunico'];
+		var item = dadosOndeResolver[el.value] || dadosOndeResolver['cadunico'];
+		out.style.display = 'block';
+		if (btn) {
+			btn.textContent = item.guiaNome;
+		}
 		out.innerHTML =
-			'<p style="margin:0 0 0.45rem 0; font-size:0.92rem;"><strong>🏢 Órgão Oficial Responsável:</strong> ' + item.orgao + '</p>' +
-			'<p style="margin:0 0 0.65rem 0; font-size:0.9rem;"><strong>📋 O que ter em mãos:</strong> ' + item.docs + '</p>' +
-			'<div style="display:flex; flex-wrap:wrap; gap:0.75rem; align-items:center; padding-top:0.5rem; border-top:1px solid #dbe5ef;">' +
-			'<a href="' + item.guiaUrl + '" style="background:#178b4b; color:#fff; padding:0.45rem 0.9rem; border-radius:6px; font-weight:700; font-size:0.84rem; text-decoration:none;">' + item.guiaNome + '</a>' +
-			'<a href="' + item.canalUrl + '" target="_blank" rel="noopener noreferrer" style="font-weight:700; font-size:0.84rem; color:#102b57;">🔗 Acessar ' + item.canalNome + ' &nearr;</a>' +
+			'<p style="margin:0 0 0.45rem 0; font-size:0.95rem; color:#102b57;"><strong>🏢 Órgão Oficial Responsável:</strong> ' + item.orgao + '</p>' +
+			'<p style="margin:0 0 0.85rem 0; font-size:0.92rem; color:#334155;"><strong>📋 Documentos Necessários:</strong> ' + item.docs + '</p>' +
+			'<div style="display:flex; flex-wrap:wrap; gap:0.75rem; align-items:center; padding-top:0.65rem; border-top:1px solid #dbe5ef;">' +
+			'<a href="' + item.canalUrl + '" target="_blank" rel="noopener noreferrer" style="background:#102b57; color:#ffffff !important; padding:0.55rem 1.1rem; border-radius:8px; font-weight:700; font-size:0.88rem; text-decoration:none !important; display:inline-block;">🔗 Acessar ' + item.canalNome + ' &nearr;</a>' +
 			'</div>';
 	}
+
+	function abrirGuiaSelecionadoOndeResolver() {
+		var el = document.getElementById('or-tarefa');
+		if (!el) return;
+		var item = dadosOndeResolver[el.value] || dadosOndeResolver['cadunico'];
+		if (item && item.guiaUrl) {
+			window.location.href = item.guiaUrl;
+		}
+	}
+
 	document.addEventListener('DOMContentLoaded', mostrarRoteiroOndeResolver);
 	</script>
 	<?php
