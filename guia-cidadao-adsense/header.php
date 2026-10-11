@@ -84,6 +84,7 @@
 				?>
 				<ul id="primary-menu">
 					<li><a href="<?php echo esc_url( home_url( '/' ) ); ?>">🏠 Início</a></li>
+					<li><a href="<?php echo esc_url( home_url( '/calendario-de-beneficios/' ) ); ?>">📅 Calendário de Benefícios 2026</a></li>
 					<li><a href="<?php echo esc_url( home_url( '/category/beneficios-trabalhador/' ) ); ?>">📋 Benefícios & Trabalhador</a></li>
 					<li><a href="<?php echo esc_url( home_url( '/category/documentos-gov-br/' ) ); ?>">🪪 Documentos & Gov.br</a></li>
 					<li><a href="<?php echo esc_url( home_url( '/category/contas-financas/' ) ); ?>">💳 Contas & Finanças</a></li>

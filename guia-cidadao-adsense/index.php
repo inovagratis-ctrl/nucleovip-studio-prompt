@@ -152,6 +152,27 @@ get_header();
 					<span class="utility-card-cta">Abrir simuladores &rarr;</span>
 				</a>
 			</div>
+
+			<!-- Atalhos de Consulta Recorrente: Calendário de Benefícios 2026 + Roteiro Onde Resolver -->
+			<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:1rem; margin-top:1rem;">
+				<a href="<?php echo esc_url( home_url( '/calendario-de-beneficios/' ) ); ?>" class="quick-tool-item" style="border-left:4px solid #178b4b; padding:1rem 1.25rem;">
+					<span class="quick-tool-icon" aria-hidden="true">📅</span>
+					<div>
+						<strong>Calendário de Pagamentos de Benefícios 2026</strong>
+						<span>Filtre por final do NIS/Benefício: Bolsa Família, INSS/BPC e PIS/PASEP (sem informar CPF)</span>
+					</div>
+					<span class="quick-tool-arrow" aria-hidden="true">&rarr;</span>
+				</a>
+
+				<a href="<?php echo esc_url( home_url( '/calendario-de-beneficios/#onde-resolver' ) ); ?>" class="quick-tool-item" style="border-left:4px solid #102b57; padding:1rem 1.25rem;">
+					<span class="quick-tool-icon" aria-hidden="true">🧭</span>
+					<div>
+						<strong>Roteiro “Onde Resolver?” &amp; Guia CadÚnico / CRAS</strong>
+						<span>Escolha uma tarefa e veja quais documentos levar e o link oficial (.gov.br)</span>
+					</div>
+					<span class="quick-tool-arrow" aria-hidden="true">&rarr;</span>
+				</a>
+			</div>
 		</section>
 	<?php endif; ?>
 
