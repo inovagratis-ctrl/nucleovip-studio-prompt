@@ -69,7 +69,107 @@ document.addEventListener('DOMContentLoaded', function () {
   if (menuBtn && navBar) {
     menuBtn.addEventListener('click', function () {
       navBar.style.display = navBar.style.display === 'none' ? 'block' : '';
+    
+  // ==========================================
+  // SISTEMA DE BUSCA ESTÁTICA INSTANTÂNEA
+  // ==========================================
+  var searchForms = document.querySelectorAll('.search-form');
+  var urlParams = new URLSearchParams(window.location.search);
+  var searchQuery = urlParams.get('s');
+
+  function normalizarTexto(txt) {
+    return (txt || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+  }
+
+  function escapeHtml(str) {
+    return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function executarBusca(query) {
+    if (!query) return;
+    var postsGrid = document.querySelector('.posts-grid');
+    var sectionTitle = document.querySelector('.section-title');
+    if (!postsGrid) {
+      window.location.href = '/?s=' + encodeURIComponent(query);
+      return;
+    }
+
+    fetch('/search-index.json')
+      .then(function(res) { return res.json(); })
+      .then(function(items) {
+        var qNorm = normalizarTexto(query);
+        var termos = qNorm.split(/\s+/).filter(Boolean);
+        var resultados = items.filter(function(item) {
+          var haystack = normalizarTexto(item.title + ' ' + item.desc + ' ' + item.category + ' ' + item.slug);
+          return termos.every(function(t) { return haystack.indexOf(t) !== -1; });
+        });
+
+        if (sectionTitle) {
+          sectionTitle.innerHTML = 'Resultados da busca por: <em>"' + escapeHtml(query) + '"</em> <span style="font-size:0.9rem; font-weight:normal; color:#64748b;">(' + resultados.length + ' encontrados)</span>';
+        }
+
+        var heroSection = document.querySelector('.tools-spotlight-section');
+        if (heroSection) heroSection.style.display = 'none';
+
+        if (resultados.length === 0) {
+          postsGrid.innerHTML = '<div style="grid-column:1/-1; padding:2.5rem; background:#f8fafc; border-radius:12px; border:1px solid #e2e8f0; text-align:center;">' +
+            '<h3 style="color:#1e293b; margin-bottom:0.5rem;">🔍 Nenhum guia encontrado</h3>' +
+            '<p style="color:#64748b; margin-bottom:1.5rem;">Não encontramos nenhum artigo correspondente a <strong>"' + escapeHtml(query) + '"</strong>. Tente buscar por termos como: <em>fgts, inss, irpf, cadunico, cnh, mei ou 13º</em>.</p>' +
+            '<a href="/" class="hero-btn-primary" style="display:inline-block;">← Ver Todos os Guias</a>' +
+            '</div>';
+          return;
+        }
+
+        var html = '';
+        resultados.forEach(function(item) {
+          html += '<article class="post-card">' +
+            '<a href="' + item.url + '" class="post-card-thumb">' +
+            '<img src="' + item.thumb + '" alt="' + escapeHtml(item.title) + '" loading="lazy" style="width:100%; height:200px; object-fit:cover;">' +
+            '</a>' +
+            '<div class="post-card-body">' +
+            '<div><span class="post-category-badge">' + escapeHtml(item.category) + '</span></div>' +
+            '<h3 class="post-card-title"><a href="' + item.url + '">' + escapeHtml(item.title) + '</a></h3>' +
+            '<p class="post-card-excerpt">' + escapeHtml(item.desc) + '</p>' +
+            '<div class="post-card-meta"><a href="' + item.url + '" class="post-card-cta">Ler Guia Completo &rarr;</a></div>' +
+            '</div></article>';
+        });
+        postsGrid.innerHTML = html;
+
+        var existingClear = document.getElementById('btn-limpar-busca');
+        if (!existingClear && sectionTitle) {
+          var clearBtn = document.createElement('a');
+          clearBtn.id = 'btn-limpar-busca';
+          clearBtn.href = '/';
+          clearBtn.textContent = '✕ Limpar busca e voltar à Home';
+          clearBtn.style.cssText = 'display:inline-block; font-size:0.85rem; color:#178b4b; margin-top:0.5rem; text-decoration:none; font-weight:600;';
+          sectionTitle.parentNode.appendChild(clearBtn);
+        }
+      });
+  }
+
+  searchForms.forEach(function(form) {
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      var input = form.querySelector('input[name="s"]');
+      var q = input ? input.value.trim() : '';
+      if (q) {
+        if (window.location.pathname === '/' || window.location.pathname === '') {
+          history.pushState(null, '', '/?s=' + encodeURIComponent(q));
+          executarBusca(q);
+        } else {
+          window.location.href = '/?s=' + encodeURIComponent(q);
+        }
+      }
     });
+  });
+
+  if (searchQuery) {
+    var searchInput = document.querySelector('input[name="s"]');
+    if (searchInput) searchInput.value = searchQuery;
+    executarBusca(searchQuery);
+  }
+
+});
   }
 });
 
