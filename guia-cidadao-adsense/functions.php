@@ -850,6 +850,39 @@ function guia_cidadao_render_admin_central() {
 		</div>
 
 		<div style="background:#fff; padding:20px; border:1px solid #ccd0d4; border-radius:8px; margin-top:20px;">
+			<h2>📬 Caixa de Entrada da Ouvidoria (contato@nucleovip.com.br → Redirecionamento: eusimar72@gmail.com)</h2>
+			<?php
+			$mensagens_log = get_option( 'guia_cidadao_contato_log', array() );
+			if ( ! empty( $mensagens_log ) && is_array( $mensagens_log ) ) :
+				?>
+				<table class="widefat striped">
+					<thead>
+						<tr>
+							<th>Data/Hora</th>
+							<th>Nome do Leitor</th>
+							<th>E-mail para Resposta</th>
+							<th>Assunto</th>
+							<th>Mensagem</th>
+						</tr>
+					</thead>
+					<tbody>
+						<?php foreach ( $mensagens_log as $msg ) : ?>
+							<tr>
+								<td><?php echo esc_html( isset( $msg['data'] ) ? $msg['data'] : '' ); ?></td>
+								<td><strong><?php echo esc_html( isset( $msg['nome'] ) ? $msg['nome'] : '' ); ?></strong></td>
+								<td><a href="mailto:<?php echo esc_attr( isset( $msg['email'] ) ? $msg['email'] : '' ); ?>"><?php echo esc_html( isset( $msg['email'] ) ? $msg['email'] : '' ); ?></a></td>
+								<td><?php echo esc_html( isset( $msg['assunto'] ) ? $msg['assunto'] : '' ); ?></td>
+								<td><?php echo esc_html( isset( $msg['mensagem'] ) ? $msg['mensagem'] : '' ); ?></td>
+							</tr>
+						<?php endforeach; ?>
+					</tbody>
+				</table>
+			<?php else : ?>
+				<p><em>Nenhuma mensagem recebida ainda pelo formulário de contato.</em></p>
+			<?php endif; ?>
+		</div>
+
+		<div style="background:#fff; padding:20px; border:1px solid #ccd0d4; border-radius:8px; margin-top:20px;">
 			<h2>📰 Radar ao Vivo: Últimas Notícias Oficiais (Agência Brasil & Senado)</h2>
 			<?php foreach ( $official_feeds as $source_name => $feed_url ) : ?>
 				<h3 style="margin-top:15px; border-bottom:1px solid #eee; padding-bottom:5px;"><?php echo esc_html( $source_name ); ?></h3>
