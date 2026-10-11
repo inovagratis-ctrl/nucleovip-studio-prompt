@@ -35,25 +35,15 @@
 			$custom_logo_url = $custom_logo_id ? wp_get_attachment_image_url( $custom_logo_id, 'full' ) : '';
 			?>
 			<?php if ( $custom_logo_url ) : ?>
-				<?php if ( is_front_page() && is_home() ) : ?>
-					<h1 class="site-title-logo">
-						<a href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home" class="site-logo-link">
-							<img src="<?php echo esc_url( $custom_logo_url ); ?>" alt="<?php echo esc_attr( get_bloginfo( 'name' ) . ' — ' . get_bloginfo( 'description' ) ); ?>" class="site-logo-horizontal" width="380" height="88" decoding="async" />
-						</a>
-					</h1>
-				<?php else : ?>
+				<div class="site-title-logo">
 					<a href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home" class="site-logo-link">
 						<img src="<?php echo esc_url( $custom_logo_url ); ?>" alt="<?php echo esc_attr( get_bloginfo( 'name' ) . ' — ' . get_bloginfo( 'description' ) ); ?>" class="site-logo-horizontal" width="380" height="88" decoding="async" />
 					</a>
-				<?php endif; ?>
+				</div>
 			<?php else : ?>
 				<div class="site-logo-icon" aria-hidden="true">NV</div>
 				<div>
-					<?php if ( is_front_page() && is_home() ) : ?>
-						<h1 class="site-title"><a href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home"><?php bloginfo( 'name' ); ?></a></h1>
-					<?php else : ?>
-						<p class="site-title"><a href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home"><?php bloginfo( 'name' ); ?></a></p>
-					<?php endif; ?>
+					<p class="site-title"><a href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home"><?php bloginfo( 'name' ); ?></a></p>
 					<p class="site-description"><?php bloginfo( 'description' ); ?></p>
 				</div>
 			<?php endif; ?>

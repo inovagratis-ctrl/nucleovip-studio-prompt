@@ -32,8 +32,10 @@ get_header();
 						<h1 class="entry-title"><?php the_title(); ?></h1>
 
 						<div class="entry-meta-bar">
-							<span class="updated-badge">✔ Verificado e Atualizado em <?php echo esc_html( get_the_modified_date( 'd/m/Y' ) ); ?></span>
-							<span>Por <strong>Redação <?php bloginfo( 'name' ); ?></strong></span>
+							<span class="updated-badge">✔ Revisado em <?php echo esc_html( get_the_modified_date( 'd/m/Y' ) ); ?></span>
+							<span>Publicado em <?php echo esc_html( get_the_date( 'd/m/Y' ) ); ?></span>
+							<span>Autor: <strong>Equipe Editorial <?php bloginfo( 'name' ); ?></strong></span>
+							<span>Revisão Técnica: <strong>Eusimar Teixeira</strong></span>
 							<a href="https://api.whatsapp.com/send?text=<?php echo esc_attr( $share_text ); ?>" target="_blank" rel="noopener nofollow" style="margin-left:auto; background:#16a34a; color:#fff; padding:0.25rem 0.7rem; border-radius:6px; font-weight:700; font-size:0.78rem; text-decoration:none;">📲 Compartilhar no WhatsApp</a>
 						</div>
 
@@ -48,14 +50,26 @@ get_header();
 						<?php the_content(); ?>
 					</div>
 
-					<!-- Caixa de Autoridade Editorial (E-E-A-T) com Editor Responsável Nomeado -->
-					<div class="author-eeat-box">
-						<div class="author-avatar" aria-hidden="true">ET</div>
-						<div>
-							<strong>Revisão Técnica: Eusimar Teixeira — Editor Responsável (<?php bloginfo( 'name' ); ?>)</strong>
-							<p style="font-size:0.85rem; color:#475569; margin-top:0.25rem;">
-								Conteúdo e tabelas paramétricas conferidos conforme atos normativos vigentes em 2026 (<a href="https://www.gov.br/previdencia/pt-br/assuntos/rpps/documentos/PortariaInterministerialMPSMF13de9dejaneirode2026.pdf" target="_blank" rel="noopener nofollow">Portaria Interministerial MPS/MF nº 13/2026</a>, <a href="https://www.planalto.gov.br/ccivil_03/leis/l4749.htm" target="_blank" rel="noopener nofollow">Lei nº 4.749/1965</a>, CLT e Portal Gov.br). Consulte nosso <a href="<?php echo esc_url( home_url( '/sobre-nos/' ) ); ?>">Expediente Editorial</a> ou <a href="<?php echo esc_url( home_url( '/contato/' ) ); ?>">reporte uma atualização</a>.
-							</p>
+					<!-- Caixa de Autoridade Editorial (E-E-A-T), Fontes Primárias e Data de Consulta -->
+					<div class="author-eeat-box" style="flex-direction:column; align-items:flex-start; gap:0.75rem;">
+						<div style="display:flex; gap:1rem; align-items:center; width:100%;">
+							<div class="author-avatar" aria-hidden="true">ET</div>
+							<div>
+								<strong>Autoria: Equipe Editorial <?php bloginfo( 'name' ); ?> · Revisão Técnica: Eusimar Teixeira (Editor Responsável)</strong>
+								<p style="font-size:0.84rem; color:#475569; margin-top:0.2rem;">
+									Publicado em <strong><?php echo esc_html( get_the_date( 'd/m/Y' ) ); ?></strong> · Última revisão de conteúdo em <strong><?php echo esc_html( get_the_modified_date( 'd/m/Y' ) ); ?></strong> · Consulta às bases oficiais: <strong>Outubro/2026</strong>.
+								</p>
+							</div>
+						</div>
+						<div style="width:100%; padding-top:0.65rem; border-top:1px solid #dbe5ef; font-size:0.83rem; color:#334155; line-height:1.55;">
+							<strong>🏛️ Fontes Primárias Oficiais Consultadas:</strong>
+							<a href="https://www.gov.br/pt-br" target="_blank" rel="noopener noreferrer">Portal Gov.br</a> ·
+							<a href="https://meu.inss.gov.br/" target="_blank" rel="noopener noreferrer">Meu INSS</a> ·
+							<a href="https://www.gov.br/receitafederal/pt-br" target="_blank" rel="noopener noreferrer">Receita Federal</a> ·
+							<a href="https://www.caixa.gov.br/" target="_blank" rel="noopener noreferrer">Caixa Econômica Federal</a> ·
+							<a href="https://www.planalto.gov.br/ccivil_03/_ato2023-2026/2025/lei/l15270.htm" target="_blank" rel="noopener noreferrer">Lei nº 15.270/2025 (IRPF)</a> ·
+							<a href="https://www.gov.br/previdencia/pt-br/assuntos/rpps/documentos/PortariaInterministerialMPSMF13de9dejaneirode2026.pdf" target="_blank" rel="noopener noreferrer">Portaria MPS/MF nº 13/2026</a>.
+							Consulte nosso <a href="<?php echo esc_url( home_url( '/sobre-nos/' ) ); ?>">Expediente Editorial</a> ou <a href="<?php echo esc_url( home_url( '/contato/' ) ); ?>">reporte uma atualização</a>.
 						</div>
 					</div>
 				</article>

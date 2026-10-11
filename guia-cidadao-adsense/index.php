@@ -32,15 +32,15 @@ get_header();
 				<div class="hero-content-left">
 					<span class="hero-badge-2026">✔ TABELA OFICIAL INSS 2026 • ISENÇÃO IRRF ATÉ R$ 5.000 (LEI Nº 15.270/2025)</span>
 					<h2>Calcular meu 13º Salário 2026</h2>
-					<p>Orientação clara para o seu dia a dia: descubra na hora a estimativa da sua <strong>1ª parcela (até 30/11/2026)</strong> e da <strong>2ª parcela (até 18/12/2026)</strong>, já com cálculo progressivo de INSS e IRRF separado.</p>
+					<p>Orientação clara para o seu dia a dia: descubra na hora a estimativa da sua <strong>1ª parcela (até 30/11/2026)</strong> e da <strong>2ª parcela (prazo legal até 20/12, antecipado para 18/12/2026 por cair no domingo)</strong>, já com cálculo progressivo de INSS e IRRF separado.</p>
 					<div class="hero-cta-group">
 						<a href="<?php echo esc_url( home_url( '/simulador-decimo-terceiro-salario-1-e-2-parcela/' ) ); ?>" class="hero-btn-primary">Acessar simulador de 13º &rarr;</a>
 						<a href="<?php echo esc_url( home_url( '/calculadoras/' ) ); ?>" class="hero-btn-secondary">Acessar as calculadoras</a>
 					</div>
 				</div>
 				<?php if ( $hero_bg_url ) : ?>
-					<div class="hero-mobile-visual" aria-hidden="true">
-						<img src="<?php echo esc_url( $hero_bg_url ); ?>" alt="" loading="eager" decoding="async" />
+					<div class="hero-mobile-visual">
+						<img src="<?php echo esc_url( $hero_bg_url ); ?>" alt="Pessoa consultando serviços públicos e benefícios sociais" width="1200" height="675" loading="eager" decoding="async" />
 					</div>
 				<?php endif; ?>
 			</div>
@@ -85,7 +85,7 @@ get_header();
 			</div>
 		</section>
 
-		<!-- 2. NAVEGAÇÃO POR ASSUNTO (Ícones oficiais do kit ao lado do rótulo visível, com alt="") -->
+		<!-- 2. NAVEGAÇÃO POR ASSUNTO (Ícones oficiais do kit com alt descritivo) -->
 		<section class="utility-hub-section" aria-label="Categorias de Utilidade Pública">
 			<div class="section-header">
 				<h2 class="section-title">Consultas por Categoria</h2>
@@ -96,7 +96,7 @@ get_header();
 					<div class="utility-card-header">
 						<div class="utility-icon">
 							<?php if ( $url_icon_beneficios ) : ?>
-								<img src="<?php echo esc_url( $url_icon_beneficios ); ?>" alt="" width="54" height="54" loading="lazy" decoding="async" />
+								<img src="<?php echo esc_url( $url_icon_beneficios ); ?>" alt="Ilustração de benefícios e direitos do trabalhador" width="54" height="54" loading="lazy" decoding="async" />
 							<?php else : ?>
 								<span aria-hidden="true">📋</span>
 							<?php endif; ?>
@@ -111,7 +111,7 @@ get_header();
 					<div class="utility-card-header">
 						<div class="utility-icon">
 							<?php if ( $url_icon_documentos ) : ?>
-								<img src="<?php echo esc_url( $url_icon_documentos ); ?>" alt="" width="54" height="54" loading="lazy" decoding="async" />
+								<img src="<?php echo esc_url( $url_icon_documentos ); ?>" alt="Ilustração de documentos e serviços Gov.br" width="54" height="54" loading="lazy" decoding="async" />
 							<?php else : ?>
 								<span aria-hidden="true">🪪</span>
 							<?php endif; ?>
@@ -126,7 +126,7 @@ get_header();
 					<div class="utility-card-header">
 						<div class="utility-icon">
 							<?php if ( $url_icon_financas ) : ?>
-								<img src="<?php echo esc_url( $url_icon_financas ); ?>" alt="" width="54" height="54" loading="lazy" decoding="async" />
+								<img src="<?php echo esc_url( $url_icon_financas ); ?>" alt="Ilustração de contas e finanças pessoais" width="54" height="54" loading="lazy" decoding="async" />
 							<?php else : ?>
 								<span aria-hidden="true">💳</span>
 							<?php endif; ?>
@@ -141,7 +141,7 @@ get_header();
 					<div class="utility-card-header">
 						<div class="utility-icon">
 							<?php if ( $url_icon_calculadoras ) : ?>
-								<img src="<?php echo esc_url( $url_icon_calculadoras ); ?>" alt="" width="54" height="54" loading="lazy" decoding="async" />
+								<img src="<?php echo esc_url( $url_icon_calculadoras ); ?>" alt="Ilustração de calculadoras trabalhistas" width="54" height="54" loading="lazy" decoding="async" />
 							<?php else : ?>
 								<span aria-hidden="true">🧮</span>
 							<?php endif; ?>
@@ -176,21 +176,32 @@ get_header();
 		</section>
 	<?php endif; ?>
 
-	<!-- 3. SEÇÃO DE GUIAS E ARTIGOS (Cartões Padronizados: Miniatura 1/3 + Categoria + Título + Resumo curto + Ação) -->
+	<!-- 3. SEÇÃO DE GUIAS E ARTIGOS (Heading H1 textual semântico + Introdução na Página 2) -->
 	<div class="site-main-grid">
 		<div class="content-area">
-			<div class="section-header">
-				<h2 class="section-title">
+			<div class="section-header" style="flex-direction:column; align-items:flex-start; gap:0.4rem;">
+				<h1 class="section-title" style="font-size:1.45rem;">
 					<?php
+					$paged_num = max( 1, (int) get_query_var( 'paged' ), (int) get_query_var( 'page' ) );
 					if ( is_category() ) {
 						single_cat_title( 'Guias sobre: ' );
+						if ( $paged_num > 1 ) {
+							echo ' — página ' . esc_html( $paged_num );
+						}
 					} elseif ( is_search() ) {
 						printf( 'Resultados da busca por: "%s"', get_search_query() );
+					} elseif ( $paged_num > 1 ) {
+						echo 'Guias do Cidadão — página ' . esc_html( $paged_num );
 					} else {
-						echo 'Guias Passo a Passo e Orientações ao Cidadão';
+						echo 'Guia do Cidadão: benefícios, documentos e calculadoras';
 					}
 					?>
-				</h2>
+				</h1>
+				<?php if ( ! is_category() && ! is_search() && $paged_num > 1 ) : ?>
+					<p style="color:#475569; font-size:0.94rem; margin:0; line-height:1.55;">
+						Confira abaixo mais guias práticos do nosso arquivo com orientações passo a passo sobre restituição do IRPF, Tarifa Social de Energia, Sistema Valores a Receber (BC), situação cadastral do CPF, níveis Prata e Ouro da conta Gov.br, Nova Carteira de Identidade (CIN), Bolsa Família, Meu INSS e FGTS.
+					</p>
+				<?php endif; ?>
 			</div>
 
 			<?php if ( have_posts() ) : ?>

@@ -37,12 +37,14 @@ function guia_cidadao_clean_head() {
 	remove_action( 'wp_head', 'wlwmanifest_link' );
 	remove_action( 'wp_head', 'rsd_link' );
 	remove_action( 'wp_head', 'wp_shortlink_wp_head' );
+	remove_action( 'wp_head', 'rel_canonical' );
 }
 add_action( 'init', 'guia_cidadao_clean_head' );
+add_filter( 'wp_sitemaps_enabled', '__return_false' );
 
 function guia_cidadao_scripts() {
-	wp_enqueue_style( 'guia-cidadao-style', get_stylesheet_uri(), array(), '2.3.0' );
-	wp_enqueue_script( 'guia-cidadao-main', get_template_directory_uri() . '/assets/js/main.js', array(), '2.2.0', true );
+	wp_enqueue_style( 'guia-cidadao-style', get_stylesheet_uri(), array(), '2.4.0' );
+	wp_enqueue_script( 'guia-cidadao-main', get_template_directory_uri() . '/assets/js/main.js', array(), '2.4.0', true );
 }
 add_action( 'wp_enqueue_scripts', 'guia_cidadao_scripts' );
 
@@ -99,7 +101,7 @@ function guia_cidadao_head_adsense() {
 add_action( 'wp_head', 'guia_cidadao_head_adsense', 5 );
 
 /**
- * 3. SITEMAP.XML DINÂMICO, ROBOTS.TXT OTIMIZADO PARA ADSENSE E ADS.TXT VIRTUAL
+ * 3. SITEMAP.XML UNIFICADO COM LASTMOD REAL, ROBOTS.TXT E ADS.TXT VIRTUAL
  */
 function guia_cidadao_virtual_seo_files() {
 	if ( ! isset( $_SERVER['REQUEST_URI'] ) ) {
@@ -119,7 +121,13 @@ function guia_cidadao_virtual_seo_files() {
 		exit;
 	}
 
-	// 3.2. Entrega /robots.txt otimizado para Googlebot, Google Discover e Mediapartners-Google (AdSense)
+	// 3.2. Redireciona /wp-sitemap.xml para /sitemap.xml para evitar dois sitemaps concorrentes
+	if ( '/wp-sitemap.xml' === $uri ) {
+		wp_safe_redirect( home_url( '/sitemap.xml' ), 301 );
+		exit;
+	}
+
+	// 3.3. Entrega /robots.txt otimizado apontando para o sitemap único oficial
 	if ( '/robots.txt' === $uri ) {
 		header( 'Content-Type: text/plain; charset=utf-8' );
 		$site_url = home_url( '/' );
@@ -134,63 +142,69 @@ function guia_cidadao_virtual_seo_files() {
 		echo "Disallow: /wp-admin/\n";
 		echo "Allow: /wp-admin/admin-ajax.php\n\n";
 		echo "Sitemap: " . esc_url( $site_url . 'sitemap.xml' ) . "\n";
-		echo "Sitemap: " . esc_url( $site_url . 'wp-sitemap.xml' ) . "\n";
 		exit;
 	}
 
-	// 3.3. Entrega /sitemap.xml completo em tempo real (Home + Categorias + Páginas + Artigos)
+	// 3.4. Entrega /sitemap.xml unificado com lastmod real de cada post/página
 	if ( '/sitemap.xml' === $uri ) {
 		header( 'Content-Type: application/xml; charset=utf-8' );
 		header( 'X-Robots-Tag: noindex, follow', true );
+		$last_mod_gmt = get_lastpostmodified( 'GMT' );
+		$site_lastmod = $last_mod_gmt ? gmdate( 'c', strtotime( $last_mod_gmt ) ) : '2026-10-11T06:00:00+00:00';
 		echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+		echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
 		?>
-		<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-			<url>
-				<loc><?php echo esc_url( home_url( '/' ) ); ?></loc>
-				<lastmod><?php echo esc_html( gmdate( 'c' ) ); ?></lastmod>
-				<changefreq>daily</changefreq>
-				<priority>1.0</priority>
-			</url>
-			<?php
-			$categories = get_categories( array( 'hide_empty' => false ) );
-			foreach ( $categories as $cat ) :
-				?>
-				<url>
-					<loc><?php echo esc_url( get_category_link( $cat->term_id ) ); ?></loc>
-					<lastmod><?php echo esc_html( gmdate( 'c' ) ); ?></lastmod>
-					<changefreq>daily</changefreq>
-					<priority>0.8</priority>
-				</url>
-			<?php endforeach; ?>
-
-			<?php
-			$pages = get_pages( array( 'post_status' => 'publish' ) );
-			foreach ( $pages as $p ) :
-				?>
-				<url>
-					<loc><?php echo esc_url( get_permalink( $p->ID ) ); ?></loc>
-					<lastmod><?php echo esc_html( get_the_modified_date( 'c', $p->ID ) ); ?></lastmod>
-					<changefreq>weekly</changefreq>
-					<priority>0.8</priority>
-				</url>
-			<?php endforeach; ?>
-
-			<?php
-			$posts = get_posts( array(
-				'numberposts' => 500,
-				'post_status' => 'publish',
-				'post_type'   => 'post',
+	<url>
+		<loc><?php echo esc_url( home_url( '/' ) ); ?></loc>
+		<lastmod><?php echo esc_html( $site_lastmod ); ?></lastmod>
+		<changefreq>daily</changefreq>
+		<priority>1.0</priority>
+	</url>
+		<?php
+		$categories = get_categories( array( 'hide_empty' => true ) );
+		foreach ( $categories as $cat ) :
+			$latest_in_cat = get_posts( array(
+				'numberposts' => 1,
+				'category'    => $cat->term_id,
+				'orderby'     => 'modified',
+				'order'       => 'DESC',
 			) );
-			foreach ( $posts as $post_item ) :
-				?>
-				<url>
-					<loc><?php echo esc_url( get_permalink( $post_item->ID ) ); ?></loc>
-					<lastmod><?php echo esc_html( get_the_modified_date( 'c', $post_item->ID ) ); ?></lastmod>
-					<changefreq>weekly</changefreq>
-					<priority>0.9</priority>
-				</url>
-			<?php endforeach; ?>
-		</urlset>
+			$cat_lastmod = ! empty( $latest_in_cat ) ? get_the_modified_date( 'c', $latest_in_cat[0]->ID ) : $site_lastmod;
+			?>
+	<url>
+		<loc><?php echo esc_url( get_category_link( $cat->term_id ) ); ?></loc>
+		<lastmod><?php echo esc_html( $cat_lastmod ); ?></lastmod>
+		<changefreq>weekly</changefreq>
+		<priority>0.8</priority>
+	</url>
+		<?php endforeach; ?>
+		<?php
+		$pages = get_pages( array( 'post_status' => 'publish' ) );
+		foreach ( $pages as $p ) :
+			?>
+	<url>
+		<loc><?php echo esc_url( get_permalink( $p->ID ) ); ?></loc>
+		<lastmod><?php echo esc_html( get_the_modified_date( 'c', $p->ID ) ); ?></lastmod>
+		<changefreq>weekly</changefreq>
+		<priority>0.8</priority>
+	</url>
+		<?php endforeach; ?>
+		<?php
+		$posts = get_posts( array(
+			'numberposts' => 500,
+			'post_status' => 'publish',
+			'post_type'   => 'post',
+		) );
+		foreach ( $posts as $post_item ) :
+			?>
+	<url>
+		<loc><?php echo esc_url( get_permalink( $post_item->ID ) ); ?></loc>
+		<lastmod><?php echo esc_html( get_the_modified_date( 'c', $post_item->ID ) ); ?></lastmod>
+		<changefreq>weekly</changefreq>
+		<priority>0.9</priority>
+	</url>
+		<?php endforeach; ?>
+</urlset>
 		<?php
 		exit;
 	}
@@ -245,41 +259,84 @@ function guia_cidadao_inject_in_content_ads( $content ) {
 add_filter( 'the_content', 'guia_cidadao_inject_in_content_ads', 20 );
 
 /**
- * 5. SEO TÉCNICO PERFEITO: META TAGS, OPEN GRAPH, GOOGLE DISCOVER & SCHEMA.ORG JSON-LD
+ * 5. SEO TÉCNICO PERFEITO: CANONICAL PAGINADA AUTORREFERENTE (/page/2/), META DESCRIPTION ÚNICA,
+ *    OPEN GRAPH + IMAGEM SOCIAL 1200x675 & SCHEMA.ORG (ORGANIZATION, WEBSITE, BREADCRUMBLIST, ARTICLE)
  */
 function guia_cidadao_advanced_seo_head() {
+	global $wp_query;
 	$site_name = get_bloginfo( 'name' );
 	$site_url  = home_url( '/' );
+	$paged     = max( 1, (int) get_query_var( 'paged' ), (int) get_query_var( 'page' ) );
+	$max_pages = isset( $wp_query->max_num_pages ) ? (int) $wp_query->max_num_pages : 1;
 
 	if ( is_singular() ) {
 		global $post;
 		$title       = get_the_title() . ' — ' . $site_name;
-		$description = has_excerpt( $post->ID ) ? wp_strip_all_tags( get_the_excerpt( $post->ID ) ) : wp_trim_words( wp_strip_all_tags( $post->post_content ), 28, '...' );
+		$description = has_excerpt( $post->ID ) ? wp_strip_all_tags( get_the_excerpt( $post->ID ) ) : wp_trim_words( wp_strip_all_tags( strip_shortcodes( $post->post_content ) ), 26, '...' );
 		if ( empty( $description ) ) {
 			$description = get_bloginfo( 'description' );
 		}
 		$canonical = get_permalink( $post->ID );
 		$og_type   = is_single() ? 'article' : 'website';
 	} elseif ( is_category() ) {
-		$cat         = get_queried_object();
-		$title       = single_cat_title( '', false ) . ' — ' . $site_name;
-		$description = ! empty( $cat->description ) ? wp_strip_all_tags( $cat->description ) : 'Guias passo a passo e consultas sobre ' . single_cat_title( '', false );
-		$canonical   = get_category_link( $cat->term_id );
-		$og_type     = 'website';
+		$cat       = get_queried_object();
+		$cat_title = single_cat_title( '', false );
+		if ( $paged > 1 ) {
+			$title       = $cat_title . ' — Página ' . $paged . ' | ' . $site_name;
+			$description = 'Página ' . $paged . ' dos guias práticos, documentos necessários e orientações sobre ' . $cat_title . ' no ' . $site_name . '.';
+			$canonical   = get_pagenum_link( $paged );
+		} else {
+			$title       = $cat_title . ' — ' . $site_name;
+			$description = ! empty( $cat->description ) ? wp_strip_all_tags( $cat->description ) : 'Guias passo a passo, calendários, documentos necessários e consultas sobre ' . $cat_title . ' no ' . $site_name . '.';
+			$canonical   = get_category_link( $cat->term_id );
+		}
+		$og_type = 'website';
 	} else {
-		$title       = $site_name . ' — ' . get_bloginfo( 'description' );
-		$description = get_bloginfo( 'description' );
-		$canonical   = $site_url;
-		$og_type     = 'website';
+		if ( $paged > 1 ) {
+			$title       = 'Guias do Cidadão — Página ' . $paged . ' | ' . $site_name;
+			$description = ( 2 === $paged )
+				? 'Consulte guias atualizados sobre IRPF, tarifa social, Valores a Receber, CPF, Gov.br, CIN, Bolsa Família, Meu INSS e FGTS no Núcleo VIP.'
+				: 'Página ' . $paged . ' do arquivo de guias práticos sobre benefícios sociais, documentos Gov.br, finanças e direitos do trabalhador no ' . $site_name . '.';
+			$canonical   = get_pagenum_link( $paged );
+		} else {
+			$title       = $site_name . ' — Benefícios, Documentos Gov.br e Calculadoras CLT';
+			$description = 'Guia do Cidadão: simuladores trabalhistas gratuitos (13º salário, rescisão, férias e seguro-desemprego), calendário de benefícios 2026 e guias passo a passo do Meu INSS, CadÚnico e Gov.br.';
+			$canonical   = $site_url;
+		}
+		$og_type = 'website';
 	}
 
 	echo '<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />' . "\n";
 	echo '<meta name="description" content="' . esc_attr( $description ) . '" />' . "\n";
 	echo '<link rel="canonical" href="' . esc_url( $canonical ) . '" />' . "\n";
 
+	// Links de paginação rel="prev" e rel="next" para sequências paginadas
+	if ( ! is_singular() && $max_pages > 1 ) {
+		if ( $paged > 1 ) {
+			echo '<link rel="prev" href="' . esc_url( get_pagenum_link( $paged - 1 ) ) . '" />' . "\n";
+		}
+		if ( $paged < $max_pages ) {
+			echo '<link rel="next" href="' . esc_url( get_pagenum_link( $paged + 1 ) ) . '" />' . "\n";
+		}
+	}
+
+	// Imagem Social (Open Graph + Twitter): usa a imagem destacada do post ou o banner principal 16:9 do kit
 	$thumb_url = '';
+	$thumb_alt = $title;
 	if ( is_singular() && has_post_thumbnail() ) {
-		$thumb_url = get_the_post_thumbnail_url( get_the_ID(), 'full' );
+		$thumb_id  = get_post_thumbnail_id( get_the_ID() );
+		$thumb_url = wp_get_attachment_image_url( $thumb_id, 'full' );
+		$alt_meta  = get_post_meta( $thumb_id, '_wp_attachment_image_alt', true );
+		if ( ! empty( $alt_meta ) ) {
+			$thumb_alt = $alt_meta;
+		}
+	}
+	if ( empty( $thumb_url ) ) {
+		$hero_id = get_theme_mod( 'guia_cidadao_hero_bg_id' );
+		if ( $hero_id ) {
+			$thumb_url = wp_get_attachment_image_url( $hero_id, 'full' );
+			$thumb_alt = 'Núcleo VIP — Guia do Cidadão: benefícios, documentos e calculadoras';
+		}
 	}
 
 	echo '<meta property="og:locale" content="pt_BR" />' . "\n";
@@ -292,6 +349,7 @@ function guia_cidadao_advanced_seo_head() {
 		echo '<meta property="og:image" content="' . esc_url( $thumb_url ) . '" />' . "\n";
 		echo '<meta property="og:image:width" content="1200" />' . "\n";
 		echo '<meta property="og:image:height" content="675" />' . "\n";
+		echo '<meta property="og:image:alt" content="' . esc_attr( $thumb_alt ) . '" />' . "\n";
 	}
 
 	echo '<meta name="twitter:card" content="summary_large_image" />' . "\n";
@@ -299,6 +357,7 @@ function guia_cidadao_advanced_seo_head() {
 	echo '<meta name="twitter:description" content="' . esc_attr( $description ) . '" />' . "\n";
 	if ( ! empty( $thumb_url ) ) {
 		echo '<meta name="twitter:image" content="' . esc_url( $thumb_url ) . '" />' . "\n";
+		echo '<meta name="twitter:image:alt" content="' . esc_attr( $thumb_alt ) . '" />' . "\n";
 	}
 
 	$graph = array(
@@ -325,8 +384,37 @@ function guia_cidadao_advanced_seo_head() {
 	);
 
 	if ( is_single() ) {
+		$categories = get_the_category();
+		$cat_name   = ! empty( $categories ) ? $categories[0]->name : 'Guias';
+		$cat_link   = ! empty( $categories ) ? get_category_link( $categories[0]->term_id ) : $site_url;
+
+		$graph[] = array(
+			'@type'           => 'BreadcrumbList',
+			'@id'             => $canonical . '#breadcrumb',
+			'itemListElement' => array(
+				array(
+					'@type'    => 'ListItem',
+					'position' => 1,
+					'name'     => 'Início',
+					'item'     => $site_url,
+				),
+				array(
+					'@type'    => 'ListItem',
+					'position' => 2,
+					'name'     => $cat_name,
+					'item'     => $cat_link,
+				),
+				array(
+					'@type'    => 'ListItem',
+					'position' => 3,
+					'name'     => get_the_title(),
+					'item'     => $canonical,
+				),
+			),
+		);
+
 		$article_schema = array(
-			'@type'            => 'NewsArticle',
+			'@type'            => 'Article',
 			'@id'              => $canonical . '#article',
 			'headline'         => get_the_title(),
 			'description'      => $description,
@@ -334,8 +422,13 @@ function guia_cidadao_advanced_seo_head() {
 			'dateModified'     => get_the_modified_date( 'c' ),
 			'mainEntityOfPage' => $canonical,
 			'author'           => array(
+				'@type' => 'Organization',
+				'name'  => 'Equipe Editorial ' . $site_name,
+				'url'   => home_url( '/sobre-nos/' ),
+			),
+			'reviewedBy'       => array(
 				'@type' => 'Person',
-				'name'  => 'Eusimar Teixeira (Editor Responsável)',
+				'name'  => 'Eusimar Teixeira',
 				'url'   => home_url( '/sobre-nos/' ),
 			),
 			'publisher'        => array( '@id' => $site_url . '#organization' ),
@@ -344,6 +437,26 @@ function guia_cidadao_advanced_seo_head() {
 			$article_schema['image'] = array( $thumb_url );
 		}
 		$graph[] = $article_schema;
+	} elseif ( is_category() ) {
+		$cat = get_queried_object();
+		$graph[] = array(
+			'@type'           => 'BreadcrumbList',
+			'@id'             => $canonical . '#breadcrumb',
+			'itemListElement' => array(
+				array(
+					'@type'    => 'ListItem',
+					'position' => 1,
+					'name'     => 'Início',
+					'item'     => $site_url,
+				),
+				array(
+					'@type'    => 'ListItem',
+					'position' => 2,
+					'name'     => single_cat_title( '', false ),
+					'item'     => get_category_link( $cat->term_id ),
+				),
+			),
+		);
 	}
 
 	if ( is_page( 'calculadoras' ) || ( is_singular() && has_shortcode( get_post()->post_content, 'calculadora_seguro_desemprego' ) ) || ( is_singular() && has_shortcode( get_post()->post_content, 'calculadora_irpf' ) ) || ( is_singular() && has_shortcode( get_post()->post_content, 'calculadora_decimo_terceiro' ) ) ) {
