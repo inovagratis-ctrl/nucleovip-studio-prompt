@@ -1635,4 +1635,197 @@ img {
   color: #78350f;
 }
 
+/* ==========================================================================
+   DIRETÓRIO COMPLETO DE SERVIÇOS CAIXA, BB E TRABALHADOR
+   ========================================================================== */
+.service-dir-section {
+  margin: 2.5rem 0;
+}
+
+.service-dir-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.service-dir-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.service-dir-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+}
+
+.service-dir-header {
+  padding: 1.2rem 1.4rem;
+  border-bottom: 1px solid #f1f5f9;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.service-dir-header h3 {
+  font-size: 1.12rem;
+  color: var(--primary-dark);
+  line-height: 1.35;
+  margin: 0;
+}
+
+.service-badge-org {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.2rem 0.55rem;
+  border-radius: 4px;
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+
+.badge-caixa {
+  background: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+}
+
+.badge-bb {
+  background: #fef9c3;
+  color: #854d0e;
+  border: 1px solid #fef08a;
+}
+
+.badge-gov {
+  background: #e0e7ff;
+  color: #3730a3;
+  border: 1px solid #c7d2fe;
+}
+
+.service-dir-body {
+  padding: 1.25rem 1.4rem;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.service-spec-item {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: #334155;
+}
+
+.service-spec-label {
+  font-weight: 700;
+  color: #0f172a;
+  display: block;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin-bottom: 0.15rem;
+}
+
+.service-steps-list {
+  margin: 0.35rem 0 0 1.2rem;
+  padding: 0;
+  font-size: 0.85rem;
+  color: #475569;
+}
+
+.service-steps-list li {
+  margin-bottom: 0.35rem;
+}
+
+.service-dir-footer {
+  padding: 1rem 1.4rem;
+  background: #f8fafc;
+  border-top: 1px solid #f1f5f9;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.service-meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.74rem;
+  color: #64748b;
+}
+
+.service-btn-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+}
+
+.service-btn-guide {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: none !important;
+  color: #0c326f !important;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.service-btn-guide:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+.service-btn-official {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: none !important;
+  color: #ffffff !important;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.btn-caixa {
+  background: #005ca9;
+}
+.btn-caixa:hover {
+  background: #004077;
+}
+
+.btn-bb {
+  background: #002d72;
+  color: #ffd100 !important;
+}
+.btn-bb:hover {
+  background: #001f4f;
+}
+
+.btn-gov {
+  background: #1351b4;
+}
+.btn-gov:hover {
+  background: #0c326f;
+}
+
+@media (max-width: 640px) {
+  .service-btn-group {
+    grid-template-columns: 1fr;
+  }
+}
+
+
 
