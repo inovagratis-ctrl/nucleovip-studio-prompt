@@ -35,8 +35,8 @@ function guia_cidadao_clean_head() {
 add_action( 'init', 'guia_cidadao_clean_head' );
 
 function guia_cidadao_scripts() {
-	wp_enqueue_style( 'guia-cidadao-style', get_stylesheet_uri(), array(), '2.0.0' );
-	wp_enqueue_script( 'guia-cidadao-main', get_template_directory_uri() . '/assets/js/main.js', array(), '2.0.0', true );
+	wp_enqueue_style( 'guia-cidadao-style', get_stylesheet_uri(), array(), '2.2.0' );
+	wp_enqueue_script( 'guia-cidadao-main', get_template_directory_uri() . '/assets/js/main.js', array(), '2.2.0', true );
 }
 add_action( 'wp_enqueue_scripts', 'guia_cidadao_scripts' );
 
@@ -418,7 +418,7 @@ function guia_cidadao_shortcode_irpf() {
 	<div class="calc-box" id="calc-irpf">
 		<div class="calc-header">
 			<h3>🦁 Simulador de Imposto de Renda Mensal 2026 (IRRF e Salário Líquido)</h3>
-			<small style="color:#475569;">Vigência 2026: Tabela INSS Portaria MPS/MF nº 13/2026 + Tabela Progressiva Mensal da Receita Federal</small>
+			<small style="color:#475569;">Vigência 2026: Tabela INSS Portaria MPS/MF nº 13/2026 + Isenção IRRF até R$ 5.000 (Lei nº 15.270/2025)</small>
 		</div>
 		<div class="calc-grid">
 			<div class="calc-field">
@@ -448,7 +448,7 @@ function guia_cidadao_shortcode_ferias() {
 	<div class="calc-box" id="calc-ferias">
 		<div class="calc-header">
 			<h3>🏖️ Simulador de Férias Remuneradas 2026 (CLT + 1/3 Constitucional)</h3>
-			<small style="color:#475569;">Vigência 2026: Tabela INSS Portaria MPS/MF nº 13, de 09/01/2026 + IRRF Mensal</small>
+			<small style="color:#475569;">Vigência 2026: INSS Portaria MPS/MF nº 13/2026 + Isenção IRRF até R$ 5.000 (Lei nº 15.270/2025)</small>
 		</div>
 		<div class="calc-grid">
 			<div class="calc-field">
@@ -528,7 +528,7 @@ function guia_cidadao_shortcode_decimo() {
 	<div class="calc-box" id="calc-decimo">
 		<div class="calc-header">
 			<h3>💰 Simulador de 13º Salário 2026 (Estimativa de 1ª e 2ª Parcela)</h3>
-			<small style="color:#475569;">Vigência 2026: Tabela INSS Portaria Interministerial MPS/MF nº 13, de 09/01/2026 (Faixas R$ 1.621,00 a R$ 8.708,55) • Lei nº 4.749/1965</small>
+			<small style="color:#475569;">Vigência 2026: INSS Portaria MPS/MF nº 13/2026 • Isenção IRRF até R$ 5.000 (Lei nº 15.270/2025) • Lei nº 4.749/1965</small>
 		</div>
 		<div class="calc-grid">
 			<div class="calc-field">
@@ -767,13 +767,128 @@ function guia_cidadao_render_admin_central() {
 }
 
 /**
- * 8. GERADOR AUTOMÁTICO DE ILUSTRAÇÕES EDITORIAIS EM WEBP (1200x675 - PADRÃO 16:9 LEVE)
- * Segue as melhores práticas de UX:
- * - Proporção 16:9 (1200x675px) em formato leve WebP
- * - Fundo claro editorial com ilustração gráfica centralizada (não corta no celular e elimina blocos escuros)
- * - Sem excesso de texto dentro da imagem (apenas um selo curto de 2 palavras do assunto centralizado)
- * - Texto alternativo (alt) descritivo da ilustração, sem repetir o título inteiro do artigo
+ * 8. GERADOR AUTOMÁTICO DE FOTOGRAFIAS EDITORIAIS EM WEBP (1200x675 - PADRÃO 16:9 LEVE, ZERO TEXTO NA IMAGEM)
+ * - Associa cada artigo a uma fotografia real de alta resolução específica do seu assunto (Dólar, Apostas, MEI, CNH, 13º, FGTS, INSS, etc.)
+ * - Redimensiona para 1200x675px (16:9) e salva em formato WebP leve
+ * - Define texto alternativo (alt) que descreve fielmente a fotografia e o tema do cartão, sem repetir o título inteiro
  */
+function guia_cidadao_get_topic_photo_and_alt( $title, $cat_slug = '' ) {
+	$lower = mb_strtolower( $title, 'UTF-8' );
+
+	if ( false !== mb_strpos( $lower, 'dólar' ) || false !== mb_strpos( $lower, 'câmbio' ) ) {
+		return array(
+			'url' => 'https://images.unsplash.com/photo-1580519542036-c47de6196ba5?auto=format&fit=crop&w=1200&q=80',
+			'alt' => 'Fotografia de cédulas de dólar norte-americano sobre mesa representando cotação cambial',
+		);
+	}
+	if ( false !== mb_strpos( $lower, 'bets' ) || false !== mb_strpos( $lower, 'apostas' ) || false !== mb_strpos( $lower, 'apostador' ) ) {
+		return array(
+			'url' => 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?auto=format&fit=crop&w=1200&q=80',
+			'alt' => 'Pessoa utilizando aplicativo financeiro e transação digital no smartphone',
+		);
+	}
+	if ( false !== mb_strpos( $lower, 'mei' ) || false !== mb_strpos( $lower, 'empreendedor' ) || false !== mb_strpos( $lower, 'dasn' ) ) {
+		return array(
+			'url' => 'https://images.unsplash.com/photo-1556740738-b6a63e27c4df?auto=format&fit=crop&w=1200&q=80',
+			'alt' => 'Microempreendedor conferindo notas fiscais e guia mensal de pagamento no balcão de trabalho',
+		);
+	}
+	if ( false !== mb_strpos( $lower, 'cnh' ) || false !== mb_strpos( $lower, 'trânsito' ) || false !== mb_strpos( $lower, 'condutor' ) ) {
+		return array(
+			'url' => 'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&w=1200&q=80',
+			'alt' => 'Motorista ao volante de automóvel representando habilitação e Carteira Digital de Trânsito',
+		);
+	}
+	if ( false !== mb_strpos( $lower, '13º' ) || false !== mb_strpos( $lower, 'décimo' ) ) {
+		return array(
+			'url' => 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=1200&q=80',
+			'alt' => 'Calculadora financeira e demonstrativo de folha de pagamento sobre mesa de escritório',
+		);
+	}
+	if ( false !== mb_strpos( $lower, 'rescisão' ) ) {
+		return array(
+			'url' => 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=1200&q=80',
+			'alt' => 'Assinatura de documento contratual e conferência de verbas rescisórias trabalhistas',
+		);
+	}
+	if ( false !== mb_strpos( $lower, 'férias' ) ) {
+		return array(
+			'url' => 'https://images.unsplash.com/photo-1506784983877-45594efa4cbe?auto=format&fit=crop&w=1200&q=80',
+			'alt' => 'Calendário mensal sobre mesa planejando período de descanso de férias remuneradas',
+		);
+	}
+	if ( false !== mb_strpos( $lower, 'seguro-desemprego' ) ) {
+		return array(
+			'url' => 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=1200&q=80',
+			'alt' => 'Trabalhador consultando carteira de trabalho e requerimento de benefício no computador',
+		);
+	}
+	if ( false !== mb_strpos( $lower, 'imposto de renda' ) || false !== mb_strpos( $lower, 'irpf' ) ) {
+		return array(
+			'url' => 'https://images.unsplash.com/photo-1554224154-26032ffc0d07?auto=format&fit=crop&w=1200&q=80',
+			'alt' => 'Planilha de apuração tributária, óculos e calculadora para simulação de Imposto de Renda',
+		);
+	}
+	if ( false !== mb_strpos( $lower, 'fgts' ) ) {
+		return array(
+			'url' => 'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?auto=format&fit=crop&w=1200&q=80',
+			'alt' => 'Moedas e reserva financeira representando saldo acumulado do Fundo de Garantia',
+		);
+	}
+	if ( false !== mb_strpos( $lower, 'bpc' ) || false !== mb_strpos( $lower, 'loas' ) ) {
+		return array(
+			'url' => 'https://images.unsplash.com/photo-1581579438747-1dc8d17bbce4?auto=format&fit=crop&w=1200&q=80',
+			'alt' => 'Casal de idosos sorrindo em casa representando amparo assistencial e previdenciário',
+		);
+	}
+	if ( false !== mb_strpos( $lower, 'inss' ) || false !== mb_strpos( $lower, 'cnis' ) ) {
+		return array(
+			'url' => 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80',
+			'alt' => 'Pessoa consultando extrato previdenciário e serviços digitais na tela do notebook',
+		);
+	}
+	if ( false !== mb_strpos( $lower, 'bolsa família' ) || false !== mb_strpos( $lower, 'cadúnico' ) ) {
+		return array(
+			'url' => 'https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=1200&q=80',
+			'alt' => 'Família reunida representando programas sociais de transferência de renda e proteção à infância',
+		);
+	}
+	if ( false !== mb_strpos( $lower, 'pis' ) || false !== mb_strpos( $lower, 'pasep' ) || false !== mb_strpos( $lower, 'abono' ) ) {
+		return array(
+			'url' => 'https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=1200&q=80',
+			'alt' => 'Profissionais no ambiente de trabalho formal representando direito ao abono salarial anual',
+		);
+	}
+	if ( false !== mb_strpos( $lower, 'valores a receber' ) || false !== mb_strpos( $lower, 'banco central' ) ) {
+		return array(
+			'url' => 'https://images.unsplash.com/photo-1601597111158-2fceff292cdc?auto=format&fit=crop&w=1200&q=80',
+			'alt' => 'Consulta bancária pelo celular e cartão representando resgate de saldo financeiro',
+		);
+	}
+	if ( false !== mb_strpos( $lower, 'energia' ) || false !== mb_strpos( $lower, 'conta de luz' ) || false !== mb_strpos( $lower, 'tarifa social' ) ) {
+		return array(
+			'url' => 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&w=1200&q=80',
+			'alt' => 'Rede de distribuição de energia elétrica ao entardecer representando desconto na fatura de luz',
+		);
+	}
+	if ( false !== mb_strpos( $lower, 'gov.br' ) || false !== mb_strpos( $lower, 'prata ou ouro' ) ) {
+		return array(
+			'url' => 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&w=1200&q=80',
+			'alt' => 'Smartphone exibindo tela de autenticação digital segura e validação biométrica',
+		);
+	}
+	if ( false !== mb_strpos( $lower, 'cpf' ) || false !== mb_strpos( $lower, 'certidão' ) ) {
+		return array(
+			'url' => 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1200&q=80',
+			'alt' => 'Emissão de certidão de regularidade fiscal e conferência de cadastro em computador',
+		);
+	}
+	return array(
+		'url' => 'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=1200&q=80',
+		'alt' => 'Cidadão apresentando documentação pessoal em atendimento de serviço público',
+	);
+}
+
 function guia_cidadao_generate_post_thumbnail( $post_id ) {
 	if ( wp_is_post_revision( $post_id ) || 'post' !== get_post_type( $post_id ) ) {
 		return;
@@ -781,17 +896,8 @@ function guia_cidadao_generate_post_thumbnail( $post_id ) {
 	if ( has_post_thumbnail( $post_id ) ) {
 		return;
 	}
-	if ( ! function_exists( 'imagecreatetruecolor' ) || ! function_exists( 'imagettftext' ) ) {
+	if ( ! function_exists( 'imagecreatetruecolor' ) ) {
 		return;
-	}
-
-	$font_bold = '/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf';
-	$font_reg  = '/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf';
-	if ( ! file_exists( $font_bold ) ) {
-		return;
-	}
-	if ( ! file_exists( $font_reg ) ) {
-		$font_reg = $font_bold;
 	}
 
 	$title = html_entity_decode( get_the_title( $post_id ), ENT_QUOTES, 'UTF-8' );
@@ -801,167 +907,56 @@ function guia_cidadao_generate_post_thumbnail( $post_id ) {
 
 	$categories = get_the_category( $post_id );
 	$cat_slug   = ! empty( $categories ) ? $categories[0]->slug : 'geral';
-	$lower      = mb_strtolower( $title, 'UTF-8' );
+	$photo_info = guia_cidadao_get_topic_photo_and_alt( $title, $cat_slug );
 
-	// Define tema visual específico por assunto (Fundo claro suave + Ilustração centralizada + Alt descritivo)
-	if ( false !== mb_strpos( $lower, '13º' ) || false !== mb_strpos( $lower, 'décimo' ) ) {
-		$bg_top = array( 240, 253, 244 ); $bg_bot = array( 220, 252, 231 );
-		$primary = array( 21, 128, 61 );  $accent = array( 12, 50, 111 );
-		$badge = '13º SALÁRIO CLT';
-		$sub   = '1ª e 2ª Parcelas • Tabela 2026';
-		$alt   = 'Ilustração de demonstrativo de pagamento e calculadora para estimativa de 13º salário';
-		$icon_type = 'calculator';
-	} elseif ( false !== mb_strpos( $lower, 'rescisão' ) || false !== mb_strpos( $lower, 'fgts' ) ) {
-		$bg_top = array( 239, 246, 255 ); $bg_bot = array( 219, 234, 254 );
-		$primary = array( 29, 78, 216 );  $accent = array( 22, 136, 33 );
-		$badge = ( false !== mb_strpos( $lower, 'rescisão' ) ) ? 'RESCISÃO CLT' : 'CONSULTA FGTS';
-		$sub   = 'Saldo, Extrato e Direitos';
-		$alt   = 'Ilustração de carteira de trabalho digital e extrato de Fundo de Garantia';
-		$icon_type = 'wallet';
-	} elseif ( false !== mb_strpos( $lower, 'férias' ) ) {
-		$bg_top = array( 240, 249, 255 ); $bg_bot = array( 224, 242, 254 );
-		$primary = array( 3, 105, 161 );  $accent = array( 245, 158, 11 );
-		$badge = 'FÉRIAS CLT + 1/3';
-		$sub   = 'Simulador de Valor Líquido';
-		$alt   = 'Ilustração de calendário de descanso remunerado e cálculo de terço constitucional';
-		$icon_type = 'calendar';
-	} elseif ( false !== mb_strpos( $lower, 'seguro-desemprego' ) ) {
-		$bg_top = array( 245, 243, 255 ); $bg_bot = array( 237, 233, 254 );
-		$primary = array( 109, 40, 217 ); $accent = array( 16, 185, 129 );
-		$badge = 'SEGURO-DESEMPREGO';
-		$sub   = 'Parcelas e Faixas MTE 2026';
-		$alt   = 'Ilustração de escudo de proteção trabalhista e tabela de parcelas do Seguro-Desemprego';
-		$icon_type = 'shield';
-	} elseif ( false !== mb_strpos( $lower, 'imposto de renda' ) || false !== mb_strpos( $lower, 'irpf' ) ) {
-		$bg_top = array( 254, 252, 232 ); $bg_bot = array( 254, 240, 138 );
-		$primary = array( 180, 83, 9 );   $accent = array( 12, 50, 111 );
-		$badge = 'IMPOSTO DE RENDA';
-		$sub   = 'Faixas de Isenção e Restituição';
-		$alt   = 'Ilustração de formulário de declaração fiscal e cálculo de alíquota efetiva';
-		$icon_type = 'chart';
-	} elseif ( 'documentos-gov-br' === $cat_slug ) {
-		$bg_top = array( 240, 253, 250 ); $bg_bot = array( 204, 251, 241 );
-		$primary = array( 15, 118, 110 ); $accent = array( 19, 81, 180 );
-		$badge = 'DOCUMENTO DIGITAL';
-		$sub   = 'Emissão e Validação Gov.br';
-		$alt   = 'Ilustração de documento de identificação nacional com QR Code e validação digital';
-		$icon_type = 'idcard';
-	} elseif ( 'contas-financas' === $cat_slug ) {
-		$bg_top = array( 255, 251, 235 ); $bg_bot = array( 254, 243, 199 );
-		$primary = array( 180, 83, 9 );   $accent = array( 21, 128, 61 );
-		$badge = 'CONSULTA FINANCEIRA';
-		$sub   = 'Serviços Públicos e Economia';
-		$alt   = 'Ilustração de painel de consulta financeira e tarifas de serviços públicos';
-		$icon_type = 'chart';
+	$response = wp_remote_get( $photo_info['url'], array( 'timeout' => 15 ) );
+	if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
+		return;
+	}
+
+	$img_bytes = wp_remote_retrieve_body( $response );
+	$src_im    = @imagecreatefromstring( $img_bytes );
+	if ( ! $src_im ) {
+		return;
+	}
+
+	$src_w = imagesx( $src_im );
+	$src_h = imagesy( $src_im );
+	$dst_w = 1200;
+	$dst_h = 675;
+
+	// Recorte centralizado proporcional 16:9 (1200x675)
+	$src_ratio = $src_w / $src_h;
+	$dst_ratio = $dst_w / $dst_h;
+	if ( $src_ratio > $dst_ratio ) {
+		$crop_h = $src_h;
+		$crop_w = (int) ( $src_h * $dst_ratio );
+		$crop_x = (int) ( ( $src_w - $crop_w ) / 2 );
+		$crop_y = 0;
 	} else {
-		$bg_top = array( 248, 250, 252 ); $bg_bot = array( 226, 232, 240 );
-		$primary = array( 12, 50, 111 );  $accent = array( 22, 136, 33 );
-		$badge = 'DIREITOS E BENEFÍCIOS';
-		$sub   = 'Consulta Oficial Passo a Passo';
-		$alt   = 'Ilustração de cartão de benefício social e guia informativo ao cidadão';
-		$icon_type = 'shield';
+		$crop_w = $src_w;
+		$crop_h = (int) ( $src_w / $dst_ratio );
+		$crop_x = 0;
+		$crop_y = (int) ( ( $src_h - $crop_h ) / 2 );
 	}
 
-	$w = 1200;
-	$h = 675;
-	$im = imagecreatetruecolor( $w, $h );
-
-	// 1. Fundo claro suave (gradiente pastel luminoso)
-	for ( $y = 0; $y < $h; $y++ ) {
-		$r = (int) ( $bg_top[0] + ( $bg_bot[0] - $bg_top[0] ) * ( $y / $h ) );
-		$g = (int) ( $bg_top[1] + ( $bg_bot[1] - $bg_top[1] ) * ( $y / $h ) );
-		$b = (int) ( $bg_top[2] + ( $bg_bot[2] - $bg_top[2] ) * ( $y / $h ) );
-		$col = imagecolorallocate( $im, $r, $g, $b );
-		imageline( $im, 0, $y, $w, $y, $col );
-	}
-
-	imagealphablending( $im, true );
-	$c_white   = imagecolorallocate( $im, 255, 255, 255 );
-	$c_primary = imagecolorallocate( $im, $primary[0], $primary[1], $primary[2] );
-	$c_accent  = imagecolorallocate( $im, $accent[0], $accent[1], $accent[2] );
-	$c_dark    = imagecolorallocate( $im, 30, 41, 59 );
-	$c_muted   = imagecolorallocate( $im, 100, 116, 139 );
-	$c_border  = imagecolorallocate( $im, 203, 213, 225 );
-	$c_shadow  = imagecolorallocatealpha( $im, 15, 23, 42, 115 );
-
-	// Círculo suave centralizado de fundo
-	$c_halo = imagecolorallocatealpha( $im, $primary[0], $primary[1], $primary[2], 116 );
-	imagefilledellipse( $im, 600, 337, 540, 540, $c_halo );
-
-	// 2. Cartão Ilustrativo Centralizado (340..860 x 135..540) — Não corta no mobile!
-	imagefilledrectangle( $im, 338, 145, 872, 548, $c_shadow );
-	imagefilledrectangle( $im, 330, 135, 870, 540, $c_white );
-	imagerectangle( $im, 330, 135, 870, 540, $c_border );
-
-	// Topo colorido do cartão ilustrado
-	imagefilledrectangle( $im, 330, 135, 870, 195, $c_primary );
-	imagefilledellipse( $im, 365, 165, 16, 16, $c_white );
-	imagefilledellipse( $im, 392, 165, 16, 16, $c_accent );
-
-	// 3. Desenho Vetorial Centralizado por Tipo de Assunto (Lado Esquerdo do Cartão Central)
-	$ix = 435;
-	$iy = 325;
-	$c_icon_bg = imagecolorallocatealpha( $im, $primary[0], $primary[1], $primary[2], 110 );
-	imagefilledellipse( $im, $ix, $iy, 140, 140, $c_icon_bg );
-
-	if ( 'calculator' === $icon_type ) {
-		// Ícone de Calculadora
-		imagefilledrectangle( $im, $ix - 38, $iy - 48, $ix + 38, $iy + 48, $c_primary );
-		imagefilledrectangle( $im, $ix - 28, $iy - 38, $ix + 28, $iy - 16, $c_white );
-		for ( $row = 0; $row < 3; $row++ ) {
-			for ( $col_i = 0; $col_i < 3; $col_i++ ) {
-				$bx = ( $ix - 26 ) + ( $col_i * 19 );
-				$by = ( $iy - 6 ) + ( $row * 17 );
-				imagefilledrectangle( $im, $bx, $by, $bx + 13, $by + 11, ( 2 === $col_i && 2 === $row ) ? $c_accent : $c_white );
-			}
-		}
-	} elseif ( 'idcard' === $icon_type ) {
-		// Ícone de Carteira de Identidade / Documento
-		imagefilledrectangle( $im, $ix - 48, $iy - 34, $ix + 48, $iy + 34, $c_primary );
-		imagefilledellipse( $im, $ix - 22, $iy - 4, 24, 24, $c_white );
-		imagefilledrectangle( $im, $ix - 36, $iy + 12, $ix - 8, $iy + 24, $c_white );
-		imagefilledrectangle( $im, $ix + 2, $iy - 18, $ix + 38, $iy - 10, $c_white );
-		imagefilledrectangle( $im, $ix + 2, $iy - 2, $ix + 38, $iy + 6, $c_accent );
-		imagefilledrectangle( $im, $ix + 2, $iy + 14, $ix + 28, $iy + 22, $c_white );
-	} elseif ( 'chart' === $icon_type ) {
-		// Ícone de Gráfico Financeiro / Imposto
-		imagefilledrectangle( $im, $ix - 36, $iy + 5, $ix - 18, $iy + 40, $c_primary );
-		imagefilledrectangle( $im, $ix - 9, $iy - 15, $ix + 9, $iy + 40, $c_accent );
-		imagefilledrectangle( $im, $ix + 18, $iy - 38, $ix + 36, $iy + 40, $c_primary );
-	} else {
-		// Ícone de Documento Verificado / Benefício
-		imagefilledrectangle( $im, $ix - 36, $iy - 45, $ix + 36, $iy + 45, $c_primary );
-		imagefilledrectangle( $im, $ix - 24, $iy - 26, $ix + 24, $iy - 18, $c_white );
-		imagefilledrectangle( $im, $ix - 24, $iy - 8, $ix + 24, $iy, $c_white );
-		imagefilledrectangle( $im, $ix - 24, $iy + 10, $ix + 10, $iy + 18, $c_accent );
-	}
-
-	// 4. Elementos Visuais Limpos à Direita do Ícone (Selo Curto + Barras Gráficas Simbólicas)
-	imagettftext( $im, 22, 0, 525, 290, $c_dark, $font_bold, $badge );
-	imagettftext( $im, 15, 0, 525, 325, $c_muted, $font_reg, $sub );
-
-	// Barras gráficas decorativas de interface (representando linhas de documento/simulador)
-	$c_bar1 = imagecolorallocate( $im, 226, 232, 240 );
-	imagefilledrectangle( $im, 525, 352, 815, 366, $c_bar1 );
-	imagefilledrectangle( $im, 525, 380, 760, 394, $c_bar1 );
-
-	// Selo Verde "Verificado 2026"
-	imagefilledrectangle( $im, 525, 418, 725, 456, $c_accent );
-	imagettftext( $im, 13, 0, 542, 443, $c_white, $font_bold, 'ATUALIZADO 2026' );
+	$dst_im = imagecreatetruecolor( $dst_w, $dst_h );
+	imagecopyresampled( $dst_im, $src_im, 0, 0, $crop_x, $crop_y, $dst_w, $dst_h, $crop_w, $crop_h );
+	imagedestroy( $src_im );
 
 	$upload_dir = wp_upload_dir();
 	$use_webp   = function_exists( 'imagewebp' );
-	$ext        = $use_webp ? '.webp' : '.png';
-	$mime       = $use_webp ? 'image/webp' : 'image/png';
-	$filename   = 'ilustracao-post-' . $post_id . '-' . time() . $ext;
+	$ext        = $use_webp ? '.webp' : '.jpg';
+	$mime       = $use_webp ? 'image/webp' : 'image/jpeg';
+	$filename   = 'foto-editorial-' . $post_id . '-' . time() . $ext;
 	$filepath   = trailingslashit( $upload_dir['path'] ) . $filename;
 
 	if ( $use_webp ) {
-		imagewebp( $im, $filepath, 88 );
+		imagewebp( $dst_im, $filepath, 82 );
 	} else {
-		imagepng( $im, $filepath, 8 );
+		imagejpeg( $dst_im, $filepath, 85 );
 	}
-	imagedestroy( $im );
+	imagedestroy( $dst_im );
 
 	if ( ! file_exists( $filepath ) ) {
 		return;
@@ -970,7 +965,7 @@ function guia_cidadao_generate_post_thumbnail( $post_id ) {
 	$attachment = array(
 		'guid'           => trailingslashit( $upload_dir['url'] ) . $filename,
 		'post_mime_type' => $mime,
-		'post_title'     => 'Ilustração — ' . $badge,
+		'post_title'     => $photo_info['alt'],
 		'post_content'   => '',
 		'post_status'    => 'inherit',
 	);
@@ -981,10 +976,10 @@ function guia_cidadao_generate_post_thumbnail( $post_id ) {
 		$attach_data = wp_generate_attachment_metadata( $attach_id, $filepath );
 		wp_update_attachment_metadata( $attach_id, $attach_data );
 		set_post_thumbnail( $post_id, $attach_id );
-		// Alt text descreve a imagem em si, sem repetir o título inteiro do artigo
-		update_post_meta( $attach_id, '_wp_attachment_image_alt', $alt );
+		update_post_meta( $attach_id, '_wp_attachment_image_alt', $photo_info['alt'] );
 	}
 }
 add_action( 'save_post', 'guia_cidadao_generate_post_thumbnail', 20, 1 );
+
 
 
