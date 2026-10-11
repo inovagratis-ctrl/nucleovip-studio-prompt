@@ -6,9 +6,20 @@
   "observability": {
     "enabled": true
   },
+  "routes": [
+    {
+      "pattern": "nucleovip.com.br/*",
+      "zone_name": "nucleovip.com.br"
+    },
+    {
+      "pattern": "www.nucleovip.com.br/*",
+      "zone_name": "nucleovip.com.br"
+    }
+  ],
   "assets": {
     "directory": "public",
     "binding": "ASSETS",
+    "run_worker_first": true,
     "html_handling": "auto-trailing-slash",
     "not_found_handling": "404-page"
   }
