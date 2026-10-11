@@ -1,0 +1,991 @@
+/*
+Theme Name: Guia do Cidadão Pro (AdSense & Utilidade Pública)
+Theme URI: https://example.com/guia-cidadao-pro
+Author: Antigravity AI
+Author URI: https://example.com
+Description: Tema WordPress ultra-rápido (Core Web Vitals 99+), desenvolvido sob medida para Portais de Utilidade Pública (Benefícios, Documentos, Finanças e Calculadoras). Inclui espaços de AdSense anti-CLS de alto CTR, páginas obrigatórias de aprovação pré-configuradas (Política de Privacidade DART/LGPD, Termos, Sobre E-E-A-T, Contato), gerador nativo de ads.txt e calculadoras interativas embutidas.
+Version: 1.0.0
+Requires at least: 6.0
+Tested up to: 6.7
+Requires PHP: 7.4
+License: GPL v2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
+Text Domain: guia-cidadao
+Tags: blog, news, custom-menu, featured-images, threaded-comments, translation-ready, two-columns, right-sidebar
+*/
+
+:root {
+  --primary: #0c326f;
+  --primary-dark: #071d41;
+  --primary-light: #1351b4;
+  --accent: #168821;
+  --accent-hover: #116a1a;
+  --warning: #f59e0b;
+  --bg-body: #f4f6f9;
+  --bg-card: #ffffff;
+  --text-main: #1e293b;
+  --text-muted: #475569;
+  --border-color: #e2e8f0;
+  --ad-bg: #f8fafc;
+  --ad-border: #cbd5e1;
+  --radius: 10px;
+  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
+  --container-width: 1180px;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+  background-color: var(--bg-body);
+  color: var(--text-main);
+  line-height: 1.65;
+  overflow-x: hidden;
+}
+
+a {
+  color: var(--primary-light);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+a:hover {
+  color: var(--primary-dark);
+  text-decoration: underline;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  border-radius: var(--radius);
+}
+
+.container {
+  max-width: var(--container-width);
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+/* ==========================================================================
+   TOP BAR (Aviso de Transparência p/ Aprovação no Google AdSense)
+   ========================================================================== */
+.top-utility-bar {
+  background-color: var(--primary-dark);
+  color: #cbd5e1;
+  font-size: 0.78rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.top-utility-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.top-utility-disclaimer {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.badge-independent {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  padding: 0.1rem 0.45rem;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+}
+
+.top-utility-links {
+  display: flex;
+  gap: 1rem;
+  list-style: none;
+}
+
+.top-utility-links a {
+  color: #e2e8f0;
+  text-decoration: none;
+}
+
+.top-utility-links a:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+/* ==========================================================================
+   HEADER & NAVIGATION
+   ========================================================================== */
+.site-header {
+  background-color: var(--primary);
+  color: #fff;
+  padding: 1.1rem 0;
+  box-shadow: var(--shadow-md);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.site-branding {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.site-logo-icon {
+  width: 42px;
+  height: 42px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.site-title {
+  font-size: 1.4rem;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.site-title a {
+  color: #fff;
+  text-decoration: none;
+}
+
+.site-description {
+  font-size: 0.78rem;
+  color: #bfdbfe;
+  margin-top: 2px;
+}
+
+.header-search {
+  flex: 1;
+  max-width: 420px;
+}
+
+.search-form {
+  display: flex;
+  background: #fff;
+  border-radius: 999px;
+  overflow: hidden;
+  padding: 3px;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.search-field {
+  border: none;
+  padding: 0.5rem 1rem;
+  width: 100%;
+  font-size: 0.9rem;
+  color: var(--text-main);
+  outline: none;
+}
+
+.search-submit {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1.1rem;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.search-submit:hover {
+  background: var(--accent-hover);
+}
+
+.category-nav-bar {
+  background: #fff;
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+}
+
+.main-navigation ul {
+  display: flex;
+  list-style: none;
+  gap: 0.25rem;
+  overflow-x: auto;
+  padding: 0.5rem 0;
+}
+
+.main-navigation a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.9rem;
+  color: var(--text-main);
+  font-weight: 600;
+  font-size: 0.9rem;
+  border-radius: 6px;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.main-navigation a:hover,
+.main-navigation .current-menu-item > a {
+  background: #eff6ff;
+  color: var(--primary-light);
+}
+
+.mobile-menu-toggle {
+  display: none;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.4);
+  color: #fff;
+  padding: 0.45rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+/* ==========================================================================
+   ADSENSE CONTAINERS (Zero CLS + High CTR + Google Policy Compliant)
+   ========================================================================== */
+.ad-slot-wrapper {
+  margin: 1.5rem auto;
+  text-align: center;
+  background-color: var(--ad-bg);
+  border: 1px dashed var(--ad-border);
+  border-radius: 8px;
+  padding: 0.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.ad-label {
+  display: block;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #64748b;
+  margin-bottom: 0.35rem;
+}
+
+/* Min-heights prevent Cumulative Layout Shift (CLS) for Core Web Vitals */
+.ad-header-leaderboard {
+  min-height: 115px;
+  max-width: 970px;
+}
+
+.ad-in-article {
+  min-height: 280px;
+  margin: 1.75rem 0;
+}
+
+.ad-sidebar-sticky {
+  min-height: 300px;
+}
+
+.ad-placeholder-demo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: inherit;
+  color: #475569;
+  font-size: 0.85rem;
+  padding: 1rem;
+  background: repeating-linear-gradient(
+    -45deg,
+    #f8fafc,
+    #f8fafc 10px,
+    #f1f5f9 10px,
+    #f1f5f9 20px
+  );
+  border-radius: 6px;
+}
+
+.ad-placeholder-demo strong {
+  color: var(--primary);
+  font-size: 0.95rem;
+  margin-bottom: 0.25rem;
+}
+
+/* ==========================================================================
+   QUICK UTILITY HUB CARDS (Homepage High-Engagement Bar)
+   ========================================================================== */
+.utility-hub-section {
+  margin: 1.75rem 0;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.section-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--primary-dark);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.section-title::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 22px;
+  background: var(--accent);
+  border-radius: 3px;
+}
+
+.utility-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+
+.utility-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  text-decoration: none !important;
+}
+
+.utility-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary-light);
+}
+
+.utility-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+.utility-icon.blue { background: #dbeafe; color: #1d4ed8; }
+.utility-icon.green { background: #dcfce7; color: #15803d; }
+.utility-icon.amber { background: #fef3c7; color: #b45309; }
+.utility-icon.purple { background: #f3e8ff; color: #6d28d9; }
+
+.utility-card h3 {
+  font-size: 1.05rem;
+  color: var(--primary-dark);
+  font-weight: 700;
+}
+
+.utility-card p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+.utility-card-cta {
+  margin-top: auto;
+  padding-top: 0.5rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--primary-light);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* ==========================================================================
+   MAIN LAYOUT (Content + Sticky Right Sidebar for AdSense)
+   ========================================================================== */
+.site-main-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 330px;
+  gap: 2rem;
+  margin: 1.5rem 0 3rem;
+  align-items: start;
+}
+
+/* ==========================================================================
+   POSTS GRID & CARDS
+   ========================================================================== */
+.posts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+}
+
+.post-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow 0.15s ease;
+}
+
+.post-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.post-card-thumb {
+  aspect-ratio: 16 / 9;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  padding: 1rem;
+  text-align: center;
+}
+
+.post-card-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 0;
+}
+
+.post-category-badge {
+  display: inline-block;
+  background: #eff6ff;
+  color: var(--primary-light);
+  font-size: 0.73rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.2rem 0.6rem;
+  border-radius: 99px;
+  margin-bottom: 0.5rem;
+}
+
+.post-card-body {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.post-card-title {
+  font-size: 1.15rem;
+  line-height: 1.35;
+  margin-bottom: 0.6rem;
+  font-weight: 700;
+}
+
+.post-card-title a {
+  color: var(--text-main);
+  text-decoration: none;
+}
+
+.post-card-title a:hover {
+  color: var(--primary-light);
+}
+
+.post-card-excerpt {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+  flex: 1;
+}
+
+.post-card-meta {
+  font-size: 0.78rem;
+  color: #64748b;
+  border-top: 1px solid var(--border-color);
+  padding-top: 0.75rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* ==========================================================================
+   SINGLE ARTICLE & PAGE CONTENT (Optimized for Reading & AdSense Clicks)
+   ========================================================================== */
+.single-article-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 2rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.breadcrumbs {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.entry-title {
+  font-size: 1.95rem;
+  line-height: 1.25;
+  color: var(--primary-dark);
+  font-weight: 800;
+  margin-bottom: 0.85rem;
+}
+
+.entry-meta-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  padding-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.updated-badge {
+  background: #dcfce7;
+  color: #166534;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.78rem;
+}
+
+/* Table of Contents (Increases Time on Page & Ad Viewability) */
+.toc-box {
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-left: 4px solid var(--primary-light);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin: 1.5rem 0;
+}
+
+.toc-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--primary-dark);
+  margin-bottom: 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.toc-list {
+  padding-left: 1.25rem;
+  font-size: 0.9rem;
+}
+
+.toc-list li {
+  margin-bottom: 0.3rem;
+}
+
+.entry-content {
+  font-size: 1.0625rem;
+  line-height: 1.75;
+  color: #1e293b;
+}
+
+.entry-content h2 {
+  font-size: 1.45rem;
+  color: var(--primary-dark);
+  margin: 2rem 0 0.85rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 2px solid #eff6ff;
+}
+
+.entry-content h3 {
+  font-size: 1.2rem;
+  color: var(--primary);
+  margin: 1.5rem 0 0.65rem;
+}
+
+.entry-content p {
+  margin-bottom: 1.2rem;
+}
+
+.entry-content ul, .entry-content ol {
+  margin: 0 0 1.25rem 1.5rem;
+}
+
+.entry-content li {
+  margin-bottom: 0.45rem;
+}
+
+/* Gov.br Inspired Step-by-Step & Alert Callout Boxes */
+.gov-callout {
+  background: #eff6ff;
+  border-left: 4px solid var(--primary-light);
+  padding: 1.15rem 1.25rem;
+  border-radius: 0 8px 8px 0;
+  margin: 1.5rem 0;
+}
+
+.gov-callout.success {
+  background: #f0fdf4;
+  border-left-color: var(--accent);
+}
+
+.gov-callout.warning {
+  background: #fffbeb;
+  border-left-color: var(--warning);
+}
+
+.gov-callout-title {
+  font-weight: 700;
+  color: var(--primary-dark);
+  margin-bottom: 0.35rem;
+  display: block;
+}
+
+/* Author E-E-A-T Box for Google Quality Raters */
+.author-eeat-box {
+  background: #f8fafc;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  margin-top: 2rem;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.author-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   INTERACTIVE PUBLIC UTILITY CALCULATORS (High CTR AdSense Magnet)
+   ========================================================================== */
+.calc-box {
+  background: #ffffff;
+  border: 2px solid var(--primary-light);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  margin: 1.75rem 0;
+  box-shadow: var(--shadow-md);
+}
+
+.calc-header {
+  background: #eff6ff;
+  margin: -1.5rem -1.5rem 1.25rem -1.5rem;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #bfdbfe;
+  border-radius: 8px 8px 0 0;
+}
+
+.calc-header h3 {
+  margin: 0 !important;
+  color: var(--primary-dark);
+  font-size: 1.2rem;
+}
+
+.calc-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.calc-field label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+  color: var(--text-main);
+}
+
+.calc-field input,
+.calc-field select {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+.calc-btn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  width: 100%;
+  transition: background 0.15s ease;
+}
+
+.calc-btn:hover {
+  background: var(--accent-hover);
+}
+
+.calc-result {
+  display: none;
+  margin-top: 1.25rem;
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+  border-radius: 8px;
+  padding: 1.25rem;
+}
+
+.calc-result.active {
+  display: block;
+}
+
+.calc-result-total {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #15803d;
+  margin: 0.35rem 0;
+}
+
+/* ==========================================================================
+   SIDEBAR & STICKY ADSENSE
+   ========================================================================== */
+.widget-area {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.widget-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.widget-title {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--primary-dark);
+  margin-bottom: 0.85rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--primary-light);
+}
+
+.popular-utility-list {
+  list-style: none;
+}
+
+.popular-utility-list li {
+  border-bottom: 1px solid var(--border-color);
+  padding: 0.6rem 0;
+}
+
+.popular-utility-list li:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.popular-utility-list a {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.popular-utility-list a:hover {
+  color: var(--primary-light);
+}
+
+.sticky-sidebar-container {
+  position: sticky;
+  top: 85px;
+}
+
+/* ==========================================================================
+   FOOTER & MANDATORY LINKS + LGPD BANNER
+   ========================================================================== */
+.site-footer {
+  background: var(--primary-dark);
+  color: #cbd5e1;
+  padding: 3rem 0 2rem;
+  margin-top: 3rem;
+  font-size: 0.9rem;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.footer-col h4 {
+  color: #fff;
+  font-size: 1rem;
+  margin-bottom: 0.85rem;
+}
+
+.footer-links {
+  list-style: none;
+}
+
+.footer-links li {
+  margin-bottom: 0.5rem;
+}
+
+.footer-links a {
+  color: #cbd5e1;
+}
+
+.footer-links a:hover {
+  color: #fff;
+}
+
+.footer-disclaimer-box {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  font-size: 0.8rem;
+  color: #94a3b8;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+.footer-bottom {
+  text-align: center;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+/* LGPD Cookie Consent Bar (Required for Google AdSense Approval) */
+.lgpd-cookie-banner {
+  position: fixed;
+  bottom: 1rem;
+  left: 1rem;
+  right: 1rem;
+  max-width: 980px;
+  margin: 0 auto;
+  background: #0f172a;
+  color: #f8fafc;
+  padding: 1rem 1.25rem;
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  z-index: 9999;
+  font-size: 0.85rem;
+}
+
+.lgpd-cookie-banner.hidden {
+  display: none;
+}
+
+.lgpd-cookie-banner a {
+  color: #60a5fa;
+  text-decoration: underline;
+}
+
+.lgpd-btn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 0.55rem 1.2rem;
+  border-radius: 6px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   RESPONSIVE BREAKPOINTS
+   ========================================================================== */
+@media (max-width: 960px) {
+  .utility-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .site-main-grid {
+    grid-template-columns: 1fr;
+  }
+  .footer-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .header-inner {
+    flex-wrap: wrap;
+  }
+  .header-search {
+    order: 3;
+    max-width: 100%;
+    width: 100%;
+  }
+  .mobile-menu-toggle {
+    display: inline-block;
+  }
+  .utility-grid,
+  .posts-grid,
+  .calc-grid {
+    grid-template-columns: 1fr;
+  }
+  .single-article-card {
+    padding: 1.25rem;
+  }
+  .entry-title {
+    font-size: 1.5rem;
+  }
+  .lgpd-cookie-banner {
+    flex-direction: column;
+    text-align: center;
+  }
+}
