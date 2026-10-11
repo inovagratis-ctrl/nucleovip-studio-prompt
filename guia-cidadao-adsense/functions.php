@@ -273,6 +273,19 @@ function guia_cidadao_advanced_seo_head() {
 		global $post;
 		$title       = get_the_title() . ' — ' . $site_name;
 		$description = has_excerpt( $post->ID ) ? wp_strip_all_tags( get_the_excerpt( $post->ID ) ) : wp_trim_words( wp_strip_all_tags( strip_shortcodes( $post->post_content ) ), 26, '...' );
+		if ( is_page() ) {
+			$page_descriptions = array(
+				'calculadoras'            => 'Simuladores trabalhistas e fiscais gratuitos 2026: calcule 13º salário, rescisão CLT com multa do FGTS, férias remuneradas, seguro-desemprego e IRRF mensal.',
+				'calendario-de-beneficios'=> 'Calendário oficial de pagamentos 2026 do INSS, BPC/LOAS, Bolsa Família e Abono Salarial PIS/PASEP organizado pelo final do NIS ou número do benefício.',
+				'sobre-nos'               => 'Conheça o expediente editorial, a metodologia de revisão técnica, as fontes oficiais (Planalto, Gov.br, INSS e Caixa) e os princípios de transparência do Núcleo VIP.',
+				'contato'                 => 'Entre em contato com a Ouvidoria do Leitor e equipe editorial do Núcleo VIP — Guia do Cidadão para dúvidas, sugestões de pauta ou correções técnicas.',
+				'politica-de-privacidade' => 'Política de Privacidade, proteção de dados pessoais (LGPD — Lei nº 13.709/2018) e gerenciamento de cookies de publicidade do portal Núcleo VIP.',
+				'termos-de-uso'           => 'Termos e Condições de Uso do portal independente Núcleo VIP — Guia do Cidadão, limites de responsabilidade dos simuladores e diretrizes editoriais.',
+			);
+			if ( isset( $page_descriptions[ $post->post_name ] ) ) {
+				$description = $page_descriptions[ $post->post_name ];
+			}
+		}
 		if ( empty( $description ) ) {
 			$description = get_bloginfo( 'description' );
 		}
