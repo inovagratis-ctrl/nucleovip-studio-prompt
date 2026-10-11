@@ -12,62 +12,80 @@ get_header();
 <main id="primary" class="site-main container">
 
 	<?php if ( is_home() && ! is_paged() ) : ?>
-		<!-- 1. SEÇÃO DE FERRAMENTAS INTERATIVAS (Separada dos Artigos, com destaque para "Calcular meu 13º") -->
+		<?php
+		$hero_bg_id       = get_theme_mod( 'guia_cidadao_hero_bg_id' );
+		$hero_bg_url      = $hero_bg_id ? wp_get_attachment_image_url( $hero_bg_id, 'full' ) : '';
+		$icon_beneficios  = get_theme_mod( 'guia_cidadao_icon_beneficios' );
+		$icon_documentos  = get_theme_mod( 'guia_cidadao_icon_documentos' );
+		$icon_financas    = get_theme_mod( 'guia_cidadao_icon_financas' );
+		$icon_calculadoras = get_theme_mod( 'guia_cidadao_icon_calculadoras' );
+
+		$url_icon_beneficios   = $icon_beneficios ? wp_get_attachment_image_url( $icon_beneficios, 'full' ) : '';
+		$url_icon_documentos   = $icon_documentos ? wp_get_attachment_image_url( $icon_documentos, 'full' ) : '';
+		$url_icon_financas     = $icon_financas ? wp_get_attachment_image_url( $icon_financas, 'full' ) : '';
+		$url_icon_calculadoras = $icon_calculadoras ? wp_get_attachment_image_url( $icon_calculadoras, 'full' ) : '';
+		?>
+		<!-- 1. SEÇÃO DE FERRAMENTAS INTERATIVAS (Hero Cidadão + Atalhos das Calculadoras) -->
 		<section class="tools-spotlight-section" aria-label="Calculadoras Trabalhistas em Destaque">
-			<div class="tools-spotlight-grid">
-				<!-- Cartão Principal Evidente: Calcular meu 13º -->
-				<div class="featured-tool-card">
-					<span class="hero-badge-2026">✔ TABELA OFICIAL INSS 2026 (PORTARIA MPS/MF Nº 13/2026)</span>
+			<!-- Cartão Principal (Hero Cidadão 1920x1080 com espaço negativo à esquerda para HTML e pessoa visível à direita) -->
+			<div class="featured-tool-card<?php echo $hero_bg_url ? ' has-hero-banner' : ''; ?>" <?php echo $hero_bg_url ? 'style="--hero-bg-image: url(\'' . esc_url( $hero_bg_url ) . '\');"' : ''; ?>>
+				<div class="hero-content-left">
+					<span class="hero-badge-2026">✔ TABELA OFICIAL INSS 2026 • ISENÇÃO IRRF ATÉ R$ 5.000 (LEI Nº 15.270/2025)</span>
 					<h2>Calcular meu 13º Salário 2026</h2>
-					<p>Descubra na hora a estimativa da sua <strong>1ª parcela (até 30/11/2026)</strong> e da <strong>2ª parcela (até 18/12/2026)</strong>, já com cálculo progressivo de INSS e IRRF separado.</p>
+					<p>Orientação clara para o seu dia a dia: descubra na hora a estimativa da sua <strong>1ª parcela (até 30/11/2026)</strong> e da <strong>2ª parcela (até 18/12/2026)</strong>, já com cálculo progressivo de INSS e IRRF separado.</p>
 					<div class="hero-cta-group">
 						<a href="<?php echo esc_url( home_url( '/simulador-decimo-terceiro-salario-1-e-2-parcela/' ) ); ?>" class="hero-btn-primary">Acessar simulador de 13º &rarr;</a>
-						<a href="<?php echo esc_url( home_url( '/calculadoras/' ) ); ?>" class="hero-btn-secondary">Ver todas as 5 calculadoras</a>
+						<a href="<?php echo esc_url( home_url( '/calculadoras/' ) ); ?>" class="hero-btn-secondary">Acessar as calculadoras</a>
 					</div>
 				</div>
+				<?php if ( $hero_bg_url ) : ?>
+					<div class="hero-mobile-visual" aria-hidden="true">
+						<img src="<?php echo esc_url( $hero_bg_url ); ?>" alt="" loading="eager" decoding="async" />
+					</div>
+				<?php endif; ?>
+			</div>
 
-				<!-- Outras 4 Ferramentas Rápidas -->
-				<div class="quick-tools-list">
-					<a href="<?php echo esc_url( home_url( '/calculadora-rescisao-trabalhista-clt-multa-fgts/' ) ); ?>" class="quick-tool-item">
-						<span class="quick-tool-icon">📊</span>
-						<div>
-							<strong>Simulador de Rescisão CLT</strong>
-							<span>Saldo de salário, férias, 13º e multa FGTS</span>
-						</div>
-						<span class="quick-tool-arrow">&rarr;</span>
-					</a>
+			<!-- Outras 4 Ferramentas Rápidas -->
+			<div class="quick-tools-list">
+				<a href="<?php echo esc_url( home_url( '/calculadora-rescisao-trabalhista-clt-multa-fgts/' ) ); ?>" class="quick-tool-item">
+					<span class="quick-tool-icon" aria-hidden="true">📊</span>
+					<div>
+						<strong>Simulador de Rescisão CLT</strong>
+						<span>Saldo de salário, férias, 13º e multa FGTS</span>
+					</div>
+					<span class="quick-tool-arrow" aria-hidden="true">&rarr;</span>
+				</a>
 
-					<a href="<?php echo esc_url( home_url( '/calculadora-seguro-desemprego-valor-quantidade-parcelas/' ) ); ?>" class="quick-tool-item">
-						<span class="quick-tool-icon">🛡️</span>
-						<div>
-							<strong>Calculadora de Seguro-Desemprego</strong>
-							<span>Valor e quantidade de parcelas (3 a 5x)</span>
-						</div>
-						<span class="quick-tool-arrow">&rarr;</span>
-					</a>
+				<a href="<?php echo esc_url( home_url( '/calculadora-seguro-desemprego-valor-quantidade-parcelas/' ) ); ?>" class="quick-tool-item">
+					<span class="quick-tool-icon" aria-hidden="true">🛡️</span>
+					<div>
+						<strong>Calculadora de Seguro-Desemprego</strong>
+						<span>Valor e quantidade de parcelas (3 a 5x)</span>
+					</div>
+					<span class="quick-tool-arrow" aria-hidden="true">&rarr;</span>
+				</a>
 
-					<a href="<?php echo esc_url( home_url( '/calculadora-de-ferias-clt-terco-constitucional-abono/' ) ); ?>" class="quick-tool-item">
-						<span class="quick-tool-icon">🏖️</span>
-						<div>
-							<strong>Calculadora de Férias + 1/3</strong>
-							<span>Valor líquido e abono de 10 dias</span>
-						</div>
-						<span class="quick-tool-arrow">&rarr;</span>
-					</a>
+				<a href="<?php echo esc_url( home_url( '/calculadora-de-ferias-clt-terco-constitucional-abono/' ) ); ?>" class="quick-tool-item">
+					<span class="quick-tool-icon" aria-hidden="true">🏖️</span>
+					<div>
+						<strong>Calculadora de Férias + 1/3</strong>
+						<span>Valor líquido e abono de 10 dias</span>
+					</div>
+					<span class="quick-tool-arrow" aria-hidden="true">&rarr;</span>
+				</a>
 
-					<a href="<?php echo esc_url( home_url( '/calculadora-imposto-de-renda-mensal-irpf-salario-liquido/' ) ); ?>" class="quick-tool-item">
-						<span class="quick-tool-icon">🦁</span>
-						<div>
-							<strong>Simulador de IRPF e Salário Líquido</strong>
-							<span>Compare desconto simplificado vs legal</span>
-						</div>
-						<span class="quick-tool-arrow">&rarr;</span>
-					</a>
-				</div>
+				<a href="<?php echo esc_url( home_url( '/calculadora-imposto-de-renda-mensal-irpf-salario-liquido/' ) ); ?>" class="quick-tool-item">
+					<span class="quick-tool-icon" aria-hidden="true">🦁</span>
+					<div>
+						<strong>Simulador de IRPF e Salário Líquido</strong>
+						<span>Isenção até R$ 5.000 (Lei nº 15.270/2025)</span>
+					</div>
+					<span class="quick-tool-arrow" aria-hidden="true">&rarr;</span>
+				</a>
 			</div>
 		</section>
 
-		<!-- 2. NAVEGAÇÃO POR ASSUNTO -->
+		<!-- 2. NAVEGAÇÃO POR ASSUNTO (Ícones oficiais do kit ao lado do rótulo visível, com alt="") -->
 		<section class="utility-hub-section" aria-label="Categorias de Utilidade Pública">
 			<div class="section-header">
 				<h2 class="section-title">Consultas por Categoria</h2>
@@ -75,29 +93,61 @@ get_header();
 
 			<div class="utility-grid">
 				<a href="<?php echo esc_url( home_url( '/category/beneficios-trabalhador/' ) ); ?>" class="utility-card">
-					<div class="utility-icon blue">📋</div>
-					<h3>Benefícios & Trabalhador</h3>
+					<div class="utility-card-header">
+						<div class="utility-icon">
+							<?php if ( $url_icon_beneficios ) : ?>
+								<img src="<?php echo esc_url( $url_icon_beneficios ); ?>" alt="" width="40" height="40" loading="lazy" decoding="async" />
+							<?php else : ?>
+								<span aria-hidden="true">📋</span>
+							<?php endif; ?>
+						</div>
+						<h3>Benefícios & Trabalhador</h3>
+					</div>
 					<p>INSS, FGTS, Bolsa Família, PIS/PASEP, BPC/LOAS e Seguro-Desemprego.</p>
 					<span class="utility-card-cta">Ver guias de benefícios &rarr;</span>
 				</a>
 
 				<a href="<?php echo esc_url( home_url( '/category/documentos-gov-br/' ) ); ?>" class="utility-card">
-					<div class="utility-icon green">🪪</div>
-					<h3>Documentos & Gov.br</h3>
+					<div class="utility-card-header">
+						<div class="utility-icon">
+							<?php if ( $url_icon_documentos ) : ?>
+								<img src="<?php echo esc_url( $url_icon_documentos ); ?>" alt="" width="40" height="40" loading="lazy" decoding="async" />
+							<?php else : ?>
+								<span aria-hidden="true">🪪</span>
+							<?php endif; ?>
+						</div>
+						<h3>Documentos & Gov.br</h3>
+					</div>
 					<p>Nova Carteira de Identidade (CIN), CNH Digital, CPF, Certidões e MEI.</p>
 					<span class="utility-card-cta">Ver guias de documentos &rarr;</span>
 				</a>
 
 				<a href="<?php echo esc_url( home_url( '/category/contas-financas/' ) ); ?>" class="utility-card">
-					<div class="utility-icon amber">💳</div>
-					<h3>Contas & Finanças</h3>
-					<p>Valores a Receber (BC), Tarifa Social de Energia e Restituição do IRPF.</p>
+					<div class="utility-card-header">
+						<div class="utility-icon">
+							<?php if ( $url_icon_financas ) : ?>
+								<img src="<?php echo esc_url( $url_icon_financas ); ?>" alt="" width="40" height="40" loading="lazy" decoding="async" />
+							<?php else : ?>
+								<span aria-hidden="true">💳</span>
+							<?php endif; ?>
+						</div>
+						<h3>Contas & Finanças</h3>
+					</div>
+					<p>Valores a Receber (BC), Tarifa Social de Energia, Câmbio e Restituição do IRPF.</p>
 					<span class="utility-card-cta">Ver guias financeiros &rarr;</span>
 				</a>
 
 				<a href="<?php echo esc_url( home_url( '/category/calculadoras-simuladores/' ) ); ?>" class="utility-card">
-					<div class="utility-icon purple">🧮</div>
-					<h3>Calculadoras CLT 2026</h3>
+					<div class="utility-card-header">
+						<div class="utility-icon">
+							<?php if ( $url_icon_calculadoras ) : ?>
+								<img src="<?php echo esc_url( $url_icon_calculadoras ); ?>" alt="" width="40" height="40" loading="lazy" decoding="async" />
+							<?php else : ?>
+								<span aria-hidden="true">🧮</span>
+							<?php endif; ?>
+						</div>
+						<h3>Calculadoras & Simuladores</h3>
+					</div>
 					<p>Simuladores gratuitos com memória de cálculo oficial passo a passo.</p>
 					<span class="utility-card-cta">Abrir simuladores &rarr;</span>
 				</a>

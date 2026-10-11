@@ -29,15 +29,33 @@
 <header class="site-header" role="banner">
 	<div class="container header-inner">
 		<div class="site-branding">
-			<div class="site-logo-icon" aria-hidden="true">BR</div>
-			<div>
+			<?php
+			$custom_logo_id  = get_theme_mod( 'custom_logo' );
+			$custom_logo_url = $custom_logo_id ? wp_get_attachment_image_url( $custom_logo_id, 'full' ) : '';
+			?>
+			<?php if ( $custom_logo_url ) : ?>
 				<?php if ( is_front_page() && is_home() ) : ?>
-					<h1 class="site-title"><a href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home"><?php bloginfo( 'name' ); ?></a></h1>
+					<h1 class="site-title-logo">
+						<a href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home" class="site-logo-link">
+							<img src="<?php echo esc_url( $custom_logo_url ); ?>" alt="<?php echo esc_attr( get_bloginfo( 'name' ) . ' — ' . get_bloginfo( 'description' ) ); ?>" class="site-logo-horizontal" width="320" height="70" decoding="async" />
+						</a>
+					</h1>
 				<?php else : ?>
-					<p class="site-title"><a href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home"><?php bloginfo( 'name' ); ?></a></p>
+					<a href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home" class="site-logo-link">
+						<img src="<?php echo esc_url( $custom_logo_url ); ?>" alt="<?php echo esc_attr( get_bloginfo( 'name' ) . ' — ' . get_bloginfo( 'description' ) ); ?>" class="site-logo-horizontal" width="320" height="70" decoding="async" />
+					</a>
 				<?php endif; ?>
-				<p class="site-description"><?php bloginfo( 'description' ); ?></p>
-			</div>
+			<?php else : ?>
+				<div class="site-logo-icon" aria-hidden="true">NV</div>
+				<div>
+					<?php if ( is_front_page() && is_home() ) : ?>
+						<h1 class="site-title"><a href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home"><?php bloginfo( 'name' ); ?></a></h1>
+					<?php else : ?>
+						<p class="site-title"><a href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home"><?php bloginfo( 'name' ); ?></a></p>
+					<?php endif; ?>
+					<p class="site-description"><?php bloginfo( 'description' ); ?></p>
+				</div>
+			<?php endif; ?>
 		</div>
 
 		<button class="mobile-menu-toggle" id="mobile-menu-btn" aria-label="Abrir Menu">☰ Categorias</button>

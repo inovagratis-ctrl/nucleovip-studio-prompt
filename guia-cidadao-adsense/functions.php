@@ -15,6 +15,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 function guia_cidadao_setup() {
 	add_theme_support( 'title-tag' );
 	add_theme_support( 'post-thumbnails' );
+	add_theme_support( 'custom-logo', array(
+		'height'      => 210,
+		'width'       => 960,
+		'flex-height' => true,
+		'flex-width'  => true,
+	) );
 	add_theme_support( 'html5', array( 'search-form', 'comment-form', 'comment-list', 'gallery', 'caption', 'style', 'script' ) );
 
 	register_nav_menus( array(
@@ -35,7 +41,7 @@ function guia_cidadao_clean_head() {
 add_action( 'init', 'guia_cidadao_clean_head' );
 
 function guia_cidadao_scripts() {
-	wp_enqueue_style( 'guia-cidadao-style', get_stylesheet_uri(), array(), '2.2.0' );
+	wp_enqueue_style( 'guia-cidadao-style', get_stylesheet_uri(), array(), '2.3.0' );
 	wp_enqueue_script( 'guia-cidadao-main', get_template_directory_uri() . '/assets/js/main.js', array(), '2.2.0', true );
 }
 add_action( 'wp_enqueue_scripts', 'guia_cidadao_scripts' );
@@ -980,6 +986,55 @@ function guia_cidadao_generate_post_thumbnail( $post_id ) {
 	}
 }
 add_action( 'save_post', 'guia_cidadao_generate_post_thumbnail', 20, 1 );
+
+/**
+ * 9. INFOGRÁFICO RESPONSIVO E ACESSÍVEL: "CONSULTE COM SEGURANÇA" (KIT VISUAL NÚCLEO VIP)
+ */
+function guia_cidadao_shortcode_infografico_seguranca() {
+	ob_start();
+	?>
+	<aside class="nv-consulta-segura" aria-label="Infográfico com três recomendações para consultar serviços públicos digitais com segurança">
+		<div class="nv-cs-top">
+			<div class="nv-cs-brand">
+				<span class="nv-cs-badge" aria-hidden="true">NV</span>
+				<span>NÚCLEO VIP · GUIA DO CIDADÃO</span>
+			</div>
+			<div class="nv-cs-hero">
+				<span class="nv-cs-label">ORIENTAÇÃO AO CIDADÃO</span>
+				<h3 class="nv-cs-title">Consulte com segurança</h3>
+				<p class="nv-cs-subtitle">Use nossos guias para encontrar o caminho — e confirme informações e acessos nos canais oficiais.</p>
+			</div>
+		</div>
+		<div class="nv-cs-steps" role="list" aria-label="Três passos para uma consulta segura">
+			<div class="nv-cs-card" role="listitem">
+				<div class="nv-cs-num" aria-hidden="true">01</div>
+				<h4>Encontre o serviço</h4>
+				<p>Localize o guia relacionado ao benefício, documento ou consulta que você precisa.</p>
+			</div>
+			<div class="nv-cs-card" role="listitem">
+				<div class="nv-cs-num" aria-hidden="true">02</div>
+				<h4>Confira a fonte</h4>
+				<p>Use os links oficiais indicados no guia e confira o endereço do site antes de entrar.</p>
+			</div>
+			<div class="nv-cs-card" role="listitem">
+				<div class="nv-cs-num" aria-hidden="true">03</div>
+				<h4>Proteja seus dados</h4>
+				<p>Não informe senhas ou códigos de acesso em formulários de terceiros. Não pague para “liberar” uma consulta oficial.</p>
+			</div>
+		</div>
+		<div class="nv-cs-rule">
+			<strong>Importante:</strong> o Núcleo VIP é um portal independente. Não representa órgãos públicos nem solicita senha Gov.br, dados bancários ou pagamento para liberar benefícios.
+		</div>
+		<div class="nv-cs-footer">
+			<span class="nv-cs-footbrand">Núcleo VIP — Guia do Cidadão</span>
+			<span>Informação independente · Consulte sempre os canais oficiais</span>
+		</div>
+	</aside>
+	<?php
+	return ob_get_clean();
+}
+add_shortcode( 'infografico_consulta_segura', 'guia_cidadao_shortcode_infografico_seguranca' );
+
 
 
 
