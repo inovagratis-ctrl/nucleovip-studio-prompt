@@ -1,0 +1,5 @@
+{
+  "installCommand": "mkdir -p node_modules/.bin && cp vite-shim.cjs node_modules/.bin/vite && chmod +x node_modules/.bin/vite vite-shim.cjs",
+  "buildCommand": "node vite-shim.cjs",
+  "outputDirectory": "dist"
+}
