@@ -281,6 +281,11 @@ function guia_cidadao_advanced_seo_head() {
 	echo '<meta name="description" content="' . esc_attr( $description ) . '" />' . "\n";
 	echo '<link rel="canonical" href="' . esc_url( $canonical ) . '" />' . "\n";
 
+	$thumb_url = '';
+	if ( is_singular() && has_post_thumbnail() ) {
+		$thumb_url = get_the_post_thumbnail_url( get_the_ID(), 'full' );
+	}
+
 	// Open Graph (WhatsApp, Facebook, Telegram, Discover)
 	echo '<meta property="og:locale" content="pt_BR" />' . "\n";
 	echo '<meta property="og:type" content="' . esc_attr( $og_type ) . '" />' . "\n";
@@ -288,11 +293,19 @@ function guia_cidadao_advanced_seo_head() {
 	echo '<meta property="og:description" content="' . esc_attr( $description ) . '" />' . "\n";
 	echo '<meta property="og:url" content="' . esc_url( $canonical ) . '" />' . "\n";
 	echo '<meta property="og:site_name" content="' . esc_attr( $site_name ) . '" />' . "\n";
+	if ( ! empty( $thumb_url ) ) {
+		echo '<meta property="og:image" content="' . esc_url( $thumb_url ) . '" />' . "\n";
+		echo '<meta property="og:image:width" content="1200" />' . "\n";
+		echo '<meta property="og:image:height" content="675" />' . "\n";
+	}
 
 	// Twitter Card
 	echo '<meta name="twitter:card" content="summary_large_image" />' . "\n";
 	echo '<meta name="twitter:title" content="' . esc_attr( $title ) . '" />' . "\n";
 	echo '<meta name="twitter:description" content="' . esc_attr( $description ) . '" />' . "\n";
+	if ( ! empty( $thumb_url ) ) {
+		echo '<meta name="twitter:image" content="' . esc_url( $thumb_url ) . '" />' . "\n";
+	}
 
 	// Schema.org JSON-LD (@graph completo: Organization + WebSite + NewsArticle / WebApplication)
 	$graph = array(
@@ -318,7 +331,7 @@ function guia_cidadao_advanced_seo_head() {
 	);
 
 	if ( is_single() ) {
-		$graph[] = array(
+		$article_schema = array(
 			'@type'            => 'NewsArticle',
 			'@id'              => $canonical . '#article',
 			'headline'         => get_the_title(),
@@ -329,6 +342,10 @@ function guia_cidadao_advanced_seo_head() {
 			'author'           => array( '@id' => $site_url . '#organization' ),
 			'publisher'        => array( '@id' => $site_url . '#organization' ),
 		);
+		if ( ! empty( $thumb_url ) ) {
+			$article_schema['image'] = array( $thumb_url );
+		}
+		$graph[] = $article_schema;
 	}
 
 	if ( is_page( 'calculadoras' ) || ( is_singular() && has_shortcode( get_post()->post_content, 'calculadora_seguro_desemprego' ) ) || ( is_singular() && has_shortcode( get_post()->post_content, 'calculadora_irpf' ) ) ) {
@@ -744,3 +761,152 @@ function guia_cidadao_render_admin_central() {
 	</div>
 	<?php
 }
+
+/**
+ * 8. GERADOR AUTOMÁTICO DE IMAGENS DESTACADAS HD (1200x675 - PADRÃO GOOGLE DISCOVER 16:9)
+ * Gera capas editoriais exclusivas com a identidade visual da categoria para todos os artigos!
+ */
+function guia_cidadao_generate_post_thumbnail( $post_id ) {
+	if ( wp_is_post_revision( $post_id ) || 'post' !== get_post_type( $post_id ) ) {
+		return;
+	}
+	if ( has_post_thumbnail( $post_id ) ) {
+		return;
+	}
+	if ( ! function_exists( 'imagecreatetruecolor' ) || ! function_exists( 'imagettftext' ) ) {
+		return;
+	}
+
+	$font_bold = '/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf';
+	$font_reg  = '/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf';
+	if ( ! file_exists( $font_bold ) ) {
+		return;
+	}
+	if ( ! file_exists( $font_reg ) ) {
+		$font_reg = $font_bold;
+	}
+
+	$title = html_entity_decode( get_the_title( $post_id ), ENT_QUOTES, 'UTF-8' );
+	if ( empty( $title ) || 'Auto Draft' === $title ) {
+		return;
+	}
+
+	$categories = get_the_category( $post_id );
+	$cat_name   = ! empty( $categories ) ? mb_strtoupper( $categories[0]->name, 'UTF-8' ) : 'UTILIDADE PÚBLICA';
+	$cat_slug   = ! empty( $categories ) ? $categories[0]->slug : 'geral';
+
+	$w = 1200;
+	$h = 675;
+	$im = imagecreatetruecolor( $w, $h );
+
+	// Paleta de cores por categoria (Estilo Editorial Moderno / Gov.br)
+	if ( 'beneficios-trabalhador' === $cat_slug ) {
+		$bg1 = array( 10, 42, 94 );     // Azul Profundo Cívico
+		$bg2 = array( 19, 81, 180 );    // Azul Gov
+		$acc = array( 34, 197, 94 );    // Verde Esmeralda
+	} elseif ( 'documentos-gov-br' === $cat_slug ) {
+		$bg1 = array( 6, 78, 59 );      // Verde Institucional Escuro
+		$bg2 = array( 22, 136, 33 );    // Verde Gov
+		$acc = array( 250, 204, 21 );   // Amarelo Ouro
+	} elseif ( 'contas-financas' === $cat_slug ) {
+		$bg1 = array( 15, 23, 42 );     // Slate Finanças
+		$bg2 = array( 30, 58, 138 );    // Azul Finanças
+		$acc = array( 245, 158, 11 );   // Âmbar Destaque
+	} else {
+		$bg1 = array( 49, 16, 104 );    // Roxo Calculadoras
+		$bg2 = array( 88, 28, 135 );    // Violeta
+		$acc = array( 56, 189, 248 );   // Ciano
+	}
+
+	// Renderiza gradiente suave
+	for ( $y = 0; $y < $h; $y++ ) {
+		$r = (int) ( $bg1[0] + ( $bg2[0] - $bg1[0] ) * ( $y / $h ) );
+		$g = (int) ( $bg1[1] + ( $bg2[1] - $bg1[1] ) * ( $y / $h ) );
+		$b = (int) ( $bg1[2] + ( $bg2[2] - $bg1[2] ) * ( $y / $h ) );
+		$line_col = imagecolorallocate( $im, $r, $g, $b );
+		imageline( $im, 0, $y, $w, $y, $line_col );
+	}
+
+	// Círculos decorativos translúcidos modernos à direita
+	imagealphablending( $im, true );
+	$circle_col1 = imagecolorallocatealpha( $im, 255, 255, 255, 117 );
+	$circle_col2 = imagecolorallocatealpha( $im, $acc[0], $acc[1], $acc[2], 108 );
+	imagefilledellipse( $im, 1080, 140, 480, 480, $circle_col1 );
+	imagefilledellipse( $im, 1050, 550, 360, 360, $circle_col2 );
+
+	// Barra lateral de destaque
+	$accent_col = imagecolorallocate( $im, $acc[0], $acc[1], $acc[2] );
+	$white      = imagecolorallocate( $im, 255, 255, 255 );
+	$light_gray = imagecolorallocate( $im, 219, 234, 254 );
+	$dark_bar   = imagecolorallocatealpha( $im, 7, 18, 38, 35 );
+
+	imagefilledrectangle( $im, 0, 0, 18, $h, $accent_col );
+
+	// Badge Superior da Categoria
+	imagefilledrectangle( $im, 75, 68, 75 + ( strlen( $cat_name ) * 16 ) + 40, 118, $accent_col );
+	$badge_text_col = ( 'documentos-gov-br' === $cat_slug || 'contas-financas' === $cat_slug || 'calculadoras-simuladores' === $cat_slug )
+		? imagecolorallocate( $im, 15, 23, 42 )
+		: $white;
+	imagettftext( $im, 18, 0, 95, 101, $badge_text_col, $font_bold, $cat_name );
+
+	// Quebra automática do Título em até 4 linhas legíveis no Google Discover e Cards
+	$words = explode( ' ', $title );
+	$lines = array();
+	$curr  = '';
+	foreach ( $words as $word ) {
+		$test = empty( $curr ) ? $word : $curr . ' ' . $word;
+		if ( mb_strlen( $test, 'UTF-8' ) > 34 && ! empty( $curr ) ) {
+			$lines[] = $curr;
+			$curr    = $word;
+		} else {
+			$curr = $test;
+		}
+	}
+	if ( ! empty( $curr ) ) {
+		$lines[] = $curr;
+	}
+	$lines = array_slice( $lines, 0, 4 );
+
+	$y_text = 210;
+	foreach ( $lines as $line ) {
+		// Sombra sutil do texto
+		$shadow = imagecolorallocatealpha( $im, 0, 0, 0, 75 );
+		imagettftext( $im, 37, 0, 78, $y_text + 3, $shadow, $font_bold, $line );
+		imagettftext( $im, 37, 0, 75, $y_text, $white, $font_bold, $line );
+		$y_text += 68;
+	}
+
+	// Rodapé de Verificação Editorial
+	imagefilledrectangle( $im, 18, $h - 90, $w, $h, $dark_bar );
+	imagettftext( $im, 18, 0, 75, $h - 38, $light_gray, $font_reg, 'NÚCLEO VIP  •  GUIA PASSO A PASSO VERIFICADO  •  FONTES OFICIAIS GOV.BR' );
+
+	$upload_dir = wp_upload_dir();
+	$filename   = 'capa-guia-' . $post_id . '-' . time() . '.png';
+	$filepath   = trailingslashit( $upload_dir['path'] ) . $filename;
+
+	imagepng( $im, $filepath, 8 );
+	imagedestroy( $im );
+
+	if ( ! file_exists( $filepath ) ) {
+		return;
+	}
+
+	$attachment = array(
+		'guid'           => trailingslashit( $upload_dir['url'] ) . $filename,
+		'post_mime_type' => 'image/png',
+		'post_title'     => $title,
+		'post_content'   => '',
+		'post_status'    => 'inherit',
+	);
+
+	$attach_id = wp_insert_attachment( $attachment, $filepath, $post_id );
+	if ( ! is_wp_error( $attach_id ) && $attach_id ) {
+		require_once ABSPATH . 'wp-admin/includes/image.php';
+		$attach_data = wp_generate_attachment_metadata( $attach_id, $filepath );
+		wp_update_attachment_metadata( $attach_id, $attach_data );
+		set_post_thumbnail( $post_id, $attach_id );
+		update_post_meta( $attach_id, '_wp_attachment_image_alt', $title );
+	}
+}
+add_action( 'save_post', 'guia_cidadao_generate_post_thumbnail', 20, 1 );
+

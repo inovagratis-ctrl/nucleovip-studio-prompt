@@ -36,6 +36,12 @@ get_header();
 							<span>Por <strong>Redação <?php bloginfo( 'name' ); ?></strong></span>
 							<a href="https://api.whatsapp.com/send?text=<?php echo esc_attr( $share_text ); ?>" target="_blank" rel="noopener nofollow" style="margin-left:auto; background:#16a34a; color:#fff; padding:0.25rem 0.7rem; border-radius:6px; font-weight:700; font-size:0.78rem; text-decoration:none;">📲 Compartilhar no WhatsApp</a>
 						</div>
+
+						<?php if ( has_post_thumbnail() ) : ?>
+							<figure class="single-post-thumb" style="margin: 0 0 1.5rem 0; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(15,23,42,0.08);">
+								<?php the_post_thumbnail( 'large', array( 'style' => 'width:100%; height:auto; display:block;' ) ); ?>
+							</figure>
+						<?php endif; ?>
 					</header>
 
 					<div class="entry-content">
@@ -75,6 +81,11 @@ get_header();
 								$related->the_post();
 								?>
 								<article class="post-card">
+									<?php if ( has_post_thumbnail() ) : ?>
+										<a href="<?php the_permalink(); ?>" class="post-card-thumb" aria-hidden="true" tabindex="-1">
+											<?php the_post_thumbnail( 'medium_large' ); ?>
+										</a>
+									<?php endif; ?>
 									<div class="post-card-body">
 										<span class="post-category-badge"><?php echo esc_html( $cat_name ); ?></span>
 										<h3 class="post-card-title"><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h3>
