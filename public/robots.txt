@@ -6,6 +6,9 @@ Allow: /
 Disallow: /wp-admin/
 Allow: /wp-admin/admin-ajax.php
 
+User-agent: Bingbot
+Allow: /
+
 User-agent: *
 Allow: /
 Disallow: /wp-admin/
