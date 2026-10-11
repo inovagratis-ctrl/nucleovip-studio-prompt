@@ -1,8 +1,10 @@
 <aside id="secondary" class="widget-area" role="complementary" aria-label="Barra Lateral">
-	<!-- Widget 1: Acesso Rápido às Calculadoras (Aumenta Retenção e RPM AdSense) -->
+	<!-- Widget 1: Acesso Rápido às 5 Calculadoras (Aumenta Retenção e RPM AdSense) -->
 	<div class="widget-card">
-		<h3 class="widget-title">🧮 Ferramentas do Trabalhador</h3>
+		<h3 class="widget-title">🧮 Calculadoras do Cidadão</h3>
 		<ul class="popular-utility-list">
+			<li><a href="<?php echo esc_url( home_url( '/calculadoras/#calc-seguro-desemprego' ) ); ?>"><span>🛡️</span> Calculadora de Seguro-Desemprego</a></li>
+			<li><a href="<?php echo esc_url( home_url( '/calculadoras/#calc-irpf' ) ); ?>"><span>🦁</span> Calculadora de Imposto de Renda (IRPF)</a></li>
 			<li><a href="<?php echo esc_url( home_url( '/calculadoras/#calc-rescisao' ) ); ?>"><span>📊</span> Simulador de Rescisão CLT + 40%</a></li>
 			<li><a href="<?php echo esc_url( home_url( '/calculadoras/#calc-ferias' ) ); ?>"><span>🏖️</span> Calculadora de Férias + 1/3</a></li>
 			<li><a href="<?php echo esc_url( home_url( '/calculadoras/#calc-decimo' ) ); ?>"><span>💰</span> Cálculo do 13º Salário</a></li>

@@ -8,21 +8,25 @@ get_header();
 	<div class="site-main-grid">
 		<div class="content-area">
 			<article class="single-article-card">
-				<span class="post-category-badge">Ferramentas Gratuitas CLT</span>
-				<h1 class="entry-title">Calculadoras Trabalhistas e Simuladores do Cidadão</h1>
+				<span class="post-category-badge">5 Ferramentas Oficiais Gratuitas</span>
+				<h1 class="entry-title">Calculadoras do Cidadão: Seguro-Desemprego, Imposto de Renda, Rescisão, Férias e 13º Salário</h1>
 				<div class="entry-meta-bar">
-					<span class="updated-badge">✔ Tabelas INSS, FGTS e CLT Atualizadas</span>
-					<span>Cálculo instantâneo e 100% gratuito</span>
+					<span class="updated-badge">✔ Tabelas Receita Federal, MTE, INSS e CLT Atualizadas</span>
+					<span>Simulação instantânea e 100% gratuita</span>
 				</div>
 
 				<div class="entry-content">
-					<p>Utilize nossos simuladores gratuitos abaixo para calcular rapidamente o valor estimado das suas <strong>Férias Remuneradas (com 1/3 constitucional)</strong>, <strong>Acerto de Rescisão Trabalhista CLT (com multa de 40% do FGTS)</strong> e <strong>13º Salário</strong>.</p>
+					<p>Utilize nossas <strong>5 calculadoras oficiais e gratuitas</strong> abaixo para simular na hora o valor e a quantidade de parcelas do seu <strong>Seguro-Desemprego</strong>, o desconto de <strong>Imposto de Renda Mensal (IRPF e Salário Líquido)</strong>, o acerto de <strong>Rescisão Trabalhista CLT (com multa do FGTS)</strong>, <strong>Férias Remuneradas + 1/3</strong> e <strong>13º Salário</strong>.</p>
 
 					<?php echo guia_cidadao_render_ad( 'adsense_p2_code', 'ad-in-article', 'Anúncio Acima das Calculadoras (Altíssimo CTR)' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 
-					<?php echo do_shortcode( '[calculadora_rescisao]' ); ?>
+					<?php echo do_shortcode( '[calculadora_seguro_desemprego]' ); ?>
+
+					<?php echo do_shortcode( '[calculadora_irpf]' ); ?>
 
 					<?php echo guia_cidadao_render_ad( 'adsense_p5_code', 'ad-in-article', 'Anúncio Entre Calculadoras (Meio da Página)' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+
+					<?php echo do_shortcode( '[calculadora_rescisao]' ); ?>
 
 					<?php echo do_shortcode( '[calculadora_ferias]' ); ?>
 

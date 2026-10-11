@@ -1,7 +1,8 @@
 <?php
 /**
  * Guia do Cidadão Pro - Functions and Definitions
- * Otimizado para Core Web Vitals (PageSpeed 99+), Google AdSense e Fontes Oficiais de Utilidade Pública.
+ * Otimizado para Core Web Vitals (PageSpeed 99+), SEO Avançado (Sitemap XML, Robots.txt, Schema.org, OpenGraph),
+ * Google AdSense e 5 Calculadoras Oficiais de Utilidade Pública.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -23,7 +24,6 @@ function guia_cidadao_setup() {
 }
 add_action( 'after_setup_theme', 'guia_cidadao_setup' );
 
-// Remove scripts desnecessários do WordPress para garantir nota máxima no Google PageSpeed
 function guia_cidadao_clean_head() {
 	remove_action( 'wp_head', 'print_emoji_detection_script', 7 );
 	remove_action( 'wp_print_styles', 'print_emoji_styles' );
@@ -35,8 +35,8 @@ function guia_cidadao_clean_head() {
 add_action( 'init', 'guia_cidadao_clean_head' );
 
 function guia_cidadao_scripts() {
-	wp_enqueue_style( 'guia-cidadao-style', get_stylesheet_uri(), array(), '1.0.0' );
-	wp_enqueue_script( 'guia-cidadao-main', get_template_directory_uri() . '/assets/js/main.js', array(), '1.0.0', true );
+	wp_enqueue_style( 'guia-cidadao-style', get_stylesheet_uri(), array(), '1.1.0' );
+	wp_enqueue_script( 'guia-cidadao-main', get_template_directory_uri() . '/assets/js/main.js', array(), '1.1.0', true );
 }
 add_action( 'wp_enqueue_scripts', 'guia_cidadao_scripts' );
 
@@ -73,7 +73,7 @@ function guia_cidadao_customize_register( $wp_customize ) {
 	}
 
 	$wp_customize->add_setting( 'adsense_show_placeholders', array(
-		'default'           => true,
+		'default'           => false,
 		'sanitize_callback' => 'rest_sanitize_boolean',
 	) );
 	$wp_customize->add_control( 'adsense_show_placeholders', array(
@@ -84,7 +84,6 @@ function guia_cidadao_customize_register( $wp_customize ) {
 }
 add_action( 'customize_register', 'guia_cidadao_customize_register' );
 
-// Insere script global do AdSense no <head> se o Publisher ID estiver preenchido
 function guia_cidadao_head_adsense() {
 	$pub_id = trim( get_theme_mod( 'adsense_pub_id', '' ) );
 	if ( ! empty( $pub_id ) ) {
@@ -93,23 +92,111 @@ function guia_cidadao_head_adsense() {
 }
 add_action( 'wp_head', 'guia_cidadao_head_adsense', 5 );
 
-// Entrega o arquivo /ads.txt virtualmente sem precisar de FTP
-function guia_cidadao_serve_ads_txt() {
-	if ( isset( $_SERVER['REQUEST_URI'] ) && $_SERVER['REQUEST_URI'] === '/ads.txt' ) {
+/**
+ * 3. SITEMAP.XML DINÂMICO, ROBOTS.TXT OTIMIZADO PARA ADSENSE E ADS.TXT VIRTUAL
+ */
+function guia_cidadao_virtual_seo_files() {
+	if ( ! isset( $_SERVER['REQUEST_URI'] ) ) {
+		return;
+	}
+	$uri = strtok( $_SERVER['REQUEST_URI'], '?' );
+
+	// 3.1. Entrega /ads.txt
+	if ( '/ads.txt' === $uri ) {
 		$ads_txt = trim( get_theme_mod( 'adsense_ads_txt', '' ) );
+		header( 'Content-Type: text/plain; charset=utf-8' );
 		if ( ! empty( $ads_txt ) ) {
-			header( 'Content-Type: text/plain; charset=utf-8' );
-			echo esc_html( $ads_txt );
-			exit;
+			echo esc_html( $ads_txt ) . "\n";
+		} else {
+			echo "# Arquivo ads.txt pronto para Google AdSense - Configure seu ID em Aparencia > Personalizar > Google AdSense\n";
 		}
+		exit;
+	}
+
+	// 3.2. Entrega /robots.txt otimizado para Googlebot, Google Discover e Mediapartners-Google (AdSense)
+	if ( '/robots.txt' === $uri ) {
+		header( 'Content-Type: text/plain; charset=utf-8' );
+		$site_url = home_url( '/' );
+		echo "User-agent: Mediapartners-Google\n";
+		echo "Allow: /\n\n";
+		echo "User-agent: Googlebot\n";
+		echo "Allow: /\n";
+		echo "Disallow: /wp-admin/\n";
+		echo "Allow: /wp-admin/admin-ajax.php\n\n";
+		echo "User-agent: *\n";
+		echo "Allow: /\n";
+		echo "Disallow: /wp-admin/\n";
+		echo "Allow: /wp-admin/admin-ajax.php\n\n";
+		echo "Sitemap: " . esc_url( $site_url . 'sitemap.xml' ) . "\n";
+		echo "Sitemap: " . esc_url( $site_url . 'wp-sitemap.xml' ) . "\n";
+		exit;
+	}
+
+	// 3.3. Entrega /sitemap.xml completo em tempo real (Home + Categorias + Páginas + Artigos)
+	if ( '/sitemap.xml' === $uri ) {
+		header( 'Content-Type: application/xml; charset=utf-8' );
+		header( 'X-Robots-Tag: noindex, follow', true );
+		echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+		?>
+		<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+			<url>
+				<loc><?php echo esc_url( home_url( '/' ) ); ?></loc>
+				<lastmod><?php echo esc_html( gmdate( 'c' ) ); ?></lastmod>
+				<changefreq>daily</changefreq>
+				<priority>1.0</priority>
+			</url>
+			<?php
+			$categories = get_categories( array( 'hide_empty' => false ) );
+			foreach ( $categories as $cat ) :
+				?>
+				<url>
+					<loc><?php echo esc_url( get_category_link( $cat->term_id ) ); ?></loc>
+					<lastmod><?php echo esc_html( gmdate( 'c' ) ); ?></lastmod>
+					<changefreq>daily</changefreq>
+					<priority>0.8</priority>
+				</url>
+			<?php endforeach; ?>
+
+			<?php
+			$pages = get_pages( array( 'post_status' => 'publish' ) );
+			foreach ( $pages as $p ) :
+				?>
+				<url>
+					<loc><?php echo esc_url( get_permalink( $p->ID ) ); ?></loc>
+					<lastmod><?php echo esc_html( get_the_modified_date( 'c', $p->ID ) ); ?></lastmod>
+					<changefreq>weekly</changefreq>
+					<priority>0.8</priority>
+				</url>
+			<?php endforeach; ?>
+
+			<?php
+			$posts = get_posts( array(
+				'numberposts' => 500,
+				'post_status' => 'publish',
+				'post_type'   => 'post',
+			) );
+			foreach ( $posts as $post_item ) :
+				?>
+				<url>
+					<loc><?php echo esc_url( get_permalink( $post_item->ID ) ); ?></loc>
+					<lastmod><?php echo esc_html( get_the_modified_date( 'c', $post_item->ID ) ); ?></lastmod>
+					<changefreq>weekly</changefreq>
+					<priority>0.9</priority>
+				</url>
+			<?php endforeach; ?>
+		</urlset>
+		<?php
+		exit;
 	}
 }
-add_action( 'init', 'guia_cidadao_serve_ads_txt', 1 );
+add_action( 'init', 'guia_cidadao_virtual_seo_files', 1 );
 
-// Função auxiliar para renderizar espaços de AdSense com proteção anti-CLS
+/**
+ * 4. RENDERIZAÇÃO E INJEÇÃO AUTOMÁTICA DE ANÚNCIOS ADSENSE
+ */
 function guia_cidadao_render_ad( $slot_key, $class = 'ad-in-article', $label_demo = 'Espaço AdSense Responsivo (Alto CTR)' ) {
 	$code = trim( get_theme_mod( $slot_key, '' ) );
-	$show_demo = get_theme_mod( 'adsense_show_placeholders', true );
+	$show_demo = get_theme_mod( 'adsense_show_placeholders', false ) || ( isset( $_GET['preview_ads'] ) && '1' === $_GET['preview_ads'] );
 
 	if ( empty( $code ) && ! $show_demo ) {
 		return '';
@@ -132,7 +219,6 @@ function guia_cidadao_render_ad( $slot_key, $class = 'ad-in-article', $label_dem
 	return ob_get_clean();
 }
 
-// Injeção automática de anúncios após o 2º e 5º parágrafos nos artigos
 function guia_cidadao_inject_in_content_ads( $content ) {
 	if ( ! is_single() || is_admin() ) {
 		return $content;
@@ -162,42 +248,196 @@ function guia_cidadao_inject_in_content_ads( $content ) {
 add_filter( 'the_content', 'guia_cidadao_inject_in_content_ads', 20 );
 
 /**
- * 3. DADOS ESTRUTURADOS SCHEMA.ORG (JSON-LD) PARA SEO DE UTILIDADE PÚBLICA
+ * 5. SEO TÉCNICO PERFEITO: META TAGS, OPEN GRAPH, GOOGLE DISCOVER & SCHEMA.ORG JSON-LD
  */
-function guia_cidadao_schema_json_ld() {
-	if ( is_single() ) {
+function guia_cidadao_advanced_seo_head() {
+	$site_name = get_bloginfo( 'name' );
+	$site_url  = home_url( '/' );
+
+	if ( is_singular() ) {
 		global $post;
-		$schema = array(
-			'@context'         => 'https://schema.org',
+		$title       = get_the_title() . ' — ' . $site_name;
+		$description = has_excerpt( $post->ID ) ? wp_strip_all_tags( get_the_excerpt( $post->ID ) ) : wp_trim_words( wp_strip_all_tags( $post->post_content ), 28, '...' );
+		if ( empty( $description ) ) {
+			$description = get_bloginfo( 'description' );
+		}
+		$canonical = get_permalink( $post->ID );
+		$og_type   = is_single() ? 'article' : 'website';
+	} elseif ( is_category() ) {
+		$cat         = get_queried_object();
+		$title       = single_cat_title( '', false ) . ' — ' . $site_name;
+		$description = ! empty( $cat->description ) ? wp_strip_all_tags( $cat->description ) : 'Guias passo a passo e consultas sobre ' . single_cat_title( '', false );
+		$canonical   = get_category_link( $cat->term_id );
+		$og_type     = 'website';
+	} else {
+		$title       = $site_name . ' — ' . get_bloginfo( 'description' );
+		$description = get_bloginfo( 'description' );
+		$canonical   = $site_url;
+		$og_type     = 'website';
+	}
+
+	// Meta Robots otimizado para Google Search e Google Discover (max-image-preview:large)
+	echo '<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />' . "\n";
+	echo '<meta name="description" content="' . esc_attr( $description ) . '" />' . "\n";
+	echo '<link rel="canonical" href="' . esc_url( $canonical ) . '" />' . "\n";
+
+	// Open Graph (WhatsApp, Facebook, Telegram, Discover)
+	echo '<meta property="og:locale" content="pt_BR" />' . "\n";
+	echo '<meta property="og:type" content="' . esc_attr( $og_type ) . '" />' . "\n";
+	echo '<meta property="og:title" content="' . esc_attr( $title ) . '" />' . "\n";
+	echo '<meta property="og:description" content="' . esc_attr( $description ) . '" />' . "\n";
+	echo '<meta property="og:url" content="' . esc_url( $canonical ) . '" />' . "\n";
+	echo '<meta property="og:site_name" content="' . esc_attr( $site_name ) . '" />' . "\n";
+
+	// Twitter Card
+	echo '<meta name="twitter:card" content="summary_large_image" />' . "\n";
+	echo '<meta name="twitter:title" content="' . esc_attr( $title ) . '" />' . "\n";
+	echo '<meta name="twitter:description" content="' . esc_attr( $description ) . '" />' . "\n";
+
+	// Schema.org JSON-LD (@graph completo: Organization + WebSite + NewsArticle / WebApplication)
+	$graph = array(
+		array(
+			'@type' => 'Organization',
+			'@id'   => $site_url . '#organization',
+			'name'  => $site_name,
+			'url'   => $site_url,
+		),
+		array(
+			'@type'           => 'WebSite',
+			'@id'             => $site_url . '#website',
+			'url'             => $site_url,
+			'name'            => $site_name,
+			'description'     => get_bloginfo( 'description' ),
+			'publisher'       => array( '@id' => $site_url . '#organization' ),
+			'potentialAction' => array(
+				'@type'       => 'SearchAction',
+				'target'      => $site_url . '?s={search_term_string}',
+				'query-input' => 'required name=search_term_string',
+			),
+		),
+	);
+
+	if ( is_single() ) {
+		$graph[] = array(
 			'@type'            => 'NewsArticle',
+			'@id'              => $canonical . '#article',
 			'headline'         => get_the_title(),
+			'description'      => $description,
 			'datePublished'    => get_the_date( 'c' ),
 			'dateModified'     => get_the_modified_date( 'c' ),
-			'mainEntityOfPage' => get_permalink(),
-			'author'           => array(
-				'@type' => 'Organization',
-				'name'  => get_bloginfo( 'name' ),
-			),
-			'publisher'        => array(
-				'@type' => 'Organization',
-				'name'  => get_bloginfo( 'name' ),
+			'mainEntityOfPage' => $canonical,
+			'author'           => array( '@id' => $site_url . '#organization' ),
+			'publisher'        => array( '@id' => $site_url . '#organization' ),
+		);
+	}
+
+	if ( is_page( 'calculadoras' ) || ( is_singular() && has_shortcode( get_post()->post_content, 'calculadora_seguro_desemprego' ) ) || ( is_singular() && has_shortcode( get_post()->post_content, 'calculadora_irpf' ) ) ) {
+		$graph[] = array(
+			'@type'               => 'WebApplication',
+			'name'                => get_the_title(),
+			'url'                 => $canonical,
+			'applicationCategory' => 'FinanceApplication',
+			'operatingSystem'     => 'All',
+			'offers'              => array(
+				'@type'         => 'Offer',
+				'price'         => '0.00',
+				'priceCurrency' => 'BRL',
 			),
 		);
-		echo '<script type="application/ld+json">' . wp_json_encode( $schema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) . '</script>' . "\n";
 	}
+
+	$schema = array(
+		'@context' => 'https://schema.org',
+		'@graph'   => $graph,
+	);
+	echo '<script type="application/ld+json">' . wp_json_encode( $schema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) . '</script>' . "\n";
 }
-add_action( 'wp_head', 'guia_cidadao_schema_json_ld' );
+add_action( 'wp_head', 'guia_cidadao_advanced_seo_head', 2 );
 
 /**
- * 4. SHORTCODES DE CALCULADORAS DE UTILIDADE PÚBLICA (ATUALIZADAS CLT 2026)
- * Uso nos posts ou páginas: [calculadora_rescisao], [calculadora_ferias], [calculadora_decimo_terceiro]
+ * 6. SHORTCODES DAS 5 CALCULADORAS OFICIAIS DE UTILIDADE PÚBLICA
+ * [calculadora_seguro_desemprego], [calculadora_irpf], [calculadora_rescisao], [calculadora_ferias], [calculadora_decimo_terceiro]
  */
+function guia_cidadao_shortcode_seguro_desemprego() {
+	ob_start();
+	?>
+	<div class="calc-box" id="calc-seguro-desemprego">
+		<div class="calc-header">
+			<h3>🧮 Calculadora de Seguro-Desemprego Oficial (Valor e Quantidade de Parcelas)</h3>
+		</div>
+		<div class="calc-grid">
+			<div class="calc-field">
+				<label for="sd-sal1">Antepenúltimo Salário Bruto (R$)</label>
+				<input type="number" id="sd-sal1" value="2400" min="0" step="50">
+			</div>
+			<div class="calc-field">
+				<label for="sd-sal2">Penúltimo Salário Bruto (R$)</label>
+				<input type="number" id="sd-sal2" value="2400" min="0" step="50">
+			</div>
+			<div class="calc-field">
+				<label for="sd-sal3">Último Salário Bruto (R$)</label>
+				<input type="number" id="sd-sal3" value="2400" min="0" step="50">
+			</div>
+			<div class="calc-field">
+				<label for="sd-meses">Meses Trabalhados com Carteira Assinada</label>
+				<input type="number" id="sd-meses" value="18" min="1" max="120">
+			</div>
+		</div>
+		<div class="calc-field" style="margin-bottom:1rem;">
+			<label for="sd-vez">Quantas vezes você já solicitou o Seguro-Desemprego?</label>
+			<select id="sd-vez">
+				<option value="1">1ª Solicitação na vida trabalhista</option>
+				<option value="2">2ª Solicitação</option>
+				<option value="3">3ª Solicitação ou mais</option>
+			</select>
+		</div>
+		<button type="button" class="calc-btn" onclick="calcularSeguroDesemprego()">Calcular Valor e Quantidade de Parcelas</button>
+		<div class="calc-result" id="resultado-sd">
+			<span>Resultado Estimado do Benefício:</span>
+			<div class="calc-result-total" id="sd-valor-parcela">0x de R$ 0,00</div>
+			<p id="sd-detalhes" style="font-size:0.85rem; margin-bottom:0; color:#334155;"></p>
+		</div>
+	</div>
+	<?php
+	return ob_get_clean();
+}
+add_shortcode( 'calculadora_seguro_desemprego', 'guia_cidadao_shortcode_seguro_desemprego' );
+
+function guia_cidadao_shortcode_irpf() {
+	ob_start();
+	?>
+	<div class="calc-box" id="calc-irpf">
+		<div class="calc-header">
+			<h3>🦁 Calculadora de Imposto de Renda Mensal (IRPF / Salário Líquido Oficial)</h3>
+		</div>
+		<div class="calc-grid">
+			<div class="calc-field">
+				<label for="irpf-salario">Salário ou Rendimento Bruto Mensal (R$)</label>
+				<input type="number" id="irpf-salario" value="3800" min="500" step="100">
+			</div>
+			<div class="calc-field">
+				<label for="irpf-dependentes">Número de Dependentes Legais</label>
+				<input type="number" id="irpf-dependentes" value="0" min="0" max="15">
+			</div>
+		</div>
+		<button type="button" class="calc-btn" onclick="calcularIRPFMensal()">Simular Imposto de Renda e Salário Líquido</button>
+		<div class="calc-result" id="resultado-irpf">
+			<span>Imposto de Renda Retido na Fonte (IRRF):</span>
+			<div class="calc-result-total" id="irpf-valor-imposto">R$ 0,00</div>
+			<p id="irpf-detalhes" style="font-size:0.85rem; margin-bottom:0; color:#334155;"></p>
+		</div>
+	</div>
+	<?php
+	return ob_get_clean();
+}
+add_shortcode( 'calculadora_irpf', 'guia_cidadao_shortcode_irpf' );
+
 function guia_cidadao_shortcode_ferias() {
 	ob_start();
 	?>
 	<div class="calc-box" id="calc-ferias">
 		<div class="calc-header">
-			<h3>🧮 Simulador Oficial de Férias Remuneradas (CLT + 1/3 Constitucional)</h3>
+			<h3>🏖️ Simulador Oficial de Férias Remuneradas (CLT + 1/3 Constitucional)</h3>
 		</div>
 		<div class="calc-grid">
 			<div class="calc-field">
@@ -230,7 +470,7 @@ function guia_cidadao_shortcode_rescisao() {
 	?>
 	<div class="calc-box" id="calc-rescisao">
 		<div class="calc-header">
-			<h3>🧮 Calculadora de Rescisão Trabalhista CLT + Multa 40% FGTS</h3>
+			<h3>📊 Calculadora de Rescisão Trabalhista CLT + Multa 40% FGTS</h3>
 		</div>
 		<div class="calc-grid">
 			<div class="calc-field">
@@ -271,7 +511,7 @@ function guia_cidadao_shortcode_decimo() {
 	?>
 	<div class="calc-box" id="calc-decimo">
 		<div class="calc-header">
-			<h3>🧮 Simulador de 13º Salário (1ª e 2ª Parcela)</h3>
+			<h3>💰 Simulador de 13º Salário (1ª e 2ª Parcela)</h3>
 		</div>
 		<div class="calc-grid">
 			<div class="calc-field">
@@ -296,7 +536,7 @@ function guia_cidadao_shortcode_decimo() {
 add_shortcode( 'calculadora_decimo_terceiro', 'guia_cidadao_shortcode_decimo' );
 
 /**
- * 5. PAINEL ADMIN: INSTALADOR 1-CLIQUE (PÁGINAS ADSENSE + CATEGORIAS) E RADAR DE FONTES OFICIAIS (GOV/AGÊNCIA BRASIL)
+ * 7. PAINEL ADMIN: INSTALADOR 1-CLIQUE (PÁGINAS ADSENSE + CATEGORIAS) E RADAR DE FONTES OFICIAIS
  */
 function guia_cidadao_admin_menu() {
 	add_menu_page(
@@ -312,7 +552,6 @@ function guia_cidadao_admin_menu() {
 add_action( 'admin_menu', 'guia_cidadao_admin_menu' );
 
 function guia_cidadao_install_structure() {
-	// 1. Cria as 4 Categorias Pilares do Portal de Utilidade Pública
 	$categories = array(
 		'Benefícios & Trabalhador' => array(
 			'slug' => 'beneficios-trabalhador',
@@ -328,7 +567,7 @@ function guia_cidadao_install_structure() {
 		),
 		'Calculadoras & Simuladores' => array(
 			'slug' => 'calculadoras-simuladores',
-			'desc' => 'Ferramentas gratuitas de cálculo trabalhista: Férias, Rescisão CLT, 13º Salário e benefícios.',
+			'desc' => 'Ferramentas gratuitas de cálculo trabalhista e fiscal: Seguro-Desemprego, Imposto de Renda IRPF, Férias, Rescisão CLT e 13º Salário.',
 		),
 	);
 
@@ -341,7 +580,6 @@ function guia_cidadao_install_structure() {
 		}
 	}
 
-	// 2. Cria as Páginas Obrigatórias de Aprovação no Google AdSense + Página de Calculadoras
 	$mandatory_pages = array(
 		'politica-de-privacidade' => array(
 			'title'    => 'Política de Privacidade e Cookies (LGPD)',
@@ -360,7 +598,7 @@ function guia_cidadao_install_structure() {
 			'template' => 'page-contato.php',
 		),
 		'calculadoras'            => array(
-			'title'    => 'Calculadoras Trabalhistas e Simuladores do Cidadão',
+			'title'    => 'Calculadoras Trabalhistas, Seguro-Desemprego e Imposto de Renda',
 			'template' => 'page-calculadoras.php',
 		),
 	);
@@ -391,7 +629,7 @@ function guia_cidadao_render_admin_central() {
 	if ( isset( $_POST['guia_action'] ) && check_admin_referer( 'guia_central_nonce' ) ) {
 		if ( 'install_portal' === $_POST['guia_action'] ) {
 			guia_cidadao_install_structure();
-			$message = '✅ Estrutura do Portal (4 Categorias + 5 Páginas Obrigatórias de Aprovação no AdSense e Calculadoras) criada com sucesso!';
+			$message = '✅ Estrutura do Portal (4 Categorias + 5 Páginas Obrigatórias de Aprovação no AdSense e Calculadoras) verificada com sucesso!';
 		} elseif ( 'import_rss_draft' === $_POST['guia_action'] && ! empty( $_POST['rss_title'] ) ) {
 			$title   = sanitize_text_field( wp_unslash( $_POST['rss_title'] ) );
 			$summary = wp_kses_post( wp_unslash( $_POST['rss_desc'] ) );
@@ -424,7 +662,7 @@ function guia_cidadao_render_admin_central() {
 	?>
 	<div class="wrap">
 		<h1>🏛️ Central do Portal de Utilidade Pública & Google AdSense</h1>
-		<p>Gerencie as páginas obrigatórias de aprovação no AdSense e busque pautas 100% verdadeiras e gratuitas direto das Agências Oficiais Públicas do Brasil.</p>
+		<p>Gerencie o SEO, Sitemap XML, Calculadoras e busque pautas 100% verdadeiras direto das Agências Oficiais Públicas do Brasil.</p>
 
 		<?php if ( ! empty( $message ) ) : ?>
 			<div class="notice notice-success is-dismissible"><p><?php echo wp_kses_post( $message ); ?></p></div>
@@ -432,34 +670,34 @@ function guia_cidadao_render_admin_central() {
 
 		<div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-top:20px;">
 			<div style="background:#fff; padding:20px; border:1px solid #ccd0d4; border-radius:8px;">
-				<h2>🚀 1. Instalação Rápida (Páginas AdSense + Categorias)</h2>
-				<p>Clique no botão abaixo para criar automaticamente:</p>
+				<h2>🚀 1. SEO, Sitemap XML e Robots.txt Ativos</h2>
 				<ul style="list-style:disc; margin-left:20px;">
-					<li><strong>4 Categorias Pilares:</strong> Benefícios & Trabalhador, Documentos & Gov.br, Contas & Finanças, Calculadoras & Simuladores.</li>
-					<li><strong>4 Páginas Obrigatórias do Google AdSense:</strong> Política de Privacidade (com cláusula Cookie DART e LGPD), Termos de Uso (com isenção de vínculo governamental), Sobre Nós (E-E-A-T) e Contato.</li>
-					<li><strong>Central de Calculadoras Interativas:</strong> Página pronta com simuladores de Férias, Rescisão e 13º Salário.</li>
+					<li><strong>Sitemap XML Principal:</strong> <a href="<?php echo esc_url( home_url( '/sitemap.xml' ) ); ?>" target="_blank"><?php echo esc_url( home_url( '/sitemap.xml' ) ); ?></a></li>
+					<li><strong>Robots.txt Otimizado AdSense:</strong> <a href="<?php echo esc_url( home_url( '/robots.txt' ) ); ?>" target="_blank"><?php echo esc_url( home_url( '/robots.txt' ) ); ?></a></li>
+					<li><strong>Arquivo ads.txt:</strong> <a href="<?php echo esc_url( home_url( '/ads.txt' ) ); ?>" target="_blank"><?php echo esc_url( home_url( '/ads.txt' ) ); ?></a></li>
 				</ul>
-				<form method="post">
+				<form method="post" style="margin-top:15px;">
 					<?php wp_nonce_field( 'guia_central_nonce' ); ?>
 					<input type="hidden" name="guia_action" value="install_portal">
-					<button type="submit" class="button button-primary button-hero">Criar Páginas Obrigatórias & Categorias Agora</button>
+					<button type="submit" class="button button-primary">Sincronizar Estrutura & Páginas</button>
 				</form>
 			</div>
 
 			<div style="background:#fff; padding:20px; border:1px solid #ccd0d4; border-radius:8px;">
-				<h2>📡 2. Fontes Oficiais de Dados em Tempo Real</h2>
-				<p>No Brasil, o conteúdo da <strong>Agência Brasil (EBC)</strong>, <strong>Agência Senado</strong> e <strong>Agência Câmara</strong> possui reprodução livre e gratuita garantida por lei (basta manter o crédito da fonte oficial). Além disso, usamos <strong>APIs Públicas Oficiais</strong>:</p>
+				<h2>🧮 2. Shortcodes das 5 Calculadoras Oficiais</h2>
+				<p>Você pode inserir qualquer calculadora dentro de qualquer post usando os shortcodes abaixo:</p>
 				<ul style="list-style:disc; margin-left:20px;">
-					<li><strong>Portal Gov.br / Diário Oficial da União:</strong> Calendários oficiais do INSS, Bolsa Família e FGTS.</li>
-					<li><strong>Agência Brasil (EBC):</strong> Notícias diárias verificadas sobre pagamentos, PIS/PASEP, Receita Federal e Enem.</li>
-					<li><strong>BrasilAPI / Banco Central:</strong> Taxa Selic, Índices e Feriados Nacionais.</li>
+					<li><code>[calculadora_seguro_desemprego]</code> — Valor e Parcelas MTE</li>
+					<li><code>[calculadora_irpf]</code> — Imposto de Renda e Salário Líquido</li>
+					<li><code>[calculadora_rescisao]</code> — Acerto Trabalhista CLT + Multa FGTS</li>
+					<li><code>[calculadora_ferias]</code> — Férias + 1/3 Constitucional</li>
+					<li><code>[calculadora_decimo_terceiro]</code> — 1ª e 2ª Parcela do 13º</li>
 				</ul>
 			</div>
 		</div>
 
 		<div style="background:#fff; padding:20px; border:1px solid #ccd0d4; border-radius:8px; margin-top:20px;">
 			<h2>📰 Radar ao Vivo: Últimas Notícias Oficiais (Agência Brasil & Senado)</h2>
-			<p>Transforme comunicados oficiais em rascunhos otimizados para AdSense com 1 clique:</p>
 			<?php foreach ( $official_feeds as $source_name => $feed_url ) : ?>
 				<h3 style="margin-top:15px; border-bottom:1px solid #eee; padding-bottom:5px;"><?php echo esc_html( $source_name ); ?></h3>
 				<?php

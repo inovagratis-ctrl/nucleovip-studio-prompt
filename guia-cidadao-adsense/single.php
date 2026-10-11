@@ -1,6 +1,6 @@
 <?php
 /**
- * Template de Artigo Individual (Otimizado para CTR de AdSense, E-E-A-T e Tempo de Permanência)
+ * Template de Artigo Individual (Otimizado para CTR de AdSense, E-E-A-T, Compartilhamento WhatsApp e Links Internos)
  */
 get_header();
 ?>
@@ -13,7 +13,10 @@ get_header();
 				the_post();
 				$categories = get_the_category();
 				$cat_name   = ! empty( $categories ) ? $categories[0]->name : 'Utilidade Pública';
-				$cat_link   = ! empty( $categories ) ? get_category_link( $categories[0]->term_id ) : home_url();
+				$cat_id     = ! empty( $categories ) ? $categories[0]->term_id : 0;
+				$cat_link   = ! empty( $categories ) ? get_category_link( $cat_id ) : home_url();
+				$share_url  = rawurlencode( get_permalink() );
+				$share_text = rawurlencode( get_the_title() . ' - ' . get_permalink() );
 				?>
 				<article id="post-<?php the_ID(); ?>" <?php post_class( 'single-article-card' ); ?>>
 					<nav class="breadcrumbs" aria-label="Navegação estrutural">
@@ -31,6 +34,7 @@ get_header();
 						<div class="entry-meta-bar">
 							<span class="updated-badge">✔ Verificado e Atualizado em <?php echo esc_html( get_the_modified_date( 'd/m/Y' ) ); ?></span>
 							<span>Por <strong>Redação <?php bloginfo( 'name' ); ?></strong></span>
+							<a href="https://api.whatsapp.com/send?text=<?php echo esc_attr( $share_text ); ?>" target="_blank" rel="noopener nofollow" style="margin-left:auto; background:#16a34a; color:#fff; padding:0.25rem 0.7rem; border-radius:6px; font-weight:700; font-size:0.78rem; text-decoration:none;">📲 Compartilhar no WhatsApp</a>
 						</div>
 					</header>
 
@@ -44,11 +48,50 @@ get_header();
 						<div>
 							<strong>Equipe Editorial <?php bloginfo( 'name' ); ?></strong>
 							<p style="font-size:0.85rem; color:#475569; margin-top:0.25rem;">
-								Nosso conteúdo de utilidade pública é apurado com base em dados oficiais do Portal Gov.br, Agência Brasil (EBC), Ministério do Trabalho e Previdência e Receita Federal. Consulte nossa <a href="<?php echo esc_url( home_url( '/sobre-nos/' ) ); ?>">Política Editorial</a>.
+								Conteúdo de utilidade pública apurado com base em fontes primárias oficiais (Portal Gov.br, Agência Brasil/EBC, Agência Senado, Ministério do Trabalho e Receita Federal). Consulte nossa <a href="<?php echo esc_url( home_url( '/sobre-nos/' ) ); ?>">Política Editorial e de Verificação</a>.
 							</p>
 						</div>
 					</div>
 				</article>
+
+				<!-- Artigos Relacionados (Aumenta Páginas/Sessão e Receita do AdSense) -->
+				<?php
+				$related = new WP_Query( array(
+					'category__in'   => array( $cat_id ),
+					'post__not_in'   => array( get_the_ID() ),
+					'posts_per_page' => 4,
+					'orderby'        => 'date',
+					'order'          => 'DESC',
+				) );
+				if ( $related->have_posts() ) :
+					?>
+					<section style="margin-top:2rem;" aria-label="Guias Relacionados">
+						<div class="section-header">
+							<h2 class="section-title">Leia Também: Guias Relacionados</h2>
+						</div>
+						<div class="posts-grid">
+							<?php
+							while ( $related->have_posts() ) :
+								$related->the_post();
+								?>
+								<article class="post-card">
+									<div class="post-card-body">
+										<span class="post-category-badge"><?php echo esc_html( $cat_name ); ?></span>
+										<h3 class="post-card-title"><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h3>
+										<div class="post-card-meta">
+											<span>📅 <?php echo esc_html( get_the_modified_date( 'd/m/Y' ) ); ?></span>
+											<a href="<?php the_permalink(); ?>" style="font-weight:700;">Ler guia &rarr;</a>
+										</div>
+									</div>
+								</article>
+								<?php
+							endwhile;
+							wp_reset_postdata();
+							?>
+						</div>
+					</section>
+				<?php endif; ?>
+
 			<?php endwhile; ?>
 		</div>
 
