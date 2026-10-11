@@ -37,12 +37,12 @@
 				<?php if ( is_front_page() && is_home() ) : ?>
 					<h1 class="site-title-logo">
 						<a href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home" class="site-logo-link">
-							<img src="<?php echo esc_url( $custom_logo_url ); ?>" alt="<?php echo esc_attr( get_bloginfo( 'name' ) . ' — ' . get_bloginfo( 'description' ) ); ?>" class="site-logo-horizontal" width="320" height="70" decoding="async" />
+							<img src="<?php echo esc_url( $custom_logo_url ); ?>" alt="<?php echo esc_attr( get_bloginfo( 'name' ) . ' — ' . get_bloginfo( 'description' ) ); ?>" class="site-logo-horizontal" width="380" height="88" decoding="async" />
 						</a>
 					</h1>
 				<?php else : ?>
 					<a href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home" class="site-logo-link">
-						<img src="<?php echo esc_url( $custom_logo_url ); ?>" alt="<?php echo esc_attr( get_bloginfo( 'name' ) . ' — ' . get_bloginfo( 'description' ) ); ?>" class="site-logo-horizontal" width="320" height="70" decoding="async" />
+						<img src="<?php echo esc_url( $custom_logo_url ); ?>" alt="<?php echo esc_attr( get_bloginfo( 'name' ) . ' — ' . get_bloginfo( 'description' ) ); ?>" class="site-logo-horizontal" width="380" height="88" decoding="async" />
 					</a>
 				<?php endif; ?>
 			<?php else : ?>

@@ -96,7 +96,7 @@ get_header();
 					<div class="utility-card-header">
 						<div class="utility-icon">
 							<?php if ( $url_icon_beneficios ) : ?>
-								<img src="<?php echo esc_url( $url_icon_beneficios ); ?>" alt="" width="40" height="40" loading="lazy" decoding="async" />
+								<img src="<?php echo esc_url( $url_icon_beneficios ); ?>" alt="" width="54" height="54" loading="lazy" decoding="async" />
 							<?php else : ?>
 								<span aria-hidden="true">📋</span>
 							<?php endif; ?>
@@ -111,7 +111,7 @@ get_header();
 					<div class="utility-card-header">
 						<div class="utility-icon">
 							<?php if ( $url_icon_documentos ) : ?>
-								<img src="<?php echo esc_url( $url_icon_documentos ); ?>" alt="" width="40" height="40" loading="lazy" decoding="async" />
+								<img src="<?php echo esc_url( $url_icon_documentos ); ?>" alt="" width="54" height="54" loading="lazy" decoding="async" />
 							<?php else : ?>
 								<span aria-hidden="true">🪪</span>
 							<?php endif; ?>
@@ -126,7 +126,7 @@ get_header();
 					<div class="utility-card-header">
 						<div class="utility-icon">
 							<?php if ( $url_icon_financas ) : ?>
-								<img src="<?php echo esc_url( $url_icon_financas ); ?>" alt="" width="40" height="40" loading="lazy" decoding="async" />
+								<img src="<?php echo esc_url( $url_icon_financas ); ?>" alt="" width="54" height="54" loading="lazy" decoding="async" />
 							<?php else : ?>
 								<span aria-hidden="true">💳</span>
 							<?php endif; ?>
@@ -141,7 +141,7 @@ get_header();
 					<div class="utility-card-header">
 						<div class="utility-icon">
 							<?php if ( $url_icon_calculadoras ) : ?>
-								<img src="<?php echo esc_url( $url_icon_calculadoras ); ?>" alt="" width="40" height="40" loading="lazy" decoding="async" />
+								<img src="<?php echo esc_url( $url_icon_calculadoras ); ?>" alt="" width="54" height="54" loading="lazy" decoding="async" />
 							<?php else : ?>
 								<span aria-hidden="true">🧮</span>
 							<?php endif; ?>

@@ -1187,6 +1187,150 @@ function guia_cidadao_shortcode_onde_resolver() {
 }
 add_shortcode( 'roteiro_onde_resolver', 'guia_cidadao_shortcode_onde_resolver' );
 
+/**
+ * 11. DIAGRAMAS EXPLICATIVOS DE FLUXO E CHECKLIST VISUAL POR SERVIÇO (MEU INSS, GOV.BR, CNH DIGITAL E CADÚNICO/CRAS)
+ */
+function guia_cidadao_shortcode_diagrama_etapas( $atts ) {
+	$atts = shortcode_atts( array( 'tipo' => 'meu-inss' ), $atts, 'diagrama_etapas_servico' );
+	$tipo = sanitize_key( $atts['tipo'] );
+
+	$configs = array(
+		'meu-inss' => array(
+			'aria'     => 'Diagrama passo a passo para consultar extratos e benefícios no Meu INSS',
+			'badge'    => 'FLUXO RÁPIDO · PREVIDÊNCIA SOCIAL',
+			'title'    => 'Como consultar o Meu INSS em 3 etapas',
+			'subtitle' => 'Siga este roteiro prático para emitir extratos oficiais (CNIS e Pagamento) sem intermediários.',
+			'steps'    => array(
+				array(
+					'num'   => '01',
+					'title' => 'Acesso com Conta Gov.br',
+					'desc'  => 'Entre em meu.inss.gov.br ou no app oficial Meu INSS usando seu CPF e senha Gov.br (nível Prata ou Ouro para extratos completos).',
+				),
+				array(
+					'num'   => '02',
+					'title' => 'Localize o Serviço na Tela Inicial',
+					'desc'  => 'Selecione "Extrato de Pagamento", "Extrato de Contribuição (CNIS)" ou "Perícia Médica" diretamente nos atalhos principais.',
+				),
+				array(
+					'num'   => '03',
+					'title' => 'Baixe o PDF com QR Code',
+					'desc'  => 'Role até o fim da tela e clique em "Baixar Documento (PDF)". O arquivo tem validade oficial em bancos e órgãos públicos.',
+				),
+			),
+			'rule'     => '<strong>Atenção:</strong> A emissão do CNIS e do histórico de pagamento é 100% gratuita. O INSS não envia links por SMS ou WhatsApp para liberar valores.',
+		),
+		'govbr' => array(
+			'aria'     => 'Diagrama comparativo dos níveis Bronze, Prata e Ouro da conta Gov.br',
+			'badge'    => 'DIAGRAMA DE NÍVEIS · IDENTIDADE DIGITAL',
+			'title'    => 'Qual nível Gov.br você precisa e como subir',
+			'subtitle' => 'Compare os três selos de confiabilidade e veja o caminho mais rápido para validar sua conta pelo celular.',
+			'steps'    => array(
+				array(
+					'num'   => '🥉',
+					'title' => 'Nível Bronze (Acesso Básico)',
+					'desc'  => 'Criado por formulário online ou no CRAS. Permite consultas simples, mas não libera Meu INSS, CNH Digital nem Valores a Receber.',
+				),
+				array(
+					'num'   => '🥈',
+					'title' => 'Nível Prata (17 Bancos ou CNH)',
+					'desc'  => 'No app Gov.br, toque em "Aumentar Nível" e faça login com um dos 17 bancos credenciados (BB, Caixa, Itaú, Bradesco, Nubank etc.).',
+				),
+				array(
+					'num'   => '🥇',
+					'title' => 'Nível Ouro (Biometria TSE ou CIN)',
+					'desc'  => 'Segurança máxima: valide pelo reconhecimento facial da câmera do celular (base da Justiça Eleitoral/TSE) ou pela Nova Identidade (CIN).',
+				),
+			),
+			'rule'     => '<strong>Dica prática para a biometria facial:</strong> Faça a foto em ambiente bem iluminado, com fundo claro, sem boné ou óculos escuros.',
+		),
+		'cnh-digital' => array(
+			'aria'     => 'Diagrama de ativação da Carteira Digital de Trânsito (CNH Digital) em 3 etapas',
+			'badge'    => 'PASSO A PASSO · SENATRAN / SERPRO',
+			'title'    => 'Roteiro de ativação da CNH Digital no celular',
+			'subtitle' => 'Tenha sua habilitação e o documento do veículo (CRLV-e) disponíveis mesmo sem conexão com a internet.',
+			'steps'    => array(
+				array(
+					'num'   => '01',
+					'title' => 'Confira o QR Code da CNH Física',
+					'desc'  => 'Abra sua CNH impressa (emitida a partir de maio/2017) e localize o código QR impresso na parte interna do documento.',
+				),
+				array(
+					'num'   => '02',
+					'title' => 'Valide no App CDT Oficial',
+					'desc'  => 'Abra o app "Carteira Digital de Trânsito" (SERPRO), entre com Gov.br Prata/Ouro, toque em "Condutor" e escaneie o QR Code + biometria facial.',
+				),
+				array(
+					'num'   => '03',
+					'title' => 'Cadastre a Chave de 4 Dígitos',
+					'desc'  => 'Defina sua senha numérica de 4 dígitos. É com ela que você abrirá a CNH Digital offline durante uma fiscalização de trânsito.',
+				),
+			),
+			'rule'     => '<strong>Validade legal (Art. 159 do CTB):</strong> A CNH Digital exibida no aplicativo oficial CDT tem exatamente o mesmo valor jurídico do documento impresso em todo o Brasil.',
+		),
+		'cadunico-cras' => array(
+			'aria'     => 'Lista visual de documentos obrigatórios para atendimento do CadÚnico no CRAS',
+			'badge'    => 'CHECKLIST VISUAL · ATENDIMENTO PRESENCIAL CRAS',
+			'title'    => 'Quais documentos levar ao CRAS para o CadÚnico',
+			'subtitle' => 'Separe a pasta da família antes de sair de casa para evitar retorno por falta de comprovante.',
+			'steps'    => array(
+				array(
+					'num'   => '👤',
+					'title' => 'Responsável Familiar (RF · 16+ anos)',
+					'desc'  => '• CPF (preferencial) ou Título de Eleitor<br>• Documento oficial com foto (RG/CIN ou CTPS)<br>• Conta de luz/água recente (ou declaração de moradia)',
+				),
+				array(
+					'num'   => '👨‍👩‍👧',
+					'title' => 'Demais Moradores da Mesma Casa',
+					'desc'  => '• CPF de cada morador<br>• Certidão de Nascimento ou Casamento (ou RG)<br>• Declaração de matrícula escolar (crianças e jovens de 4 a 17 anos)',
+				),
+				array(
+					'num'   => '🗓️',
+					'title' => 'Regra de Prazo (A cada 24 meses)',
+					'desc'  => 'Apenas o Responsável Familiar precisa ir ao CRAS responder à entrevista. Atualize sempre que mudar de endereço, renda, escola ou composição familiar.',
+				),
+			),
+			'rule'     => '<strong>Gratuidade garantida:</strong> A inscrição e a atualização do Cadastro Único no CRAS ou posto municipal são 100% gratuitas.',
+		),
+	);
+
+	$cfg = isset( $configs[ $tipo ] ) ? $configs[ $tipo ] : $configs['meu-inss'];
+
+	ob_start();
+	?>
+	<aside class="nv-consulta-segura" aria-label="<?php echo esc_attr( $cfg['aria'] ); ?>">
+		<div class="nv-cs-top">
+			<div class="nv-cs-brand">
+				<span class="nv-cs-badge" aria-hidden="true">NV</span>
+				<span>NÚCLEO VIP · GUIA DO CIDADÃO</span>
+			</div>
+			<div class="nv-cs-hero">
+				<span class="nv-cs-label"><?php echo esc_html( $cfg['badge'] ); ?></span>
+				<h3 class="nv-cs-title"><?php echo esc_html( $cfg['title'] ); ?></h3>
+				<p class="nv-cs-subtitle"><?php echo esc_html( $cfg['subtitle'] ); ?></p>
+			</div>
+		</div>
+		<div class="nv-cs-steps" role="list">
+			<?php foreach ( $cfg['steps'] as $step ) : ?>
+				<div class="nv-cs-card" role="listitem">
+					<div class="nv-cs-num" aria-hidden="true"><?php echo esc_html( $step['num'] ); ?></div>
+					<h4><?php echo esc_html( $step['title'] ); ?></h4>
+					<p><?php echo wp_kses_post( $step['desc'] ); ?></p>
+				</div>
+			<?php endforeach; ?>
+		</div>
+		<div class="nv-cs-rule">
+			<?php echo wp_kses_post( $cfg['rule'] ); ?>
+		</div>
+		<div class="nv-cs-footer">
+			<span class="nv-cs-footbrand">Núcleo VIP — Guia do Cidadão</span>
+			<span>Diagrama instrutivo original · Confira sempre nos canais oficiais (.gov.br)</span>
+		</div>
+	</aside>
+	<?php
+	return ob_get_clean();
+}
+add_shortcode( 'diagrama_etapas_servico', 'guia_cidadao_shortcode_diagrama_etapas' );
+
 
 
 

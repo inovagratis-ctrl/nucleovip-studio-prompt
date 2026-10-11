@@ -45,22 +45,22 @@
 <div class="lgpd-cookie-banner hidden" id="lgpd-banner" role="dialog" aria-label="Aviso de Privacidade e Controle de Cookies">
 	<div class="lgpd-main-row">
 		<div class="lgpd-text">
-			<strong>🍪 Controle de Cookies (LGPD):</strong> Usamos cookies essenciais para funcionamento do site e, mediante seu consentimento, cookies analíticos e de publicidade. Veja nossa <a href="<?php echo esc_url( home_url( '/politica-de-privacidade/' ) ); ?>">Política de Privacidade</a>.
+			<strong>🍪 Cookies (LGPD):</strong> Usamos cookies essenciais e, com sua permissão, métricas e anúncios. <a href="<?php echo esc_url( home_url( '/politica-de-privacidade/' ) ); ?>">Política de Privacidade</a>.
 		</div>
 		<div class="lgpd-actions">
-			<button type="button" class="lgpd-btn lgpd-btn-outline" id="lgpd-prefs-btn">Preferências</button>
-			<button type="button" class="lgpd-btn lgpd-btn-secondary" id="lgpd-reject-btn">Rejeitar Não-Essenciais</button>
-			<button type="button" class="lgpd-btn lgpd-btn-primary" id="lgpd-accept-btn">Aceitar Todos</button>
+			<button type="button" class="lgpd-btn lgpd-btn-outline" id="lgpd-prefs-btn">Opções</button>
+			<button type="button" class="lgpd-btn lgpd-btn-secondary" id="lgpd-reject-btn">Só Essenciais</button>
+			<button type="button" class="lgpd-btn lgpd-btn-primary" id="lgpd-accept-btn">Aceitar</button>
 		</div>
 	</div>
-	<div id="lgpd-prefs-panel" style="display:none; margin-top:0.75rem; padding-top:0.75rem; border-top:1px solid rgba(255,255,255,0.15); font-size:0.8rem;">
-		<div style="display:flex; flex-wrap:wrap; gap:1.25rem; align-items:center; justify-content:space-between;">
-			<div style="display:flex; flex-wrap:wrap; gap:1rem;">
-				<label><input type="checkbox" checked disabled> <strong>Essenciais (Obrigatórios)</strong> — Segurança e cálculo local no navegador</label>
-				<label><input type="checkbox" id="chk-cookie-analytics" checked> <strong>Analíticos</strong> — Métricas anônimas de desempenho</label>
-				<label><input type="checkbox" id="chk-cookie-ads" checked> <strong>Publicidade (AdSense/DART)</strong> — Anúncios personalizados</label>
+	<div id="lgpd-prefs-panel" style="display:none; margin-top:0.55rem; padding-top:0.55rem; border-top:1px solid rgba(255,255,255,0.15); font-size:0.76rem;">
+		<div style="display:flex; flex-wrap:wrap; gap:0.85rem; align-items:center; justify-content:space-between;">
+			<div style="display:flex; flex-wrap:wrap; gap:0.85rem;">
+				<label><input type="checkbox" checked disabled> <strong>Essenciais</strong> (Obrigatórios)</label>
+				<label><input type="checkbox" id="chk-cookie-analytics" checked> <strong>Analíticos</strong></label>
+				<label><input type="checkbox" id="chk-cookie-ads" checked> <strong>Publicidade (AdSense)</strong></label>
 			</div>
-			<button type="button" class="lgpd-btn lgpd-btn-primary" id="lgpd-save-prefs-btn">Salvar Minhas Escolhas</button>
+			<button type="button" class="lgpd-btn lgpd-btn-primary" id="lgpd-save-prefs-btn">Salvar Escolhas</button>
 		</div>
 	</div>
 </div>
