@@ -144,10 +144,17 @@ img:is([sizes=auto i],[sizes^="auto," i]){contain-intrinsic-size:3000px 1500px}
 						<span class="gov-callout-title">✅ Mensagem encaminhada com sucesso à Ouvidoria!</span>
 						<p style="margin-bottom:0;">Nossa equipe editorial recebeu sua mensagem através da central <strong>contato@nucleovip.com.br</strong> e responderá pelo e-mail informado em até 48 horas úteis.</p>
 					</div>
+					<div class="gov-callout warning" id="contato-erro" style="display:none;">
+						<span class="gov-callout-title">⚠️ Erro no envio:</span>
+						<p style="margin-bottom:0;">Por favor, preencha todos os campos obrigatórios: seu nome (mínimo 2 caracteres), um e-mail válido para resposta e sua mensagem (mínimo 5 caracteres).</p>
+					</div>
 					<script>
 					if (window.location.search.indexOf('enviado=1') !== -1) {
 						var el = document.getElementById('contato-sucesso');
 						if (el) el.style.display = 'block';
+					} else if (window.location.search.indexOf('erro=1') !== -1) {
+						var err = document.getElementById('contato-erro');
+						if (err) err.style.display = 'block';
 					}
 					</script>
 
