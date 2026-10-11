@@ -1,0 +1,1 @@
+# Arquivo ads.txt pronto para Google AdSense - Configure seu ID em Aparencia > Personalizar > Google AdSense
