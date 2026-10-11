@@ -35,8 +35,8 @@ function guia_cidadao_clean_head() {
 add_action( 'init', 'guia_cidadao_clean_head' );
 
 function guia_cidadao_scripts() {
-	wp_enqueue_style( 'guia-cidadao-style', get_stylesheet_uri(), array(), '1.1.0' );
-	wp_enqueue_script( 'guia-cidadao-main', get_template_directory_uri() . '/assets/js/main.js', array(), '1.1.0', true );
+	wp_enqueue_style( 'guia-cidadao-style', get_stylesheet_uri(), array(), '2.0.0' );
+	wp_enqueue_script( 'guia-cidadao-main', get_template_directory_uri() . '/assets/js/main.js', array(), '2.0.0', true );
 }
 add_action( 'wp_enqueue_scripts', 'guia_cidadao_scripts' );
 
@@ -194,11 +194,9 @@ add_action( 'init', 'guia_cidadao_virtual_seo_files', 1 );
 /**
  * 4. RENDERIZAÇÃO E INJEÇÃO AUTOMÁTICA DE ANÚNCIOS ADSENSE
  */
-function guia_cidadao_render_ad( $slot_key, $class = 'ad-in-article', $label_demo = 'Espaço AdSense Responsivo (Alto CTR)' ) {
+function guia_cidadao_render_ad( $slot_key, $class = 'ad-in-article', $label_demo = '' ) {
 	$code = trim( get_theme_mod( $slot_key, '' ) );
-	$show_demo = get_theme_mod( 'adsense_show_placeholders', false ) || ( isset( $_GET['preview_ads'] ) && '1' === $_GET['preview_ads'] );
-
-	if ( empty( $code ) && ! $show_demo ) {
+	if ( empty( $code ) ) {
 		return '';
 	}
 
@@ -206,14 +204,7 @@ function guia_cidadao_render_ad( $slot_key, $class = 'ad-in-article', $label_dem
 	?>
 	<div class="ad-slot-wrapper <?php echo esc_attr( $class ); ?>" aria-label="Publicidade">
 		<span class="ad-label">Publicidade</span>
-		<?php if ( ! empty( $code ) ) : ?>
-			<?php echo $code; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-		<?php else : ?>
-			<div class="ad-placeholder-demo">
-				<strong>[ <?php echo esc_html( $label_demo ); ?> ]</strong>
-				<span>Reserva de altura anti-CLS ativa • Configure o código em Aparência &rarr; Personalizar &rarr; Google AdSense</span>
-			</div>
-		<?php endif; ?>
+		<?php echo $code; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 	</div>
 	<?php
 	return ob_get_clean();
@@ -224,9 +215,9 @@ function guia_cidadao_inject_in_content_ads( $content ) {
 		return $content;
 	}
 
-	$ad_p2  = guia_cidadao_render_ad( 'adsense_p2_code', 'ad-in-article', 'Anúncio Automático - Após 2º Parágrafo (Maior Taxa de Cliques)' );
-	$ad_p5  = guia_cidadao_render_ad( 'adsense_p5_code', 'ad-in-article', 'Anúncio Automático - Após 5º Parágrafo (Meio do Conteúdo)' );
-	$ad_end = guia_cidadao_render_ad( 'adsense_end_code', 'ad-in-article', 'Anúncio Automático - Conclusão do Passo a Passo' );
+	$ad_p2  = guia_cidadao_render_ad( 'adsense_p2_code', 'ad-in-article' );
+	$ad_p5  = guia_cidadao_render_ad( 'adsense_p5_code', 'ad-in-article' );
+	$ad_end = guia_cidadao_render_ad( 'adsense_end_code', 'ad-in-article' );
 
 	$paragraphs = explode( '</p>', $content );
 	$new_content = '';
@@ -276,7 +267,6 @@ function guia_cidadao_advanced_seo_head() {
 		$og_type     = 'website';
 	}
 
-	// Meta Robots otimizado para Google Search e Google Discover (max-image-preview:large)
 	echo '<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />' . "\n";
 	echo '<meta name="description" content="' . esc_attr( $description ) . '" />' . "\n";
 	echo '<link rel="canonical" href="' . esc_url( $canonical ) . '" />' . "\n";
@@ -286,7 +276,6 @@ function guia_cidadao_advanced_seo_head() {
 		$thumb_url = get_the_post_thumbnail_url( get_the_ID(), 'full' );
 	}
 
-	// Open Graph (WhatsApp, Facebook, Telegram, Discover)
 	echo '<meta property="og:locale" content="pt_BR" />' . "\n";
 	echo '<meta property="og:type" content="' . esc_attr( $og_type ) . '" />' . "\n";
 	echo '<meta property="og:title" content="' . esc_attr( $title ) . '" />' . "\n";
@@ -299,7 +288,6 @@ function guia_cidadao_advanced_seo_head() {
 		echo '<meta property="og:image:height" content="675" />' . "\n";
 	}
 
-	// Twitter Card
 	echo '<meta name="twitter:card" content="summary_large_image" />' . "\n";
 	echo '<meta name="twitter:title" content="' . esc_attr( $title ) . '" />' . "\n";
 	echo '<meta name="twitter:description" content="' . esc_attr( $description ) . '" />' . "\n";
@@ -307,13 +295,13 @@ function guia_cidadao_advanced_seo_head() {
 		echo '<meta name="twitter:image" content="' . esc_url( $thumb_url ) . '" />' . "\n";
 	}
 
-	// Schema.org JSON-LD (@graph completo: Organization + WebSite + NewsArticle / WebApplication)
 	$graph = array(
 		array(
 			'@type' => 'Organization',
 			'@id'   => $site_url . '#organization',
 			'name'  => $site_name,
 			'url'   => $site_url,
+			'email' => 'contato@nucleovip.com.br',
 		),
 		array(
 			'@type'           => 'WebSite',
@@ -339,7 +327,11 @@ function guia_cidadao_advanced_seo_head() {
 			'datePublished'    => get_the_date( 'c' ),
 			'dateModified'     => get_the_modified_date( 'c' ),
 			'mainEntityOfPage' => $canonical,
-			'author'           => array( '@id' => $site_url . '#organization' ),
+			'author'           => array(
+				'@type' => 'Person',
+				'name'  => 'Eusimar Teixeira (Editor Responsável)',
+				'url'   => home_url( '/sobre-nos/' ),
+			),
 			'publisher'        => array( '@id' => $site_url . '#organization' ),
 		);
 		if ( ! empty( $thumb_url ) ) {
@@ -348,7 +340,7 @@ function guia_cidadao_advanced_seo_head() {
 		$graph[] = $article_schema;
 	}
 
-	if ( is_page( 'calculadoras' ) || ( is_singular() && has_shortcode( get_post()->post_content, 'calculadora_seguro_desemprego' ) ) || ( is_singular() && has_shortcode( get_post()->post_content, 'calculadora_irpf' ) ) ) {
+	if ( is_page( 'calculadoras' ) || ( is_singular() && has_shortcode( get_post()->post_content, 'calculadora_seguro_desemprego' ) ) || ( is_singular() && has_shortcode( get_post()->post_content, 'calculadora_irpf' ) ) || ( is_singular() && has_shortcode( get_post()->post_content, 'calculadora_decimo_terceiro' ) ) ) {
 		$graph[] = array(
 			'@type'               => 'WebApplication',
 			'name'                => get_the_title(),
@@ -372,15 +364,15 @@ function guia_cidadao_advanced_seo_head() {
 add_action( 'wp_head', 'guia_cidadao_advanced_seo_head', 2 );
 
 /**
- * 6. SHORTCODES DAS 5 CALCULADORAS OFICIAIS DE UTILIDADE PÚBLICA
- * [calculadora_seguro_desemprego], [calculadora_irpf], [calculadora_rescisao], [calculadora_ferias], [calculadora_decimo_terceiro]
+ * 6. SHORTCODES DAS 5 CALCULADORAS OFICIAIS DE UTILIDADE PÚBLICA (TABELAS 2026)
  */
 function guia_cidadao_shortcode_seguro_desemprego() {
 	ob_start();
 	?>
 	<div class="calc-box" id="calc-seguro-desemprego">
 		<div class="calc-header">
-			<h3>🧮 Calculadora de Seguro-Desemprego Oficial (Valor e Quantidade de Parcelas)</h3>
+			<h3>🛡️ Simulador de Seguro-Desemprego 2026 (Estimativa de Valor e Parcelas)</h3>
+			<small style="color:#475569;">Vigência 2026: Piso R$ 1.621,00 e Teto R$ 2.588,41 (Portaria Interministerial MPS/MF nº 13, de 09/01/2026 e Lei nº 7.998/1990)</small>
 		</div>
 		<div class="calc-grid">
 			<div class="calc-field">
@@ -408,10 +400,10 @@ function guia_cidadao_shortcode_seguro_desemprego() {
 				<option value="3">3ª Solicitação ou mais</option>
 			</select>
 		</div>
-		<button type="button" class="calc-btn" onclick="calcularSeguroDesemprego()">Calcular Valor e Quantidade de Parcelas</button>
+		<button type="button" class="calc-btn" onclick="calcularSeguroDesemprego()">Simular Estimativa de Valor e Parcelas</button>
 		<div class="calc-result" id="resultado-sd">
-			<span>Resultado Estimado do Benefício:</span>
-			<div class="calc-result-total" id="sd-valor-parcela">0x de R$ 0,00</div>
+			<span>Estimativa do Benefício:</span>
+			<div class="calc-result-total" id="sd-valor-parcela">0 parcelas de R$ 0,00</div>
 			<p id="sd-detalhes" style="font-size:0.85rem; margin-bottom:0; color:#334155;"></p>
 		</div>
 	</div>
@@ -425,7 +417,8 @@ function guia_cidadao_shortcode_irpf() {
 	?>
 	<div class="calc-box" id="calc-irpf">
 		<div class="calc-header">
-			<h3>🦁 Calculadora de Imposto de Renda Mensal (IRPF / Salário Líquido Oficial)</h3>
+			<h3>🦁 Simulador de Imposto de Renda Mensal 2026 (IRRF e Salário Líquido)</h3>
+			<small style="color:#475569;">Vigência 2026: Tabela INSS Portaria MPS/MF nº 13/2026 + Tabela Progressiva Mensal da Receita Federal</small>
 		</div>
 		<div class="calc-grid">
 			<div class="calc-field">
@@ -437,9 +430,9 @@ function guia_cidadao_shortcode_irpf() {
 				<input type="number" id="irpf-dependentes" value="0" min="0" max="15">
 			</div>
 		</div>
-		<button type="button" class="calc-btn" onclick="calcularIRPFMensal()">Simular Imposto de Renda e Salário Líquido</button>
+		<button type="button" class="calc-btn" onclick="calcularIRPFMensal()">Simular Estimativa de IRRF e Salário Líquido</button>
 		<div class="calc-result" id="resultado-irpf">
-			<span>Imposto de Renda Retido na Fonte (IRRF):</span>
+			<span>Estimativa de Imposto de Renda Retido na Fonte (IRRF):</span>
 			<div class="calc-result-total" id="irpf-valor-imposto">R$ 0,00</div>
 			<p id="irpf-detalhes" style="font-size:0.85rem; margin-bottom:0; color:#334155;"></p>
 		</div>
@@ -454,25 +447,30 @@ function guia_cidadao_shortcode_ferias() {
 	?>
 	<div class="calc-box" id="calc-ferias">
 		<div class="calc-header">
-			<h3>🏖️ Simulador Oficial de Férias Remuneradas (CLT + 1/3 Constitucional)</h3>
+			<h3>🏖️ Simulador de Férias Remuneradas 2026 (CLT + 1/3 Constitucional)</h3>
+			<small style="color:#475569;">Vigência 2026: Tabela INSS Portaria MPS/MF nº 13, de 09/01/2026 + IRRF Mensal</small>
 		</div>
 		<div class="calc-grid">
 			<div class="calc-field">
-				<label for="ferias-salario">Salário Bruto Mensal (R$)</label>
+				<label for="ferias-salario">Salário Bruto Mensal Fixo (R$)</label>
 				<input type="number" id="ferias-salario" value="2800" min="500" step="50">
 			</div>
 			<div class="calc-field">
-				<label for="ferias-dias">Dias de Férias</label>
+				<label for="ferias-dias">Dias de Gozo de Férias</label>
 				<select id="ferias-dias">
 					<option value="30">30 dias (Completo)</option>
-					<option value="20">20 dias (+ 10 dias vendidos / Abono)</option>
+					<option value="20">20 dias (+ 10 dias vendidos / Abono Pecuniário)</option>
 					<option value="15">15 dias</option>
 				</select>
 			</div>
 		</div>
-		<button type="button" class="calc-btn" onclick="calcularFeriasCLT()">Calcular Valor Líquido das Férias</button>
+		<div class="calc-field" style="margin-bottom:1rem;">
+			<label for="ferias-dependentes">Número de Dependentes Legais (para cálculo de IRRF)</label>
+			<input type="number" id="ferias-dependentes" value="0" min="0" max="15">
+		</div>
+		<button type="button" class="calc-btn" onclick="calcularFeriasCLT()">Calcular Estimativa Líquida das Férias</button>
 		<div class="calc-result" id="resultado-ferias">
-			<span>Valor Líquido Estimado a Receber:</span>
+			<span>Estimativa Líquida a Receber:</span>
 			<div class="calc-result-total" id="ferias-valor-liquido">R$ 0,00</div>
 			<p id="ferias-detalhes" style="font-size:0.85rem; margin-bottom:0; color:#334155;"></p>
 		</div>
@@ -487,11 +485,12 @@ function guia_cidadao_shortcode_rescisao() {
 	?>
 	<div class="calc-box" id="calc-rescisao">
 		<div class="calc-header">
-			<h3>📊 Calculadora de Rescisão Trabalhista CLT + Multa 40% FGTS</h3>
+			<h3>📊 Simulador de Rescisão Trabalhista CLT 2026 + Multa do FGTS</h3>
+			<small style="color:#475569;">Vigência 2026: Tabela INSS Portaria MPS/MF nº 13, de 09/01/2026 e Art. 477 da CLT</small>
 		</div>
 		<div class="calc-grid">
 			<div class="calc-field">
-				<label for="resc-salario">Último Salário Bruto (R$)</label>
+				<label for="resc-salario">Último Salário Bruto Fixo (R$)</label>
 				<input type="number" id="resc-salario" value="2500" min="500" step="50">
 			</div>
 			<div class="calc-field">
@@ -503,17 +502,17 @@ function guia_cidadao_shortcode_rescisao() {
 				<input type="number" id="resc-dias" value="15" min="1" max="31">
 			</div>
 			<div class="calc-field">
-				<label for="resc-motivo">Motivo do Desligamento</label>
+				<label for="resc-motivo">Modalidade de Desligamento</label>
 				<select id="resc-motivo">
-					<option value="sem_justa_causa">Demissão Sem Justa Causa (Com Multa 40%)</option>
+					<option value="sem_justa_causa">Demissão Sem Justa Causa (Com Multa 40% FGTS)</option>
 					<option value="pedido_demissao">Pedido de Demissão pelo Trabalhador</option>
-					<option value="acordo">Acordo Comum (Multa 20% FGTS)</option>
+					<option value="acordo">Acordo Comum Art. 484-A (Multa 20% FGTS)</option>
 				</select>
 			</div>
 		</div>
-		<button type="button" class="calc-btn" onclick="calcularRescisaoCLT()">Simular Acerto Rescisório Agora</button>
+		<button type="button" class="calc-btn" onclick="calcularRescisaoCLT()">Simular Estimativa de Acerto Rescisório</button>
 		<div class="calc-result" id="resultado-rescisao">
-			<span>Total Estimado da Rescisão:</span>
+			<span>Estimativa Líquida da Rescisão:</span>
 			<div class="calc-result-total" id="resc-valor-total">R$ 0,00</div>
 			<p id="resc-detalhes" style="font-size:0.85rem; margin-bottom:0; color:#334155;"></p>
 		</div>
@@ -528,11 +527,12 @@ function guia_cidadao_shortcode_decimo() {
 	?>
 	<div class="calc-box" id="calc-decimo">
 		<div class="calc-header">
-			<h3>💰 Simulador de 13º Salário (1ª e 2ª Parcela)</h3>
+			<h3>💰 Simulador de 13º Salário 2026 (Estimativa de 1ª e 2ª Parcela)</h3>
+			<small style="color:#475569;">Vigência 2026: Tabela INSS Portaria Interministerial MPS/MF nº 13, de 09/01/2026 (Faixas R$ 1.621,00 a R$ 8.708,55) • Lei nº 4.749/1965</small>
 		</div>
 		<div class="calc-grid">
 			<div class="calc-field">
-				<label for="dec-salario">Salário Bruto (R$)</label>
+				<label for="dec-salario">Salário Bruto Mensal Fixo (R$)</label>
 				<input type="number" id="dec-salario" value="3000" min="500" step="50">
 			</div>
 			<div class="calc-field">
@@ -540,9 +540,13 @@ function guia_cidadao_shortcode_decimo() {
 				<input type="number" id="dec-meses" value="12" min="1" max="12">
 			</div>
 		</div>
-		<button type="button" class="calc-btn" onclick="calcularDecimoCLT()">Calcular 1ª e 2ª Parcelas</button>
+		<div class="calc-field" style="margin-bottom:1rem;">
+			<label for="dec-dependentes">Número de Dependentes Legais (para cálculo de IRRF na 2ª parcela)</label>
+			<input type="number" id="dec-dependentes" value="0" min="0" max="15">
+		</div>
+		<button type="button" class="calc-btn" onclick="calcularDecimoCLT()">Calcular Estimativa da 1ª e 2ª Parcelas</button>
 		<div class="calc-result" id="resultado-decimo">
-			<span>Total Líquido do 13º Salário:</span>
+			<span>Estimativa Total Líquida do 13º Salário:</span>
 			<div class="calc-result-total" id="dec-valor-total">R$ 0,00</div>
 			<p id="dec-detalhes" style="font-size:0.85rem; margin-bottom:0; color:#334155;"></p>
 		</div>

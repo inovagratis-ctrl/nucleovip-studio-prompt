@@ -1,28 +1,71 @@
 /**
- * Guia do Cidadão Pro - Script Ultra-Leve (Sem jQuery)
- * Inclui: Banner LGPD, Menu Mobile e 5 Calculadoras Oficiais:
- * 1. Férias CLT + 1/3
- * 2. Rescisão CLT + Multa FGTS
- * 3. 13º Salário
- * 4. Seguro-Desemprego (Faixas MTE + Quantidade de Parcelas)
- * 5. Imposto de Renda Mensal (IRPF / Salário Líquido - Receita Federal)
+ * Guia do Cidadão Pro - Script Oficial v2.0.0 (Zero jQuery)
+ * Tabelas Oficiais 2026:
+ * - Portaria Interministerial MPS/MF nº 13, de 9 de janeiro de 2026 (Salário Mínimo R$ 1.621,00 e Faixas INSS/Seguro-Desemprego)
+ * - Lei nº 4.749, de 12 de agosto de 1965 e Manual do eSocial (Prazos do 13º Salário)
+ * - Tabelas Progressivas de Incidência Mensal do IRRF (Receita Federal)
  */
 
 document.addEventListener('DOMContentLoaded', function () {
+  // 1. Gerenciador Completo de Consentimento de Cookies (LGPD)
   var lgpdBanner = document.getElementById('lgpd-banner');
-  var lgpdBtn = document.getElementById('lgpd-accept-btn');
+  var btnAcceptAll = document.getElementById('lgpd-accept-btn');
+  var btnReject = document.getElementById('lgpd-reject-btn');
+  var btnPrefs = document.getElementById('lgpd-prefs-btn');
+  var btnSavePrefs = document.getElementById('lgpd-save-prefs-btn');
+  var prefsPanel = document.getElementById('lgpd-prefs-panel');
+  var reopenLink = document.getElementById('lgpd-reopen-link');
 
-  if (lgpdBanner && !localStorage.getItem('guia_lgpd_accepted')) {
+  function salvarConsentimento(tipo) {
+    localStorage.setItem('guia_lgpd_consent', JSON.stringify({
+      status: tipo,
+      analytics: tipo === 'all' || (document.getElementById('chk-cookie-analytics') && document.getElementById('chk-cookie-analytics').checked),
+      ads: tipo === 'all' || (document.getElementById('chk-cookie-ads') && document.getElementById('chk-cookie-ads').checked),
+      updatedAt: new Date().toISOString()
+    }));
+    if (lgpdBanner) {
+      lgpdBanner.classList.add('hidden');
+    }
+  }
+
+  if (lgpdBanner && !localStorage.getItem('guia_lgpd_consent')) {
     lgpdBanner.classList.remove('hidden');
   }
 
-  if (lgpdBtn) {
-    lgpdBtn.addEventListener('click', function () {
-      localStorage.setItem('guia_lgpd_accepted', '1');
-      lgpdBanner.classList.add('hidden');
+  if (btnAcceptAll) {
+    btnAcceptAll.addEventListener('click', function () {
+      salvarConsentimento('all');
     });
   }
 
+  if (btnReject) {
+    btnReject.addEventListener('click', function () {
+      if (document.getElementById('chk-cookie-analytics')) document.getElementById('chk-cookie-analytics').checked = false;
+      if (document.getElementById('chk-cookie-ads')) document.getElementById('chk-cookie-ads').checked = false;
+      salvarConsentimento('essential_only');
+    });
+  }
+
+  if (btnPrefs && prefsPanel) {
+    btnPrefs.addEventListener('click', function () {
+      prefsPanel.style.display = prefsPanel.style.display === 'none' ? 'block' : 'none';
+    });
+  }
+
+  if (btnSavePrefs) {
+    btnSavePrefs.addEventListener('click', function () {
+      salvarConsentimento('custom');
+    });
+  }
+
+  if (reopenLink && lgpdBanner) {
+    reopenLink.addEventListener('click', function (e) {
+      e.preventDefault();
+      lgpdBanner.classList.remove('hidden');
+    });
+  }
+
+  // 2. Menu Mobile
   var menuBtn = document.getElementById('mobile-menu-btn');
   var navBar = document.querySelector('.category-nav-bar');
   if (menuBtn && navBar) {
@@ -32,22 +75,115 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 });
 
+// Formatação em Real Brasileiro (R$)
 function formatarMoedaBR(valor) {
   return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
+/**
+ * TABELA PROGRESSIVA OFICIAL DO INSS 2026
+ * Base Legal: Portaria Interministerial MPS/MF nº 13, de 9 de janeiro de 2026
+ * - Até R$ 1.621,00: 7,5%
+ * - De R$ 1.621,01 até R$ 2.902,84: 9,0%
+ * - De R$ 2.902,85 até R$ 4.354,27: 12,0%
+ * - De R$ 4.354,28 até R$ 8.708,55 (Teto 2026): 14,0%
+ * Exemplo verificado: R$ 3.000,00 -> 121,575 + 115,3656 + 11,6592 = R$ 248,60
+ */
 function calcularDescontoINSS(base) {
-  if (base <= 1518) return base * 0.075;
-  if (base <= 2793.88) return (1518 * 0.075) + ((base - 1518) * 0.09);
-  if (base <= 4190.83) return (1518 * 0.075) + ((2793.88 - 1518) * 0.09) + ((base - 2793.88) * 0.12);
-  var teto = Math.min(base, 8157.41);
-  return (1518 * 0.075) + ((2793.88 - 1518) * 0.09) + ((4190.83 - 2793.88) * 0.12) + ((teto - 4190.83) * 0.14);
+  if (base <= 0) return 0;
+  var f1 = 1621.00;
+  var f2 = 2902.84;
+  var f3 = 4354.27;
+  var teto = 8708.55;
+
+  var salario = Math.min(base, teto);
+  var desconto = 0;
+
+  if (salario <= f1) {
+    desconto = salario * 0.075;
+  } else if (salario <= f2) {
+    desconto = (f1 * 0.075) + ((salario - f1) * 0.09);
+  } else if (salario <= f3) {
+    desconto = (f1 * 0.075) + ((f2 - f1) * 0.09) + ((salario - f2) * 0.12);
+  } else {
+    desconto = (f1 * 0.075) + ((f2 - f1) * 0.09) + ((f3 - f2) * 0.12) + ((salario - f3) * 0.14);
+  }
+
+  return Math.round(desconto * 100) / 100;
 }
 
-// 1. Calculadora de Férias CLT
+/**
+ * CÁLCULO DE IRRF MENSAL (Compara Desconto Simplificado vs Deduções Legais)
+ */
+function calcularIRRF(bruto, inss, dependentes) {
+  if (bruto <= 0) return { irrf: 0, base: 0, metodo: 'Isento', faixa: 'Isento (0%)' };
+  var deducaoDep = (dependentes || 0) * 189.59;
+  var deducaoLegal = inss + deducaoDep;
+  var descontoSimplificado = 564.80;
+
+  var maiorDeducao = Math.max(deducaoLegal, descontoSimplificado);
+  var metodo = descontoSimplificado > deducaoLegal
+    ? 'Desconto Simplificado Mensal (R$ 564,80)'
+    : 'Deduções Legais (INSS + Dependentes)';
+  var base = Math.max(0, bruto - maiorDeducao);
+
+  var imposto = 0;
+  var faixa = 'Isento (0%)';
+
+  if (base <= 2259.20) {
+    imposto = 0;
+    faixa = 'Isento (0%)';
+  } else if (base <= 2826.65) {
+    imposto = (base * 0.075) - 169.44;
+    faixa = '7,5%';
+  } else if (base <= 3751.05) {
+    imposto = (base * 0.15) - 381.44;
+    faixa = '15,0%';
+  } else if (base <= 4664.68) {
+    imposto = (base * 0.225) - 662.77;
+    faixa = '22,5%';
+  } else {
+    imposto = (base * 0.275) - 896.00;
+    faixa = '27,5%';
+  }
+
+  imposto = Math.max(0, Math.round(imposto * 100) / 100);
+  return { irrf: imposto, base: base, metodo: metodo, faixa: faixa };
+}
+
+/**
+ * Calcula dinamicamente o prazo legal da 1ª e 2ª parcela do 13º no ano vigente
+ * Lei nº 4.749/1965 e orientação oficial do eSocial: prazo legal até 30 de novembro
+ * (Em 2026, 30 de novembro cai numa segunda-feira).
+ */
+function obterPrazosDecimoTerceiro() {
+  var ano = new Date().getFullYear();
+  var diasSemana = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
+  var nov30 = new Date(ano, 10, 30);
+  var dia1 = 30;
+  var dSemana1 = nov30.getDay();
+  if (dSemana1 === 6) { dia1 = 28; dSemana1 = 5; }
+  if (dSemana1 === 0) { dia1 = 29; dSemana1 = 5; }
+
+  var dez20 = new Date(ano, 11, 20);
+  var dia2 = 20;
+  var dSemana2 = dez20.getDay();
+  if (dSemana2 === 6) { dia2 = 19; dSemana2 = 5; }
+  if (dSemana2 === 0) { dia2 = 18; dSemana2 = 5; }
+
+  return {
+    ano: ano,
+    prazo1: dia1 + '/11/' + ano + ' (' + diasSemana[dSemana1] + ')',
+    prazo2: dia2 + '/12/' + ano + ' (' + diasSemana[dSemana2] + ')'
+  };
+}
+
+// 1. Calculadora de Férias CLT (2026)
 window.calcularFeriasCLT = function () {
   var salario = parseFloat(document.getElementById('ferias-salario').value) || 0;
   var dias = parseInt(document.getElementById('ferias-dias').value, 10) || 30;
+  var depEl = document.getElementById('ferias-dependentes');
+  var dependentes = depEl ? (parseInt(depEl.value, 10) || 0) : 0;
 
   var valorProporcional = (salario / 30) * dias;
   var tercoConstitucional = valorProporcional / 3;
@@ -55,19 +191,23 @@ window.calcularFeriasCLT = function () {
 
   var brutoTributavel = valorProporcional + tercoConstitucional;
   var inss = calcularDescontoINSS(brutoTributavel);
-  var liquido = brutoTributavel - inss + abonoPecuniario;
+  var irObj = calcularIRRF(brutoTributavel, inss, dependentes);
+  var liquido = brutoTributavel - inss - irObj.irrf + abonoPecuniario;
 
   var box = document.getElementById('resultado-ferias');
   document.getElementById('ferias-valor-liquido').textContent = formatarMoedaBR(liquido);
   document.getElementById('ferias-detalhes').innerHTML =
-    '<strong>Resumo:</strong> Férias Brutas (' + dias + ' dias): ' + formatarMoedaBR(valorProporcional) +
-    ' | + 1/3 Constitucional: ' + formatarMoedaBR(tercoConstitucional) +
-    (abonoPecuniario > 0 ? ' | + Abono 10 dias (isento): ' + formatarMoedaBR(abonoPecuniario) : '') +
-    ' | - INSS Estimado: ' + formatarMoedaBR(inss);
+    '<strong>Memória de Cálculo Estimada (Tabela 2026):</strong><br>' +
+    '• Férias Brutas (' + dias + ' dias): ' + formatarMoedaBR(valorProporcional) + '<br>' +
+    '• + Adicional de 1/3 Constitucional: ' + formatarMoedaBR(tercoConstitucional) + '<br>' +
+    (abonoPecuniario > 0 ? '• + Abono Pecuniário (10 dias vendidos — isento de INSS/IRRF): ' + formatarMoedaBR(abonoPecuniario) + '<br>' : '') +
+    '• - Desconto INSS (Portaria MPS/MF nº 13/2026): <strong>' + formatarMoedaBR(inss) + '</strong><br>' +
+    '• - Desconto IRRF (' + irObj.metodo + '): <strong>' + formatarMoedaBR(irObj.irrf) + '</strong><br>' +
+    '<small><em>Nota: Estimativa para salário fixo. Médias de horas extras, adicional noturno, insalubridade ou pensão alimentícia podem alterar o valor final.</em></small>';
   box.classList.add('active');
 };
 
-// 2. Calculadora de Rescisão Trabalhista CLT
+// 2. Calculadora de Rescisão Trabalhista CLT (2026)
 window.calcularRescisaoCLT = function () {
   var salario = parseFloat(document.getElementById('resc-salario').value) || 0;
   var meses = parseInt(document.getElementById('resc-meses').value, 10) || 1;
@@ -86,41 +226,59 @@ window.calcularRescisaoCLT = function () {
     multaFgts = fgtsAcumulado * 0.20;
   }
 
-  var inss = calcularDescontoINSS(saldoSalario) + calcularDescontoINSS(decimoProp);
-  var total = saldoSalario + decimoProp + feriasProp + multaFgts - inss;
+  var inssSaldo = calcularDescontoINSS(saldoSalario);
+  var inss13 = calcularDescontoINSS(decimoProp);
+  var irSaldo = calcularIRRF(saldoSalario, inssSaldo, 0).irrf;
+  var ir13 = calcularIRRF(decimoProp, inss13, 0).irrf;
+  var totalDescontos = inssSaldo + inss13 + irSaldo + ir13;
+
+  var total = saldoSalario + decimoProp + feriasProp + multaFgts - totalDescontos;
 
   var box = document.getElementById('resultado-rescisao');
   document.getElementById('resc-valor-total').textContent = formatarMoedaBR(total);
   document.getElementById('resc-detalhes').innerHTML =
-    '<strong>Detalhamento:</strong> Saldo de Salário (' + dias + 'd): ' + formatarMoedaBR(saldoSalario) +
-    ' | 13º Proporcional (' + meses + '/12): ' + formatarMoedaBR(decimoProp) +
-    ' | Férias Prop. + 1/3: ' + formatarMoedaBR(feriasProp) +
-    ' | Multa FGTS: ' + formatarMoedaBR(multaFgts) +
-    ' | - Desconto INSS: ' + formatarMoedaBR(inss);
+    '<strong>Memória de Cálculo Estimada (Tabela 2026):</strong><br>' +
+    '• Saldo de Salário (' + dias + ' dias): ' + formatarMoedaBR(saldoSalario) + '<br>' +
+    '• 13º Salário Proporcional (' + meses + '/12 avos): ' + formatarMoedaBR(decimoProp) + '<br>' +
+    '• Férias Proporcionais + 1/3 (indenizadas — isentas de INSS/IRRF): ' + formatarMoedaBR(feriasProp) + '<br>' +
+    '• Multa Rescisória sobre FGTS estimado do período: ' + formatarMoedaBR(multaFgts) + '<br>' +
+    '• - INSS sobre Saldo de Salário: ' + formatarMoedaBR(inssSaldo) + ' | - INSS sobre 13º: ' + formatarMoedaBR(inss13) + '<br>' +
+    '• - IRRF estimado (Saldo + 13º): ' + formatarMoedaBR(irSaldo + ir13) + '<br>' +
+    '<small><em>Nota: Estimativa básica. Não inclui férias vencidas de períodos anteriores, aviso prévio indenizado específico por tempo de casa (Lei nº 12.506/2011) ou saldo anterior de FGTS.</em></small>';
   box.classList.add('active');
 };
 
-// 3. Calculadora de 13º Salário CLT
+// 3. Calculadora de 13º Salário CLT (Portaria Interministerial MPS/MF nº 13/2026 + Lei 4.749/1965)
 window.calcularDecimoCLT = function () {
   var salario = parseFloat(document.getElementById('dec-salario').value) || 0;
   var meses = parseInt(document.getElementById('dec-meses').value, 10) || 12;
+  var depEl = document.getElementById('dec-dependentes');
+  var dependentes = depEl ? (parseInt(depEl.value, 10) || 0) : 0;
 
   var bruto = (salario / 12) * meses;
-  var primeiraParcela = bruto / 2;
+  var primeiraParcela = Math.round((bruto / 2) * 100) / 100;
   var inss = calcularDescontoINSS(bruto);
-  var segundaParcela = bruto - primeiraParcela - inss;
-  var totalLiquido = primeiraParcela + segundaParcela;
+  var irObj = calcularIRRF(bruto, inss, dependentes);
+  var irrf = irObj.irrf;
+
+  var segundaParcela = Math.round((bruto - primeiraParcela - inss - irrf) * 100) / 100;
+  var totalLiquido = Math.round((primeiraParcela + segundaParcela) * 100) / 100;
+  var prazos = obterPrazosDecimoTerceiro();
 
   var box = document.getElementById('resultado-decimo');
   document.getElementById('dec-valor-total').textContent = formatarMoedaBR(totalLiquido);
   document.getElementById('dec-detalhes').innerHTML =
-    '<strong>1ª Parcela (até 28/Nov sem descontos):</strong> ' + formatarMoedaBR(primeiraParcela) +
-    ' | <strong>2ª Parcela (até 20/Dez com desconto INSS):</strong> ' + formatarMoedaBR(segundaParcela) +
-    ' | Desconto INSS: ' + formatarMoedaBR(inss);
+    '<strong>Memória de Cálculo Estimada (Vigência ' + prazos.ano + ' — Portaria Interministerial MPS/MF nº 13/2026):</strong><br>' +
+    '• <strong>13º Bruto Proporcional (' + meses + '/12 avos):</strong> ' + formatarMoedaBR(bruto) + '<br>' +
+    '• <strong>1ª Parcela (Prazo legal até ' + prazos.prazo1 + ' — sem descontos):</strong> ' + formatarMoedaBR(primeiraParcela) + '<br>' +
+    '• <strong>2ª Parcela (Prazo legal até ' + prazos.prazo2 + ' — com descontos):</strong> ' + formatarMoedaBR(segundaParcela) + '<br>' +
+    '• <strong>Desconto de INSS (Progressivo 2026):</strong> ' + formatarMoedaBR(inss) + '<br>' +
+    '• <strong>Desconto de IRRF (' + irObj.metodo + '):</strong> ' + formatarMoedaBR(irrf) + '<br>' +
+    '<small><em>Observação técnica: Cálculo estimativo para remuneração fixa mensal. Caso receba horas extras, comissões ou adicionais variáveis, a média anual dessas verbas integra a base de cálculo conforme Súmula 45 do TST e Manual do eSocial.</em></small>';
   box.classList.add('active');
 };
 
-// 4. Calculadora de Seguro-Desemprego (Regras MTE / Codefat)
+// 4. Calculadora de Seguro-Desemprego 2026 (Salário Mínimo R$ 1.621,00 — Portaria MPS/MF nº 13/2026)
 window.calcularSeguroDesemprego = function () {
   var s1 = parseFloat(document.getElementById('sd-sal1').value) || 0;
   var s2 = parseFloat(document.getElementById('sd-sal2').value) || 0;
@@ -129,14 +287,16 @@ window.calcularSeguroDesemprego = function () {
   var vez = parseInt(document.getElementById('sd-vez').value, 10) || 1;
 
   var media = (s1 + s2 + s3) / 3;
-  var pisoMinimo = 1518.00;
-  var tetoMaximo = 2424.11;
+  var pisoMinimo = 1621.00;
+  var faixa1Limite = 2283.72;
+  var faixa2Limite = 3806.59;
+  var tetoMaximo = 2588.41;
   var valorParcela = 0;
 
-  if (media <= 2138.76) {
+  if (media <= faixa1Limite) {
     valorParcela = media * 0.80;
-  } else if (media <= 3564.96) {
-    valorParcela = 1711.01 + ((media - 2138.76) * 0.50);
+  } else if (media <= faixa2Limite) {
+    valorParcela = (faixa1Limite * 0.80) + ((media - faixa1Limite) * 0.50);
   } else {
     valorParcela = tetoMaximo;
   }
@@ -144,12 +304,13 @@ window.calcularSeguroDesemprego = function () {
   if (valorParcela < pisoMinimo) {
     valorParcela = pisoMinimo;
   }
+  valorParcela = Math.round(valorParcela * 100) / 100;
 
   var qtdParcelas = 0;
   var aviso = '';
   if (vez === 1) {
     if (meses < 12) {
-      aviso = 'Para a 1ª solicitação, a lei exige no mínimo 12 meses trabalhados nos últimos 18 meses.';
+      aviso = 'Para a 1ª solicitação, a Lei nº 7.998/1990 exige no mínimo 12 meses trabalhados nos últimos 18 meses.';
     } else if (meses < 24) {
       qtdParcelas = 4;
     } else {
@@ -183,61 +344,33 @@ window.calcularSeguroDesemprego = function () {
     document.getElementById('sd-detalhes').innerHTML = '<strong>Atenção:</strong> ' + aviso;
   } else {
     var totalBeneficio = valorParcela * qtdParcelas;
-    document.getElementById('sd-valor-parcela').textContent = qtdParcelas + 'x de ' + formatarMoedaBR(valorParcela);
+    document.getElementById('sd-valor-parcela').textContent = qtdParcelas + ' parcelas de ' + formatarMoedaBR(valorParcela);
     document.getElementById('sd-detalhes').innerHTML =
       '<strong>Média Salarial dos últimos 3 meses:</strong> ' + formatarMoedaBR(media) +
-      ' | <strong>Total acumulado no período:</strong> ' + formatarMoedaBR(totalBeneficio) +
-      ' (Solicitação pelo app Carteira de Trabalho Digital ou portal Gov.br).';
+      ' | <strong>Total estimado no período:</strong> ' + formatarMoedaBR(totalBeneficio) +
+      '<br><small><em>Vigência 2026: Piso de R$ 1.621,00 (Salário Mínimo Nacional) e Teto de R$ 2.588,41 conforme reajuste anual do MTE/Codefat.</em></small>';
   }
   box.classList.add('active');
 };
 
-// 5. Calculadora de Imposto de Renda Retido na Fonte (IRPF / Salário Líquido)
+// 5. Calculadora de Imposto de Renda Retido na Fonte (IRPF / Salário Líquido 2026)
 window.calcularIRPFMensal = function () {
   var salarioBruto = parseFloat(document.getElementById('irpf-salario').value) || 0;
   var dependentes = parseInt(document.getElementById('irpf-dependentes').value, 10) || 0;
 
   var inss = calcularDescontoINSS(salarioBruto);
-  var deducaoDependentes = dependentes * 189.59;
-  var deducaoLegal = inss + deducaoDependentes;
-  var descontoSimplificado = 564.80;
-
-  // Receita Federal aplica automaticamente o desconto mais vantajoso ao trabalhador
-  var maiorDeducao = Math.max(deducaoLegal, descontoSimplificado);
-  var metodoUsado = descontoSimplificado > deducaoLegal ? 'Desconto Simplificado (R$ 564,80)' : 'Deduções Legais (INSS + Dependentes)';
-  var baseCalculo = Math.max(0, salarioBruto - maiorDeducao);
-
-  var irrf = 0;
-  var faixa = 'Isento (0%)';
-
-  if (baseCalculo <= 2259.20) {
-    irrf = 0;
-    faixa = 'Isento (0%)';
-  } else if (baseCalculo <= 2826.65) {
-    irrf = (baseCalculo * 0.075) - 169.44;
-    faixa = '7,5%';
-  } else if (baseCalculo <= 3751.05) {
-    irrf = (baseCalculo * 0.15) - 381.44;
-    faixa = '15,0%';
-  } else if (baseCalculo <= 4664.68) {
-    irrf = (baseCalculo * 0.225) - 662.77;
-    faixa = '22,5%';
-  } else {
-    irrf = (baseCalculo * 0.275) - 896.00;
-    faixa = '27,5%';
-  }
-
-  irrf = Math.max(0, irrf);
+  var irObj = calcularIRRF(salarioBruto, inss, dependentes);
+  var irrf = irObj.irrf;
   var salarioLiquido = salarioBruto - inss - irrf;
   var aliquotaEfetiva = salarioBruto > 0 ? ((irrf / salarioBruto) * 100).toFixed(2) : '0.00';
 
   var box = document.getElementById('resultado-irpf');
   document.getElementById('irpf-valor-imposto').textContent =
-    irrf === 0 ? 'ISENTO (R$ 0,00 de IRPF)' : formatarMoedaBR(irrf) + ' / mês';
+    irrf === 0 ? 'ISENTO (R$ 0,00 de IRRF)' : formatarMoedaBR(irrf) + ' / mês';
   document.getElementById('irpf-detalhes').innerHTML =
-    '<strong>Salário Líquido Final:</strong> ' + formatarMoedaBR(salarioLiquido) +
-    ' | <strong>Desconto INSS:</strong> ' + formatarMoedaBR(inss) +
-    ' | <strong>Faixa IRPF:</strong> ' + faixa + ' (Alíquota efetiva: ' + aliquotaEfetiva + '%)' +
-    '<br><small>Método mais vantajoso aplicado: ' + metodoUsado + ' (Base de cálculo: ' + formatarMoedaBR(baseCalculo) + ')</small>';
+    '<strong>Salário Líquido Estimado:</strong> ' + formatarMoedaBR(salarioLiquido) +
+    ' | <strong>Desconto INSS (Tabela 2026):</strong> ' + formatarMoedaBR(inss) +
+    ' | <strong>Faixa IRPF:</strong> ' + irObj.faixa + ' (Alíquota efetiva: ' + aliquotaEfetiva + '%)' +
+    '<br><small>Método mais vantajoso aplicado: ' + irObj.metodo + ' (Base de cálculo: ' + formatarMoedaBR(irObj.base) + ')</small>';
   box.classList.add('active');
 };

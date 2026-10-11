@@ -1,6 +1,7 @@
 <?php
 /**
  * Template Principal (Homepage do Portal de Utilidade Pública)
+ * Inclui Chamada Principal (Hero) na Primeira Dobra com ação direta + 4 Pilares + Artigos Ilustrados
  */
 get_header();
 ?>
@@ -8,17 +9,31 @@ get_header();
 <main id="primary" class="site-main container">
 
 	<?php if ( is_home() && ! is_paged() ) : ?>
+		<!-- Primeira Dobra (Hero Principal): Benefício concreto e ação imediata sem competir com anúncios -->
+		<section class="hero-civic-banner" aria-label="Destaque Principal e Simuladores Oficiais 2026">
+			<div class="hero-civic-content">
+				<span class="hero-badge-2026">✔ TABELAS OFICIAIS 2026 ATUALIZADAS (PORTARIA MPS/MF Nº 13/2026)</span>
+				<h2>Simule Seus Direitos Trabalhistas e Consulte Guias Oficiais Passo a Passo</h2>
+				<p>Calcule gratuitamente a estimativa do seu <strong>13º Salário</strong>, <strong>Rescisão CLT</strong>, <strong>Férias</strong>, <strong>Seguro-Desemprego</strong> e <strong>Imposto de Renda</strong> com base nas alíquotas progressivas oficiais vigentes em 2026.</p>
+				<div class="hero-cta-group">
+					<a href="<?php echo esc_url( home_url( '/simulador-decimo-terceiro-salario-1-e-2-parcela/' ) ); ?>" class="hero-btn-primary">💰 Calcular 13º Salário 2026</a>
+					<a href="<?php echo esc_url( home_url( '/calculadora-rescisao-trabalhista-clt-multa-fgts/' ) ); ?>" class="hero-btn-secondary">📊 Simular Rescisão CLT</a>
+					<a href="<?php echo esc_url( home_url( '/calculadoras/' ) ); ?>" class="hero-btn-secondary">🧮 Ver Todas as 5 Calculadoras</a>
+				</div>
+			</div>
+		</section>
+
 		<!-- Hub de Acesso Rápido às 4 Categorias Pilares -->
 		<section class="utility-hub-section" aria-label="Serviços e Guias de Utilidade Pública">
 			<div class="section-header">
-				<h2 class="section-title">Central de Consulta Rápida do Cidadão</h2>
+				<h2 class="section-title">Navegue por Categoria de Utilidade Pública</h2>
 			</div>
 
 			<div class="utility-grid">
 				<a href="<?php echo esc_url( home_url( '/category/beneficios-trabalhador/' ) ); ?>" class="utility-card">
 					<div class="utility-icon blue">📋</div>
 					<h3>Benefícios & Trabalhador</h3>
-					<p>Calendários e consultas do INSS, FGTS, Bolsa Família, PIS/PASEP e Seguro-Desemprego.</p>
+					<p>Calendários e consultas do INSS, FGTS, Bolsa Família, PIS/PASEP, BPC/LOAS e Seguro-Desemprego.</p>
 					<span class="utility-card-cta">Acessar guias &rarr;</span>
 				</a>
 
@@ -32,14 +47,14 @@ get_header();
 				<a href="<?php echo esc_url( home_url( '/category/contas-financas/' ) ); ?>" class="utility-card">
 					<div class="utility-icon amber">💳</div>
 					<h3>Contas & Finanças</h3>
-					<p>2ª via de contas, consulta de CPF, negociação de dívidas e declaração de Imposto de Renda.</p>
+					<p>Valores a Receber (BC), Tarifa Social de Energia, CPF e Restituição do Imposto de Renda.</p>
 					<span class="utility-card-cta">Consultar agora &rarr;</span>
 				</a>
 
 				<a href="<?php echo esc_url( home_url( '/calculadoras/' ) ); ?>" class="utility-card">
 					<div class="utility-icon purple">🧮</div>
-					<h3>Calculadoras CLT</h3>
-					<p>Simuladores gratuitos e imediatos de Rescisão Trabalhista, Férias Remuneradas e 13º Salário.</p>
+					<h3>Calculadoras CLT 2026</h3>
+					<p>Simuladores auditados de 13º Salário, Rescisão, Férias, Seguro-Desemprego e IRPF.</p>
 					<span class="utility-card-cta">Calcular grátis &rarr;</span>
 				</a>
 			</div>
@@ -56,7 +71,7 @@ get_header();
 					} elseif ( is_search() ) {
 						printf( 'Resultados da busca por: "%s"', get_search_query() );
 					} else {
-						echo 'Últimas Atualizações e Guias Passo a Passo';
+						echo 'Guias Verificados e Simuladores em Destaque';
 					}
 					?>
 				</h2>
@@ -71,13 +86,11 @@ get_header();
 						$cat_name   = ! empty( $categories ) ? $categories[0]->name : 'Utilidade Pública';
 						?>
 						<article id="post-<?php the_ID(); ?>" <?php post_class( 'post-card' ); ?>>
-							<a href="<?php the_permalink(); ?>" class="post-card-thumb" aria-hidden="true" tabindex="-1">
-								<?php if ( has_post_thumbnail() ) : ?>
+							<?php if ( has_post_thumbnail() ) : ?>
+								<a href="<?php the_permalink(); ?>" class="post-card-thumb" aria-hidden="true" tabindex="-1">
 									<?php the_post_thumbnail( 'medium_large' ); ?>
-								<?php else : ?>
-									<span><strong><?php echo esc_html( $cat_name ); ?></strong><br><small>Guia Atualizado</small></span>
-								<?php endif; ?>
-							</a>
+								</a>
+							<?php endif; ?>
 							<div class="post-card-body">
 								<div>
 									<span class="post-category-badge"><?php echo esc_html( $cat_name ); ?></span>
@@ -89,8 +102,8 @@ get_header();
 									<?php echo wp_kses_post( wp_trim_words( get_the_excerpt(), 22, '...' ) ); ?>
 								</div>
 								<div class="post-card-meta">
-									<span>📅 Atualizado em <?php echo esc_html( get_the_modified_date( 'd/m/Y' ) ); ?></span>
-									<a href="<?php the_permalink(); ?>" style="font-weight:700;">Ler guia &rarr;</a>
+									<span>📅 Revisado em <?php echo esc_html( get_the_modified_date( 'd/m/Y' ) ); ?></span>
+									<a href="<?php the_permalink(); ?>" style="font-weight:700;">Acessar &rarr;</a>
 								</div>
 							</div>
 						</article>
@@ -105,12 +118,6 @@ get_header();
 						'next_text' => 'Próxima &rarr;',
 					) );
 					?>
-				</div>
-
-			<?php else : ?>
-				<div class="single-article-card">
-					<h3>Use o menu "Portal & AdSense" no Painel do WordPress</h3>
-					<p>Para criar automaticamente as <strong>4 Categorias</strong>, as <strong>Páginas Obrigatórias de Aprovação no Google AdSense</strong> e importar notícias reais direto da <strong>Agência Brasil / Gov.br</strong>, acesse o menu <strong>Portal & AdSense</strong> no seu painel administrativo.</p>
 				</div>
 			<?php endif; ?>
 		</div>

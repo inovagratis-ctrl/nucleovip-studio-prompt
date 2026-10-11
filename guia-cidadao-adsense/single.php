@@ -48,13 +48,13 @@ get_header();
 						<?php the_content(); ?>
 					</div>
 
-					<!-- Caixa de Autoridade Editorial (E-E-A-T) exigida pelo Google para aprovar sites YMYL / Utilidade Pública -->
+					<!-- Caixa de Autoridade Editorial (E-E-A-T) com Editor Responsável Nomeado -->
 					<div class="author-eeat-box">
-						<div class="author-avatar" aria-hidden="true">NV</div>
+						<div class="author-avatar" aria-hidden="true">ET</div>
 						<div>
-							<strong>Equipe Editorial <?php bloginfo( 'name' ); ?></strong>
+							<strong>Revisão Técnica: Eusimar Teixeira — Editor Responsável (<?php bloginfo( 'name' ); ?>)</strong>
 							<p style="font-size:0.85rem; color:#475569; margin-top:0.25rem;">
-								Conteúdo de utilidade pública apurado com base em fontes primárias oficiais (Portal Gov.br, Agência Brasil/EBC, Agência Senado, Ministério do Trabalho e Receita Federal). Consulte nossa <a href="<?php echo esc_url( home_url( '/sobre-nos/' ) ); ?>">Política Editorial e de Verificação</a>.
+								Conteúdo e tabelas paramétricas conferidos conforme atos normativos vigentes em 2026 (<a href="https://www.gov.br/previdencia/pt-br/assuntos/rpps/documentos/PortariaInterministerialMPSMF13de9dejaneirode2026.pdf" target="_blank" rel="noopener nofollow">Portaria Interministerial MPS/MF nº 13/2026</a>, <a href="https://www.planalto.gov.br/ccivil_03/leis/l4749.htm" target="_blank" rel="noopener nofollow">Lei nº 4.749/1965</a>, CLT e Portal Gov.br). Consulte nosso <a href="<?php echo esc_url( home_url( '/sobre-nos/' ) ); ?>">Expediente Editorial</a> ou <a href="<?php echo esc_url( home_url( '/contato/' ) ); ?>">reporte uma atualização</a>.
 							</p>
 						</div>
 					</div>

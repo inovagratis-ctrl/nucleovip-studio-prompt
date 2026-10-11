@@ -905,45 +905,148 @@ img {
   color: #94a3b8;
 }
 
-/* LGPD Cookie Consent Bar (Required for Google AdSense Approval) */
+/* ==========================================================================
+   HERO CIVIC BANNER (Primeira Dobra de Alta Confiança)
+   ========================================================================== */
+.hero-civic-banner {
+  background: linear-gradient(135deg, #071d41 0%, #0c326f 60%, #1351b4 100%);
+  color: #ffffff;
+  border-radius: 12px;
+  padding: 2rem 2.25rem;
+  margin: 1.5rem 0 1.75rem;
+  box-shadow: var(--shadow-md);
+  border-left: 6px solid var(--accent);
+}
+
+.hero-badge-2026 {
+  display: inline-block;
+  background: rgba(34, 197, 94, 0.2);
+  border: 1px solid rgba(134, 239, 172, 0.45);
+  color: #bbf7d0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.25rem 0.65rem;
+  border-radius: 99px;
+  margin-bottom: 0.75rem;
+  letter-spacing: 0.03em;
+}
+
+.hero-civic-banner h2 {
+  font-size: 1.65rem;
+  font-weight: 800;
+  line-height: 1.25;
+  margin-bottom: 0.65rem;
+  color: #fff;
+}
+
+.hero-civic-banner p {
+  font-size: 0.98rem;
+  color: #dbeafe;
+  max-width: 780px;
+  margin-bottom: 1.25rem;
+}
+
+.hero-cta-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.hero-btn-primary {
+  background: var(--accent);
+  color: #fff !important;
+  font-weight: 700;
+  font-size: 0.92rem;
+  padding: 0.65rem 1.25rem;
+  border-radius: 8px;
+  text-decoration: none !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.hero-btn-primary:hover {
+  background: var(--accent-hover);
+}
+
+.hero-btn-secondary {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #fff !important;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 0.65rem 1.15rem;
+  border-radius: 8px;
+  text-decoration: none !important;
+}
+
+.hero-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+/* LGPD Cookie Consent Bar (Compacto, Não-Intrusivo e com 3 escolhas claras) */
 .lgpd-cookie-banner {
   position: fixed;
-  bottom: 1rem;
-  left: 1rem;
-  right: 1rem;
-  max-width: 980px;
+  bottom: 0.75rem;
+  left: 0.75rem;
+  right: 0.75rem;
+  max-width: 1060px;
   margin: 0 auto;
-  background: #0f172a;
+  background: rgba(15, 23, 42, 0.97);
   color: #f8fafc;
-  padding: 1rem 1.25rem;
+  padding: 0.85rem 1.15rem;
   border-radius: 10px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   z-index: 9999;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
 }
 
 .lgpd-cookie-banner.hidden {
   display: none;
 }
 
+.lgpd-main-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
 .lgpd-cookie-banner a {
-  color: #60a5fa;
+  color: #93c5fd;
   text-decoration: underline;
 }
 
+.lgpd-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
 .lgpd-btn {
-  background: var(--accent);
-  color: #fff;
   border: none;
-  padding: 0.55rem 1.2rem;
+  padding: 0.45rem 0.9rem;
   border-radius: 6px;
   font-weight: 700;
+  font-size: 0.78rem;
   cursor: pointer;
   white-space: nowrap;
+}
+
+.lgpd-btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+
+.lgpd-btn-secondary {
+  background: #334155;
+  color: #f8fafc;
+}
+
+.lgpd-btn-outline {
+  background: transparent;
+  border: 1px solid #64748b;
+  color: #e2e8f0;
 }
 
 /* ==========================================================================
