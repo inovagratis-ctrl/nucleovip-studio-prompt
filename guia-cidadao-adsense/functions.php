@@ -767,8 +767,12 @@ function guia_cidadao_render_admin_central() {
 }
 
 /**
- * 8. GERADOR AUTOMÁTICO DE IMAGENS DESTACADAS HD (1200x675 - PADRÃO GOOGLE DISCOVER 16:9)
- * Gera capas editoriais exclusivas com a identidade visual da categoria para todos os artigos!
+ * 8. GERADOR AUTOMÁTICO DE ILUSTRAÇÕES EDITORIAIS EM WEBP (1200x675 - PADRÃO 16:9 LEVE)
+ * Segue as melhores práticas de UX:
+ * - Proporção 16:9 (1200x675px) em formato leve WebP
+ * - Fundo claro editorial com ilustração gráfica centralizada (não corta no celular e elimina blocos escuros)
+ * - Sem excesso de texto dentro da imagem (apenas um selo curto de 2 palavras do assunto centralizado)
+ * - Texto alternativo (alt) descritivo da ilustração, sem repetir o título inteiro do artigo
  */
 function guia_cidadao_generate_post_thumbnail( $post_id ) {
 	if ( wp_is_post_revision( $post_id ) || 'post' !== get_post_type( $post_id ) ) {
@@ -796,99 +800,167 @@ function guia_cidadao_generate_post_thumbnail( $post_id ) {
 	}
 
 	$categories = get_the_category( $post_id );
-	$cat_name   = ! empty( $categories ) ? mb_strtoupper( $categories[0]->name, 'UTF-8' ) : 'UTILIDADE PÚBLICA';
 	$cat_slug   = ! empty( $categories ) ? $categories[0]->slug : 'geral';
+	$lower      = mb_strtolower( $title, 'UTF-8' );
+
+	// Define tema visual específico por assunto (Fundo claro suave + Ilustração centralizada + Alt descritivo)
+	if ( false !== mb_strpos( $lower, '13º' ) || false !== mb_strpos( $lower, 'décimo' ) ) {
+		$bg_top = array( 240, 253, 244 ); $bg_bot = array( 220, 252, 231 );
+		$primary = array( 21, 128, 61 );  $accent = array( 12, 50, 111 );
+		$badge = '13º SALÁRIO CLT';
+		$sub   = '1ª e 2ª Parcelas • Tabela 2026';
+		$alt   = 'Ilustração de demonstrativo de pagamento e calculadora para estimativa de 13º salário';
+		$icon_type = 'calculator';
+	} elseif ( false !== mb_strpos( $lower, 'rescisão' ) || false !== mb_strpos( $lower, 'fgts' ) ) {
+		$bg_top = array( 239, 246, 255 ); $bg_bot = array( 219, 234, 254 );
+		$primary = array( 29, 78, 216 );  $accent = array( 22, 136, 33 );
+		$badge = ( false !== mb_strpos( $lower, 'rescisão' ) ) ? 'RESCISÃO CLT' : 'CONSULTA FGTS';
+		$sub   = 'Saldo, Extrato e Direitos';
+		$alt   = 'Ilustração de carteira de trabalho digital e extrato de Fundo de Garantia';
+		$icon_type = 'wallet';
+	} elseif ( false !== mb_strpos( $lower, 'férias' ) ) {
+		$bg_top = array( 240, 249, 255 ); $bg_bot = array( 224, 242, 254 );
+		$primary = array( 3, 105, 161 );  $accent = array( 245, 158, 11 );
+		$badge = 'FÉRIAS CLT + 1/3';
+		$sub   = 'Simulador de Valor Líquido';
+		$alt   = 'Ilustração de calendário de descanso remunerado e cálculo de terço constitucional';
+		$icon_type = 'calendar';
+	} elseif ( false !== mb_strpos( $lower, 'seguro-desemprego' ) ) {
+		$bg_top = array( 245, 243, 255 ); $bg_bot = array( 237, 233, 254 );
+		$primary = array( 109, 40, 217 ); $accent = array( 16, 185, 129 );
+		$badge = 'SEGURO-DESEMPREGO';
+		$sub   = 'Parcelas e Faixas MTE 2026';
+		$alt   = 'Ilustração de escudo de proteção trabalhista e tabela de parcelas do Seguro-Desemprego';
+		$icon_type = 'shield';
+	} elseif ( false !== mb_strpos( $lower, 'imposto de renda' ) || false !== mb_strpos( $lower, 'irpf' ) ) {
+		$bg_top = array( 254, 252, 232 ); $bg_bot = array( 254, 240, 138 );
+		$primary = array( 180, 83, 9 );   $accent = array( 12, 50, 111 );
+		$badge = 'IMPOSTO DE RENDA';
+		$sub   = 'Faixas de Isenção e Restituição';
+		$alt   = 'Ilustração de formulário de declaração fiscal e cálculo de alíquota efetiva';
+		$icon_type = 'chart';
+	} elseif ( 'documentos-gov-br' === $cat_slug ) {
+		$bg_top = array( 240, 253, 250 ); $bg_bot = array( 204, 251, 241 );
+		$primary = array( 15, 118, 110 ); $accent = array( 19, 81, 180 );
+		$badge = 'DOCUMENTO DIGITAL';
+		$sub   = 'Emissão e Validação Gov.br';
+		$alt   = 'Ilustração de documento de identificação nacional com QR Code e validação digital';
+		$icon_type = 'idcard';
+	} elseif ( 'contas-financas' === $cat_slug ) {
+		$bg_top = array( 255, 251, 235 ); $bg_bot = array( 254, 243, 199 );
+		$primary = array( 180, 83, 9 );   $accent = array( 21, 128, 61 );
+		$badge = 'CONSULTA FINANCEIRA';
+		$sub   = 'Serviços Públicos e Economia';
+		$alt   = 'Ilustração de painel de consulta financeira e tarifas de serviços públicos';
+		$icon_type = 'chart';
+	} else {
+		$bg_top = array( 248, 250, 252 ); $bg_bot = array( 226, 232, 240 );
+		$primary = array( 12, 50, 111 );  $accent = array( 22, 136, 33 );
+		$badge = 'DIREITOS E BENEFÍCIOS';
+		$sub   = 'Consulta Oficial Passo a Passo';
+		$alt   = 'Ilustração de cartão de benefício social e guia informativo ao cidadão';
+		$icon_type = 'shield';
+	}
 
 	$w = 1200;
 	$h = 675;
 	$im = imagecreatetruecolor( $w, $h );
 
-	// Paleta de cores por categoria (Estilo Editorial Moderno / Gov.br)
-	if ( 'beneficios-trabalhador' === $cat_slug ) {
-		$bg1 = array( 10, 42, 94 );     // Azul Profundo Cívico
-		$bg2 = array( 19, 81, 180 );    // Azul Gov
-		$acc = array( 34, 197, 94 );    // Verde Esmeralda
-	} elseif ( 'documentos-gov-br' === $cat_slug ) {
-		$bg1 = array( 6, 78, 59 );      // Verde Institucional Escuro
-		$bg2 = array( 22, 136, 33 );    // Verde Gov
-		$acc = array( 250, 204, 21 );   // Amarelo Ouro
-	} elseif ( 'contas-financas' === $cat_slug ) {
-		$bg1 = array( 15, 23, 42 );     // Slate Finanças
-		$bg2 = array( 30, 58, 138 );    // Azul Finanças
-		$acc = array( 245, 158, 11 );   // Âmbar Destaque
-	} else {
-		$bg1 = array( 49, 16, 104 );    // Roxo Calculadoras
-		$bg2 = array( 88, 28, 135 );    // Violeta
-		$acc = array( 56, 189, 248 );   // Ciano
-	}
-
-	// Renderiza gradiente suave
+	// 1. Fundo claro suave (gradiente pastel luminoso)
 	for ( $y = 0; $y < $h; $y++ ) {
-		$r = (int) ( $bg1[0] + ( $bg2[0] - $bg1[0] ) * ( $y / $h ) );
-		$g = (int) ( $bg1[1] + ( $bg2[1] - $bg1[1] ) * ( $y / $h ) );
-		$b = (int) ( $bg1[2] + ( $bg2[2] - $bg1[2] ) * ( $y / $h ) );
-		$line_col = imagecolorallocate( $im, $r, $g, $b );
-		imageline( $im, 0, $y, $w, $y, $line_col );
+		$r = (int) ( $bg_top[0] + ( $bg_bot[0] - $bg_top[0] ) * ( $y / $h ) );
+		$g = (int) ( $bg_top[1] + ( $bg_bot[1] - $bg_top[1] ) * ( $y / $h ) );
+		$b = (int) ( $bg_top[2] + ( $bg_bot[2] - $bg_top[2] ) * ( $y / $h ) );
+		$col = imagecolorallocate( $im, $r, $g, $b );
+		imageline( $im, 0, $y, $w, $y, $col );
 	}
 
-	// Círculos decorativos translúcidos modernos à direita
 	imagealphablending( $im, true );
-	$circle_col1 = imagecolorallocatealpha( $im, 255, 255, 255, 117 );
-	$circle_col2 = imagecolorallocatealpha( $im, $acc[0], $acc[1], $acc[2], 108 );
-	imagefilledellipse( $im, 1080, 140, 480, 480, $circle_col1 );
-	imagefilledellipse( $im, 1050, 550, 360, 360, $circle_col2 );
+	$c_white   = imagecolorallocate( $im, 255, 255, 255 );
+	$c_primary = imagecolorallocate( $im, $primary[0], $primary[1], $primary[2] );
+	$c_accent  = imagecolorallocate( $im, $accent[0], $accent[1], $accent[2] );
+	$c_dark    = imagecolorallocate( $im, 30, 41, 59 );
+	$c_muted   = imagecolorallocate( $im, 100, 116, 139 );
+	$c_border  = imagecolorallocate( $im, 203, 213, 225 );
+	$c_shadow  = imagecolorallocatealpha( $im, 15, 23, 42, 115 );
 
-	// Barra lateral de destaque
-	$accent_col = imagecolorallocate( $im, $acc[0], $acc[1], $acc[2] );
-	$white      = imagecolorallocate( $im, 255, 255, 255 );
-	$light_gray = imagecolorallocate( $im, 219, 234, 254 );
-	$dark_bar   = imagecolorallocatealpha( $im, 7, 18, 38, 35 );
+	// Círculo suave centralizado de fundo
+	$c_halo = imagecolorallocatealpha( $im, $primary[0], $primary[1], $primary[2], 116 );
+	imagefilledellipse( $im, 600, 337, 540, 540, $c_halo );
 
-	imagefilledrectangle( $im, 0, 0, 18, $h, $accent_col );
+	// 2. Cartão Ilustrativo Centralizado (340..860 x 135..540) — Não corta no mobile!
+	imagefilledrectangle( $im, 338, 145, 872, 548, $c_shadow );
+	imagefilledrectangle( $im, 330, 135, 870, 540, $c_white );
+	imagerectangle( $im, 330, 135, 870, 540, $c_border );
 
-	// Badge Superior da Categoria
-	imagefilledrectangle( $im, 75, 68, 75 + ( strlen( $cat_name ) * 16 ) + 40, 118, $accent_col );
-	$badge_text_col = ( 'documentos-gov-br' === $cat_slug || 'contas-financas' === $cat_slug || 'calculadoras-simuladores' === $cat_slug )
-		? imagecolorallocate( $im, 15, 23, 42 )
-		: $white;
-	imagettftext( $im, 18, 0, 95, 101, $badge_text_col, $font_bold, $cat_name );
+	// Topo colorido do cartão ilustrado
+	imagefilledrectangle( $im, 330, 135, 870, 195, $c_primary );
+	imagefilledellipse( $im, 365, 165, 16, 16, $c_white );
+	imagefilledellipse( $im, 392, 165, 16, 16, $c_accent );
 
-	// Quebra automática do Título em até 4 linhas legíveis no Google Discover e Cards
-	$words = explode( ' ', $title );
-	$lines = array();
-	$curr  = '';
-	foreach ( $words as $word ) {
-		$test = empty( $curr ) ? $word : $curr . ' ' . $word;
-		if ( mb_strlen( $test, 'UTF-8' ) > 34 && ! empty( $curr ) ) {
-			$lines[] = $curr;
-			$curr    = $word;
-		} else {
-			$curr = $test;
+	// 3. Desenho Vetorial Centralizado por Tipo de Assunto (Lado Esquerdo do Cartão Central)
+	$ix = 435;
+	$iy = 325;
+	$c_icon_bg = imagecolorallocatealpha( $im, $primary[0], $primary[1], $primary[2], 110 );
+	imagefilledellipse( $im, $ix, $iy, 140, 140, $c_icon_bg );
+
+	if ( 'calculator' === $icon_type ) {
+		// Ícone de Calculadora
+		imagefilledrectangle( $im, $ix - 38, $iy - 48, $ix + 38, $iy + 48, $c_primary );
+		imagefilledrectangle( $im, $ix - 28, $iy - 38, $ix + 28, $iy - 16, $c_white );
+		for ( $row = 0; $row < 3; $row++ ) {
+			for ( $col_i = 0; $col_i < 3; $col_i++ ) {
+				$bx = ( $ix - 26 ) + ( $col_i * 19 );
+				$by = ( $iy - 6 ) + ( $row * 17 );
+				imagefilledrectangle( $im, $bx, $by, $bx + 13, $by + 11, ( 2 === $col_i && 2 === $row ) ? $c_accent : $c_white );
+			}
 		}
+	} elseif ( 'idcard' === $icon_type ) {
+		// Ícone de Carteira de Identidade / Documento
+		imagefilledrectangle( $im, $ix - 48, $iy - 34, $ix + 48, $iy + 34, $c_primary );
+		imagefilledellipse( $im, $ix - 22, $iy - 4, 24, 24, $c_white );
+		imagefilledrectangle( $im, $ix - 36, $iy + 12, $ix - 8, $iy + 24, $c_white );
+		imagefilledrectangle( $im, $ix + 2, $iy - 18, $ix + 38, $iy - 10, $c_white );
+		imagefilledrectangle( $im, $ix + 2, $iy - 2, $ix + 38, $iy + 6, $c_accent );
+		imagefilledrectangle( $im, $ix + 2, $iy + 14, $ix + 28, $iy + 22, $c_white );
+	} elseif ( 'chart' === $icon_type ) {
+		// Ícone de Gráfico Financeiro / Imposto
+		imagefilledrectangle( $im, $ix - 36, $iy + 5, $ix - 18, $iy + 40, $c_primary );
+		imagefilledrectangle( $im, $ix - 9, $iy - 15, $ix + 9, $iy + 40, $c_accent );
+		imagefilledrectangle( $im, $ix + 18, $iy - 38, $ix + 36, $iy + 40, $c_primary );
+	} else {
+		// Ícone de Documento Verificado / Benefício
+		imagefilledrectangle( $im, $ix - 36, $iy - 45, $ix + 36, $iy + 45, $c_primary );
+		imagefilledrectangle( $im, $ix - 24, $iy - 26, $ix + 24, $iy - 18, $c_white );
+		imagefilledrectangle( $im, $ix - 24, $iy - 8, $ix + 24, $iy, $c_white );
+		imagefilledrectangle( $im, $ix - 24, $iy + 10, $ix + 10, $iy + 18, $c_accent );
 	}
-	if ( ! empty( $curr ) ) {
-		$lines[] = $curr;
-	}
-	$lines = array_slice( $lines, 0, 4 );
 
-	$y_text = 210;
-	foreach ( $lines as $line ) {
-		// Sombra sutil do texto
-		$shadow = imagecolorallocatealpha( $im, 0, 0, 0, 75 );
-		imagettftext( $im, 37, 0, 78, $y_text + 3, $shadow, $font_bold, $line );
-		imagettftext( $im, 37, 0, 75, $y_text, $white, $font_bold, $line );
-		$y_text += 68;
-	}
+	// 4. Elementos Visuais Limpos à Direita do Ícone (Selo Curto + Barras Gráficas Simbólicas)
+	imagettftext( $im, 22, 0, 525, 290, $c_dark, $font_bold, $badge );
+	imagettftext( $im, 15, 0, 525, 325, $c_muted, $font_reg, $sub );
 
-	// Rodapé de Verificação Editorial
-	imagefilledrectangle( $im, 18, $h - 90, $w, $h, $dark_bar );
-	imagettftext( $im, 18, 0, 75, $h - 38, $light_gray, $font_reg, 'NÚCLEO VIP  •  GUIA PASSO A PASSO VERIFICADO  •  FONTES OFICIAIS GOV.BR' );
+	// Barras gráficas decorativas de interface (representando linhas de documento/simulador)
+	$c_bar1 = imagecolorallocate( $im, 226, 232, 240 );
+	imagefilledrectangle( $im, 525, 352, 815, 366, $c_bar1 );
+	imagefilledrectangle( $im, 525, 380, 760, 394, $c_bar1 );
+
+	// Selo Verde "Verificado 2026"
+	imagefilledrectangle( $im, 525, 418, 725, 456, $c_accent );
+	imagettftext( $im, 13, 0, 542, 443, $c_white, $font_bold, 'ATUALIZADO 2026' );
 
 	$upload_dir = wp_upload_dir();
-	$filename   = 'capa-guia-' . $post_id . '-' . time() . '.png';
+	$use_webp   = function_exists( 'imagewebp' );
+	$ext        = $use_webp ? '.webp' : '.png';
+	$mime       = $use_webp ? 'image/webp' : 'image/png';
+	$filename   = 'ilustracao-post-' . $post_id . '-' . time() . $ext;
 	$filepath   = trailingslashit( $upload_dir['path'] ) . $filename;
 
-	imagepng( $im, $filepath, 8 );
+	if ( $use_webp ) {
+		imagewebp( $im, $filepath, 88 );
+	} else {
+		imagepng( $im, $filepath, 8 );
+	}
 	imagedestroy( $im );
 
 	if ( ! file_exists( $filepath ) ) {
@@ -897,8 +969,8 @@ function guia_cidadao_generate_post_thumbnail( $post_id ) {
 
 	$attachment = array(
 		'guid'           => trailingslashit( $upload_dir['url'] ) . $filename,
-		'post_mime_type' => 'image/png',
-		'post_title'     => $title,
+		'post_mime_type' => $mime,
+		'post_title'     => 'Ilustração — ' . $badge,
 		'post_content'   => '',
 		'post_status'    => 'inherit',
 	);
@@ -909,8 +981,10 @@ function guia_cidadao_generate_post_thumbnail( $post_id ) {
 		$attach_data = wp_generate_attachment_metadata( $attach_id, $filepath );
 		wp_update_attachment_metadata( $attach_id, $attach_data );
 		set_post_thumbnail( $post_id, $attach_id );
-		update_post_meta( $attach_id, '_wp_attachment_image_alt', $title );
+		// Alt text descreve a imagem em si, sem repetir o título inteiro do artigo
+		update_post_meta( $attach_id, '_wp_attachment_image_alt', $alt );
 	}
 }
 add_action( 'save_post', 'guia_cidadao_generate_post_thumbnail', 20, 1 );
+
 
