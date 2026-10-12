@@ -12,6 +12,18 @@ export default {
       return Response.redirect("https://nucleovip.com.br/sitemap.xml", 301);
     }
 
+    // 2.1 Entrega direta do ads.txt oficial (Garante resposta instantânea para o Google AdSense)
+    if (url.pathname === "/ads.txt") {
+      return new Response("google.com, pub-3922432751903141, DIRECT, f08c47fec0942fa0\n", {
+        status: 200,
+        headers: {
+          "Content-Type": "text/plain; charset=UTF-8",
+          "Cache-Control": "public, max-age=300",
+          "X-Content-Type-Options": "nosniff",
+        },
+      });
+    }
+
     // 3. Processamento e Validação Server-Side Rigorosa do Formulário de Contato (POST /contato/)
     if (request.method === "POST" && (url.pathname === "/contato/" || url.pathname === "/contato")) {
       let nome = "";
