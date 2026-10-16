@@ -4,9 +4,14 @@
   "private": true,
   "description": "Núcleo VIP — Guia do Cidadão (WordPress Theme & VPS Deployment)",
   "scripts": {
-    "build": "node vite-shim.cjs"
+    "build": "node vite-shim.cjs",
+    "deploy": "wrangler deploy",
+    "preview": "wrangler dev"
   },
   "bin": {
     "vite": "./vite-shim.cjs"
+  },
+  "devDependencies": {
+    "wrangler": "^4.149.0"
   }
 }

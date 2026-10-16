@@ -57,10 +57,14 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  if (reopenLink && lgpdBanner) {
-    reopenLink.addEventListener('click', function (e) {
-      e.preventDefault();
-      lgpdBanner.classList.remove('hidden');
+  var reopenLinks = document.querySelectorAll('a[href="#gerenciar-cookies"], #lgpd-reopen-link, #lgpd-reopen-policy-link');
+  if (reopenLinks.length > 0 && lgpdBanner) {
+    reopenLinks.forEach(function (link) {
+      link.addEventListener('click', function (e) {
+        e.preventDefault();
+        lgpdBanner.classList.remove('hidden');
+        if (prefsPanel) prefsPanel.style.display = 'block';
+      });
     });
   }
 
@@ -183,7 +187,7 @@ function formatarMoedaBR(valor) {
  * - Até R$ 1.621,00: 7,5%
  * - De R$ 1.621,01 até R$ 2.902,84: 9,0%
  * - De R$ 2.902,85 até R$ 4.354,27: 12,0%
- * - De R$ 4.354,28 até R$ 8.708,55 (Teto 2026): 14,0%
+ * - De R$ 4.354,28 até R$ 8.475,55 (Teto Oficial 2026): 14,0%
  * Exemplo conferido: R$ 3.000,00 -> R$ 248,60
  */
 function calcularDescontoINSS(base) {
@@ -191,7 +195,7 @@ function calcularDescontoINSS(base) {
   var f1 = 1621.00;
   var f2 = 2902.84;
   var f3 = 4354.27;
-  var teto = 8708.55;
+  var teto = 8475.55;
 
   var salario = Math.min(base, teto);
   var desconto = 0;

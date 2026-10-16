@@ -1,0 +1,11 @@
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+.env*
+!.env.example
+
+dist/
+node_modules/
+wp-backup/
+scratch/
