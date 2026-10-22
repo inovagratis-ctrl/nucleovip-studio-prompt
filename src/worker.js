@@ -24,6 +24,37 @@ export default {
       });
     }
 
+    // 2.2 Redirecionamento 301 de feeds legados do WordPress (/feed/, */feed/) para a página canônica
+    if (url.pathname.endsWith("/feed/") || url.pathname.endsWith("/feed")) {
+      let canonicalPath = url.pathname.replace(/\/feed\/?$/, "") || "/";
+      if (!canonicalPath.endsWith("/") && !canonicalPath.includes(".")) {
+        canonicalPath += "/";
+      }
+      return Response.redirect(`https://nucleovip.com.br${canonicalPath}`, 301);
+    }
+
+    // 2.3 Resposta amigável para endpoints REST legados (/wp-json/*) para evitar 404 no Googlebot
+    if (url.pathname.startsWith("/wp-json")) {
+      return new Response(JSON.stringify({
+        status: "ok",
+        name: "Núcleo VIP — Guia do Cidadão",
+        url: "https://nucleovip.com.br",
+        description: "Portal Independente de Utilidade Pública"
+      }), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json; charset=UTF-8",
+          "Cache-Control": "public, max-age=86400",
+          "X-Content-Type-Options": "nosniff",
+        },
+      });
+    }
+
+    // 2.4 Redirecionamento 301 de URLs legadas com parâmetros do WordPress (/?p=... ou /?page_id=...)
+    if (url.searchParams.has("p") || url.searchParams.has("page_id") || url.searchParams.has("feed")) {
+      return Response.redirect("https://nucleovip.com.br/", 301);
+    }
+
     // 3. Processamento e Validação Server-Side Rigorosa do Formulário de Contato (POST /contato/)
     if (request.method === "POST" && (url.pathname === "/contato/" || url.pathname === "/contato")) {
       let nome = "";
