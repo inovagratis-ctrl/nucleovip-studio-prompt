@@ -2,17 +2,7 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
 
-    // 1. Redirecionamento canônico 301 para HTTPS e domínio sem www (Elimina duplicidade de host e protocolo)
-    if (url.protocol === "http:" || url.hostname === "www.nucleovip.com.br") {
-      return Response.redirect(`https://nucleovip.com.br${url.pathname}${url.search}`, 301);
-    }
-
-    // 2. Redirecionamento 301 de /wp-sitemap.xml para /sitemap.xml
-    if (url.pathname === "/wp-sitemap.xml") {
-      return Response.redirect("https://nucleovip.com.br/sitemap.xml", 301);
-    }
-
-    // 2.1 Entrega direta do ads.txt oficial (Garante resposta instantânea para o Google AdSense)
+    // 1. Entrega direta do ads.txt oficial em qualquer protocolo e subdomínio (Garante 200 OK sem redirects para o robô do AdSense)
     if (url.pathname === "/ads.txt") {
       return new Response("google.com, pub-3922432751903141, DIRECT, f08c47fec0942fa0\n", {
         status: 200,
@@ -22,6 +12,16 @@ export default {
           "X-Content-Type-Options": "nosniff",
         },
       });
+    }
+
+    // 2. Redirecionamento canônico 301 para HTTPS e domínio sem www (Elimina duplicidade de host e protocolo)
+    if (url.protocol === "http:" || url.hostname === "www.nucleovip.com.br") {
+      return Response.redirect(`https://nucleovip.com.br${url.pathname}${url.search}`, 301);
+    }
+
+    // 3. Redirecionamento 301 de /wp-sitemap.xml para /sitemap.xml
+    if (url.pathname === "/wp-sitemap.xml") {
+      return Response.redirect("https://nucleovip.com.br/sitemap.xml", 301);
     }
 
     // 2.2 Redirecionamento 301 de feeds legados do WordPress (/feed/, */feed/) para a página canônica
