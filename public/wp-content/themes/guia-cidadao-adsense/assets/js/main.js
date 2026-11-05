@@ -523,30 +523,44 @@ function carregarIndicadoresTempoReal() {
         var tetoEl = document.getElementById("ind-teto-inss");
         var statusEl = document.getElementById("ind-tempo-status");
 
-        if (selicEl && data.selic) selicEl.innerHTML = data.selic.valor.toFixed(2).replace('.', ',') + '% <span class="unit">a.a.</span>';
-        if (dolarEl && data.dolar) dolarEl.textContent = data.dolar.formato;
+        if (selicEl && data.selic) {
+          selicEl.innerHTML = data.selic.valor.toFixed(2).replace('.', ',') + '% <span class="dash-unit">a.a.</span>';
+        }
+        if (dolarEl && data.dolar) {
+          dolarEl.textContent = 'R$ ' + data.dolar.valor.toFixed(2).replace('.', ',');
+        }
         if (dolarVarEl && data.dolar) {
           var isUpDolar = data.dolar.variacao >= 0;
-          dolarVarEl.textContent = (isUpDolar ? '▲ ' : '▼ ') + (isUpDolar ? '+' : '') + data.dolar.variacao.toFixed(2).replace('.', ',') + '%';
-          dolarVarEl.className = 'badge ' + (isUpDolar ? 'badge-up' : 'badge-down');
+          dolarVarEl.textContent = (isUpDolar ? '+' : '') + data.dolar.variacao.toFixed(2).replace('.', ',') + '%';
+          dolarVarEl.className = isUpDolar ? 'dash-badge-green' : 'dash-badge-red';
         }
-        if (euroEl && data.euro) euroEl.textContent = data.euro.formato;
+        if (euroEl && data.euro) {
+          euroEl.textContent = 'R$ ' + data.euro.valor.toFixed(2).replace('.', ',');
+        }
         if (euroVarEl && data.euro) {
           var isUpEuro = data.euro.variacao >= 0;
-          euroVarEl.textContent = (isUpEuro ? '▲ ' : '▼ ') + (isUpEuro ? '+' : '') + data.euro.variacao.toFixed(2).replace('.', ',') + '%';
-          euroVarEl.className = 'badge ' + (isUpEuro ? 'badge-up' : 'badge-down');
+          euroVarEl.textContent = (isUpEuro ? '+' : '') + data.euro.variacao.toFixed(2).replace('.', ',') + '%';
+          euroVarEl.className = isUpEuro ? 'dash-badge-green' : 'dash-badge-red';
         }
-        if (ipcaEl && data.ipca_12m) ipcaEl.textContent = data.ipca_12m.formato;
-        if (salarioEl && data.salario_minimo) salarioEl.textContent = data.salario_minimo.formato;
-        if (tetoEl && data.teto_inss) tetoEl.textContent = data.teto_inss.formato;
+        if (ipcaEl && data.ipca_12m) {
+          ipcaEl.textContent = data.ipca_12m.valor.toFixed(2).replace('.', ',') + '%';
+        }
+        if (salarioEl && data.salario_minimo) {
+          salarioEl.textContent = 'R$ 1.621';
+        }
+        if (tetoEl && data.teto_inss) {
+          tetoEl.textContent = 'R$ 8.475';
+        }
         if (statusEl) {
           var agora = new Date();
-          var h = ("0" + agora.getHours()).slice(-2) + ":" + ("0" + agora.getMinutes()).slice(-2);
-          statusEl.textContent = "Atualizado hoje às " + h + " (Fontes: Banco Central do Brasil & B3)";
+          var h = ('0' + agora.getHours()).slice(-2) + ':' + ('0' + agora.getMinutes()).slice(-2);
+          statusEl.textContent = 'Atualizado hoje às ' + h + ' (Fontes: Banco Central do Brasil & B3)';
         }
       }
     })
-    .catch(function () {});
+    .catch(function (e) {
+      console.warn('Erro ao carregar indicadores:', e);
+    });
 }
 
 document.addEventListener("DOMContentLoaded", function () {

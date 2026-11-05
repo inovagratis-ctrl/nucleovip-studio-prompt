@@ -28,8 +28,8 @@ export default {
         dolar: { valor: 5.48, variacao: 0.15, formato: "R$ 5,48", fonte: "Mercado Financeiro / BCB" },
         euro: { valor: 6.16, variacao: 0.20, formato: "R$ 6,16", fonte: "Mercado Financeiro / BCB" },
         ipca_12m: { valor: 4.58, formato: "4,58% (12m)", fonte: "IBGE / BCB" },
-        salario_minimo: { valor: 1621.00, formato: "R$ 1.621,00", vigencia: "2026" },
-        teto_inss: { valor: 8475.55, formato: "R$ 8.475,55", vigencia: "Portaria Interministerial MPS/MF" }
+        salario_minimo: { valor: 1621.00, formato: "R$ 1.621", vigencia: "2026" },
+        teto_inss: { valor: 8475.55, formato: "R$ 8.475", vigencia: "Portaria Interministerial MPS/MF" }
       };
 
       try {
