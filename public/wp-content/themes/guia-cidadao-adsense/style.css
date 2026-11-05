@@ -1838,164 +1838,225 @@ img {
   }
 }
 
+
 /* ==========================================================================
-   PAINEL DE INDICADORES ECONÔMICOS EM TEMPO REAL (SELIC, DÓLAR, EURO, IPCA)
+   DASHBOARD DE INDICADORES FINANCEIROS OFICIAIS (CLEAN / LIGHT GLASS STYLE)
    ========================================================================== */
-.economic-ticker-section {
-  background: linear-gradient(135deg, #0b1f3a 0%, #102b57 100%);
-  border-radius: 14px;
-  padding: 1.15rem 1.35rem;
-  margin-bottom: 2rem;
-  box-shadow: 0 4px 20px rgba(16, 43, 87, 0.15);
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+.indicadores-container {
+  width: 100%;
+  margin-bottom: 2.25rem;
 }
 
-.economic-ticker-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.6rem;
-  margin-bottom: 0.9rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+.indicadores-header {
+  margin-bottom: 1.25rem;
 }
 
-.economic-ticker-title {
-  display: flex;
+.status-live-pill {
+  display: inline-flex;
   align-items: center;
   gap: 0.55rem;
-  font-size: 0.95rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  color: #f8fafc;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  padding: 0.35rem 0.85rem;
+  border-radius: 9999px;
+  font-size: 0.8125rem;
+  color: #166534;
+  font-weight: 600;
+  margin-bottom: 0.65rem;
 }
 
-.ticker-pulse {
-  display: inline-block;
-  width: 9px;
-  height: 9px;
-  background-color: #22c55e;
+.live-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #16a34a;
   border-radius: 50%;
-  box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
-  animation: pulse-green 2s infinite;
+  box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.7);
+  animation: live-pulse 2s infinite;
 }
 
-@keyframes pulse-green {
-  0% {
-    transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
-  }
-  70% {
-    transform: scale(1);
-    box-shadow: 0 0 0 7px rgba(34, 197, 94, 0);
-  }
-  100% {
-    transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
-  }
+@keyframes live-pulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 7px rgba(22, 163, 74, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(22, 163, 74, 0); }
 }
 
-.economic-ticker-status {
-  font-size: 0.75rem;
-  color: #94a3b8;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
+.indicadores-title {
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.025em;
+  margin: 0;
 }
 
-.economic-grid {
+/* Grid Inteligente: 3 colunas em telas grandes */
+.cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 0.85rem;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
 }
 
-.economic-card {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 10px;
-  padding: 0.85rem 1rem;
-  transition: all 0.2s ease-in-out;
+/* Cards Estilo Dashboard Limpo / Minimalista */
+.card {
+  position: relative;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 1.25rem 1.35rem 1.45rem;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04), 0 1px 2px rgba(15, 23, 42, 0.02);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
 }
 
-.economic-card:hover {
-  background: rgba(255, 255, 255, 0.1);
-  transform: translateY(-2px);
-  border-color: rgba(255, 255, 255, 0.2);
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 24px -6px rgba(15, 23, 42, 0.08), 0 4px 6px -2px rgba(15, 23, 42, 0.03);
+  border-color: #cbd5e1;
 }
 
-.economic-card-header {
+.card-top {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.65rem;
 }
 
-.economic-label {
-  font-size: 0.76rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: #cbd5e1;
-}
-
-.economic-tag {
-  font-size: 0.68rem;
-  padding: 0.15rem 0.4rem;
-  border-radius: 4px;
+.card-label {
+  font-size: 0.9rem;
   font-weight: 700;
-  background: rgba(255, 255, 255, 0.12);
-  color: #e2e8f0;
+  color: #334155;
 }
 
-.economic-tag.positive {
-  background: rgba(34, 197, 94, 0.2);
-  color: #4ade80;
+.badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.2rem 0.55rem;
+  border-radius: 9999px;
+  letter-spacing: 0.02em;
 }
 
-.economic-tag.negative {
-  background: rgba(239, 68, 68, 0.2);
-  color: #f87171;
+.badge-up {
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
 }
 
-.economic-val {
-  font-size: 1.35rem;
+.badge-down {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.badge-neutral {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.card-value {
+  font-size: 1.85rem;
   font-weight: 800;
-  color: #ffffff;
-  line-height: 1.2;
-  margin: 0.15rem 0;
+  color: #0f172a;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  margin-bottom: 0.35rem;
   font-variant-numeric: tabular-nums;
 }
 
-.economic-sub {
+.card-value .unit {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.card-caption {
+  font-size: 0.78rem;
+  color: #64748b;
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* Barras de realce sutis na base do card */
+.card-accent-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: transparent;
+}
+.card-accent-bar.blue { background: #3b82f6; }
+.card-accent-bar.green { background: #10b981; }
+.card-accent-bar.orange { background: #f97316; }
+.card-accent-bar.purple { background: #8b5cf6; }
+
+/* Card Duplo (Salário / Teto) - Ocupa 2 colunas */
+.card.card-wide {
+  grid-column: span 2;
+}
+
+.card-value-group {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 2rem;
+  margin-top: 0.4rem;
+  margin-bottom: 0.2rem;
+}
+
+.sub-label {
+  display: block;
   font-size: 0.72rem;
-  color: #94a3b8;
-  margin-top: 0.2rem;
+  text-transform: uppercase;
+  color: #64748b;
+  font-weight: 700;
+  letter-spacing: 0.04em;
 }
 
-@media (max-width: 768px) {
-  .economic-grid {
+.card-value-sm {
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0.15rem 0 0 0;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.separator {
+  width: 1px;
+  height: 38px;
+  background-color: #e2e8f0;
+}
+
+/* Responsividade Mobile e Tablet */
+@media (max-width: 900px) {
+  .cards-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 0.65rem;
   }
-  .economic-val {
-    font-size: 1.18rem;
+  .card.card-wide {
+    grid-column: span 2;
   }
 }
 
-@media (max-width: 480px) {
-  .economic-grid {
+@media (max-width: 600px) {
+  .cards-grid {
     grid-template-columns: 1fr;
+    gap: 0.85rem;
   }
-  .economic-ticker-section {
-    padding: 1rem;
+  .card.card-wide {
+    grid-column: span 1;
+  }
+  .card-value-group {
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .card-value {
+    font-size: 1.65rem;
+  }
+  .card-value-sm {
+    font-size: 1.35rem;
+  }
+  .indicadores-title {
+    font-size: 1.35rem;
   }
 }
-
-
-
-

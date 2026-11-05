@@ -126,68 +126,83 @@ img:is([sizes=auto i],[sizes^="auto," i]){contain-intrinsic-size:3000px 1500px}
 
 <main id="primary" class="site-main container">
 
-		<!-- Painel Oficial de Indicadores Financeiros em Tempo Real (Selic, Dólar, Euro, IPCA e Teto INSS) -->
-		<section id="painel-indicadores-dinamicos" class="economic-ticker-section" aria-label="Indicadores Econômicos em Tempo Real">
-			<div class="economic-ticker-header">
-				<div class="economic-ticker-title">
-					<span class="ticker-pulse" aria-hidden="true"></span>
-					<span>Indicadores Financeiros Oficiais em Tempo Real</span>
+		<!-- Seção de Indicadores Econômicos Oficiais em Tempo Real -->
+		<section id="painel-indicadores-dinamicos" class="indicadores-container" aria-label="Indicadores Econômicos em Tempo Real">
+			<!-- Cabeçalho com Pill de Status -->
+			<header class="indicadores-header">
+				<div class="status-live-pill">
+					<span class="live-dot" aria-hidden="true"></span>
+					<span id="ind-tempo-status">Atualizado hoje (Fontes: Banco Central do Brasil &amp; B3)</span>
 				</div>
-				<div id="ind-tempo-status" class="economic-ticker-status">
-					● Conectado ao Banco Central do Brasil (BCB) &amp; B3
-				</div>
-			</div>
+				<h2 class="indicadores-title">Indicadores Financeiros Oficiais</h2>
+			</header>
 
-			<div class="economic-grid">
-				<!-- 1. Taxa Selic -->
-				<div class="economic-card">
-					<div class="economic-card-header">
-						<span class="economic-label">Taxa Selic Hoje</span>
-						<span class="economic-tag positive">Oficial Copom</span>
+			<!-- Grid 3x2 Elegante: 3 cards no topo + 2 cards largos embaixo -->
+			<div class="cards-grid">
+				<!-- Card 1: Taxa Selic -->
+				<article class="card card-highlight">
+					<div class="card-top">
+						<span class="card-label">Taxa Selic</span>
+						<span class="badge badge-neutral">Meta Copom</span>
 					</div>
-					<div id="ind-selic-valor" class="economic-val">13,75% a.a.</div>
-					<div class="economic-sub">Meta oficial do Banco Central</div>
-				</div>
+					<div id="ind-selic-valor" class="card-value">13,75% <span class="unit">a.a.</span></div>
+					<p class="card-caption">Meta oficial do Banco Central</p>
+					<div class="card-accent-bar blue"></div>
+				</article>
 
-				<!-- 2. Dólar Comercial -->
-				<div class="economic-card">
-					<div class="economic-card-header">
-						<span class="economic-label">Dólar Comercial</span>
-						<span id="ind-dolar-var" class="economic-tag positive">+0,15%</span>
+				<!-- Card 2: Dólar Comercial -->
+				<article class="card">
+					<div class="card-top">
+						<span class="card-label">Dólar Comercial</span>
+						<span id="ind-dolar-var" class="badge badge-up">▲ +0,15%</span>
 					</div>
-					<div id="ind-dolar-valor" class="economic-val">R$ 5,48</div>
-					<div class="economic-sub">Cotação comercial para compra / venda</div>
-				</div>
+					<div id="ind-dolar-valor" class="card-value">R$ 5,48</div>
+					<p class="card-caption">Cotação comercial para compra / venda</p>
+					<div class="card-accent-bar green"></div>
+				</article>
 
-				<!-- 3. Euro Comercial -->
-				<div class="economic-card">
-					<div class="economic-card-header">
-						<span class="economic-label">Euro</span>
-						<span id="ind-euro-var" class="economic-tag positive">+0,20%</span>
+				<!-- Card 3: Euro -->
+				<article class="card">
+					<div class="card-top">
+						<span class="card-label">Euro</span>
+						<span id="ind-euro-var" class="badge badge-up">▲ +0,20%</span>
 					</div>
-					<div id="ind-euro-valor" class="economic-val">R$ 6,16</div>
-					<div class="economic-sub">Cotação do Euro frente ao Real</div>
-				</div>
+					<div id="ind-euro-valor" class="card-value">R$ 6,16</div>
+					<p class="card-caption">Cotação frente ao Real</p>
+					<div class="card-accent-bar green"></div>
+				</article>
 
-				<!-- 4. Inflação IPCA (12 meses) -->
-				<div class="economic-card">
-					<div class="economic-card-header">
-						<span class="economic-label">Inflação IPCA</span>
-						<span class="economic-tag">12 meses</span>
+				<!-- Card 4: Inflação IPCA -->
+				<article class="card">
+					<div class="card-top">
+						<span class="card-label">Inflação IPCA</span>
+						<span class="badge badge-neutral">12 meses</span>
 					</div>
-					<div id="ind-ipca-valor" class="economic-val">4,58%</div>
-					<div class="economic-sub">Índice oficial medido pelo IBGE</div>
-				</div>
+					<div id="ind-ipca-valor" class="card-value">4,58%</div>
+					<p class="card-caption">Índice oficial medido pelo IBGE</p>
+					<div class="card-accent-bar orange"></div>
+				</article>
 
-				<!-- 5. Parâmetros Trabalhistas -->
-				<div class="economic-card">
-					<div class="economic-card-header">
-						<span class="economic-label">Salário Mínimo / Teto</span>
-						<span class="economic-tag">2026</span>
+				<!-- Card 5: Salário Mínimo e Teto INSS (Card Duplo Espaçoso) -->
+				<article class="card card-wide">
+					<div class="card-top">
+						<span class="card-label">Salário Mínimo / Teto 2026</span>
+						<span class="badge badge-neutral">Oficial MPS/MF</span>
 					</div>
-					<div class="economic-val" style="font-size: 1.05rem;">R$ 1.621 / R$ 8.475</div>
-					<div class="economic-sub">Piso nacional e teto previdenciário</div>
-				</div>
+					<div class="card-value-group">
+						<div>
+							<span class="sub-label">Mínimo Nacional</span>
+							<p id="ind-salario-min" class="card-value-sm">R$ 1.621</p>
+						</div>
+						<div class="separator" aria-hidden="true"></div>
+						<div>
+							<span class="sub-label">Teto do INSS</span>
+							<p id="ind-teto-inss" class="card-value-sm">R$ 8.475</p>
+						</div>
+					</div>
+					<p class="card-caption" style="margin-top:0.35rem;">Piso salarial e limite de contribuição previdenciária</p>
+					<div class="card-accent-bar purple"></div>
+				</article>
 			</div>
 		</section>
 
