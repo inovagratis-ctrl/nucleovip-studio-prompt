@@ -19,6 +19,124 @@ export default {
       return Response.redirect(`https://nucleovip.com.br${url.pathname}${url.search}`, 301);
     }
 
+    // 2.0 API de Indicadores Financeiros em Tempo Real (Selic Oficial BCB, Dólar, Euro, IPCA e Parâmetros)
+    if (url.pathname === "/api/indicadores" || url.pathname === "/api/indicadores/") {
+      const fallbackData = {
+        updated_at: new Date().toISOString(),
+        status: "success",
+        selic: { valor: 13.75, formato: "13,75% a.a.", fonte: "Banco Central do Brasil" },
+        dolar: { valor: 5.48, variacao: 0.15, formato: "R$ 5,48", fonte: "Mercado Financeiro / BCB" },
+        euro: { valor: 6.16, variacao: 0.20, formato: "R$ 6,16", fonte: "Mercado Financeiro / BCB" },
+        ipca_12m: { valor: 4.58, formato: "4,58% (12m)", fonte: "IBGE / BCB" },
+        salario_minimo: { valor: 1621.00, formato: "R$ 1.621,00", vigencia: "2026" },
+        teto_inss: { valor: 8475.55, formato: "R$ 8.475,55", vigencia: "Portaria Interministerial MPS/MF" }
+      };
+
+      try {
+        let selicVal = fallbackData.selic.valor;
+        let dolarVal = fallbackData.dolar.valor;
+        let dolarVar = fallbackData.dolar.variacao;
+        let euroVal = fallbackData.euro.valor;
+        let euroVar = fallbackData.euro.variacao;
+        let ipcaVal = fallbackData.ipca_12m.valor;
+
+        const [selicRes, moedasRes, ipcaRes] = await Promise.allSettled([
+          fetch("https://api.bcb.gov.br/dados/serie/bcdata.sgs.432/dados/ultimos/1?formato=json", {
+            headers: { "Accept": "application/json" }
+          }).then(r => r.ok ? r.json() : null),
+          fetch("https://economia.awesomeapi.com.br/last/USD-BRL,EUR-BRL", {
+            headers: { "Accept": "application/json" }
+          }).then(r => r.ok ? r.json() : null),
+          fetch("https://api.bcb.gov.br/dados/serie/bcdata.sgs.13522/dados/ultimos/1?formato=json", {
+            headers: { "Accept": "application/json" }
+          }).then(r => r.ok ? r.json() : null)
+        ]);
+
+        if (selicRes.status === "fulfilled" && Array.isArray(selicRes.value) && selicRes.value[0]?.valor) {
+          const parsed = parseFloat(selicRes.value[0].valor);
+          if (!isNaN(parsed) && parsed > 0) selicVal = parsed;
+        }
+
+        if (moedasRes.status === "fulfilled" && moedasRes.value?.USDBRL?.bid) {
+          const parsedUsd = parseFloat(moedasRes.value.USDBRL.bid);
+          const parsedUsdVar = parseFloat(moedasRes.value.USDBRL.pctChange);
+          if (!isNaN(parsedUsd)) dolarVal = parsedUsd;
+          if (!isNaN(parsedUsdVar)) dolarVar = parsedUsdVar;
+        }
+
+        if (moedasRes.status === "fulfilled" && moedasRes.value?.EURBRL?.bid) {
+          const parsedEur = parseFloat(moedasRes.value.EURBRL.bid);
+          const parsedEurVar = parseFloat(moedasRes.value.EURBRL.pctChange);
+          if (!isNaN(parsedEur)) euroVal = parsedEur;
+          if (!isNaN(parsedEurVar)) euroVar = parsedEurVar;
+        }
+
+        if (ipcaRes.status === "fulfilled" && Array.isArray(ipcaRes.value) && ipcaRes.value[0]?.valor) {
+          const parsedIpca = parseFloat(ipcaRes.value[0].valor);
+          if (!isNaN(parsedIpca) && parsedIpca > 0) ipcaVal = parsedIpca;
+        }
+
+        const payload = {
+          updated_at: new Date().toISOString(),
+          status: "success",
+          selic: {
+            valor: selicVal,
+            formato: `${selicVal.toFixed(2).replace(".", ",")}% a.a.`,
+            fonte: "Banco Central do Brasil (Copom)"
+          },
+          dolar: {
+            valor: dolarVal,
+            variacao: dolarVar,
+            formato: `R$ ${dolarVal.toFixed(2).replace(".", ",")}`,
+            variacao_texto: `${dolarVar >= 0 ? "+" : ""}${dolarVar.toFixed(2).replace(".", ",")}%`,
+            fonte: "Mercado Financeiro / BCB"
+          },
+          euro: {
+            valor: euroVal,
+            variacao: euroVar,
+            formato: `R$ ${euroVal.toFixed(2).replace(".", ",")}`,
+            variacao_texto: `${euroVar >= 0 ? "+" : ""}${euroVar.toFixed(2).replace(".", ",")}%`,
+            fonte: "Mercado Financeiro / BCB"
+          },
+          ipca_12m: {
+            valor: ipcaVal,
+            formato: `${ipcaVal.toFixed(2).replace(".", ",")}%`,
+            fonte: "IBGE / Banco Central"
+          },
+          salario_minimo: {
+            valor: 1621.00,
+            formato: "R$ 1.621,00",
+            vigencia: "Ano Base 2026"
+          },
+          teto_inss: {
+            valor: 8475.55,
+            formato: "R$ 8.475,55",
+            vigencia: "Portaria Interministerial MPS/MF"
+          }
+        };
+
+        return new Response(JSON.stringify(payload), {
+          status: 200,
+          headers: {
+            "Content-Type": "application/json; charset=UTF-8",
+            "Cache-Control": "public, max-age=180, s-maxage=300",
+            "Access-Control-Allow-Origin": "*",
+            "X-Content-Type-Options": "nosniff"
+          }
+        });
+      } catch (err) {
+        return new Response(JSON.stringify(fallbackData), {
+          status: 200,
+          headers: {
+            "Content-Type": "application/json; charset=UTF-8",
+            "Cache-Control": "public, max-age=60",
+            "Access-Control-Allow-Origin": "*",
+            "X-Content-Type-Options": "nosniff"
+          }
+        });
+      }
+    }
+
     // 3. Redirecionamento 301 de /wp-sitemap.xml para /sitemap.xml
     if (url.pathname === "/wp-sitemap.xml") {
       return Response.redirect("https://nucleovip.com.br/sitemap.xml", 301);

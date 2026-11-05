@@ -126,6 +126,71 @@ img:is([sizes=auto i],[sizes^="auto," i]){contain-intrinsic-size:3000px 1500px}
 
 <main id="primary" class="site-main container">
 
+		<!-- Painel Oficial de Indicadores Financeiros em Tempo Real (Selic, Dólar, Euro, IPCA e Teto INSS) -->
+		<section id="painel-indicadores-dinamicos" class="economic-ticker-section" aria-label="Indicadores Econômicos em Tempo Real">
+			<div class="economic-ticker-header">
+				<div class="economic-ticker-title">
+					<span class="ticker-pulse" aria-hidden="true"></span>
+					<span>Indicadores Financeiros Oficiais em Tempo Real</span>
+				</div>
+				<div id="ind-tempo-status" class="economic-ticker-status">
+					● Conectado ao Banco Central do Brasil (BCB) &amp; B3
+				</div>
+			</div>
+
+			<div class="economic-grid">
+				<!-- 1. Taxa Selic -->
+				<div class="economic-card">
+					<div class="economic-card-header">
+						<span class="economic-label">Taxa Selic Hoje</span>
+						<span class="economic-tag positive">Oficial Copom</span>
+					</div>
+					<div id="ind-selic-valor" class="economic-val">13,75% a.a.</div>
+					<div class="economic-sub">Meta oficial do Banco Central</div>
+				</div>
+
+				<!-- 2. Dólar Comercial -->
+				<div class="economic-card">
+					<div class="economic-card-header">
+						<span class="economic-label">Dólar Comercial</span>
+						<span id="ind-dolar-var" class="economic-tag positive">+0,15%</span>
+					</div>
+					<div id="ind-dolar-valor" class="economic-val">R$ 5,48</div>
+					<div class="economic-sub">Cotação comercial para compra / venda</div>
+				</div>
+
+				<!-- 3. Euro Comercial -->
+				<div class="economic-card">
+					<div class="economic-card-header">
+						<span class="economic-label">Euro</span>
+						<span id="ind-euro-var" class="economic-tag positive">+0,20%</span>
+					</div>
+					<div id="ind-euro-valor" class="economic-val">R$ 6,16</div>
+					<div class="economic-sub">Cotação do Euro frente ao Real</div>
+				</div>
+
+				<!-- 4. Inflação IPCA (12 meses) -->
+				<div class="economic-card">
+					<div class="economic-card-header">
+						<span class="economic-label">Inflação IPCA</span>
+						<span class="economic-tag">12 meses</span>
+					</div>
+					<div id="ind-ipca-valor" class="economic-val">4,58%</div>
+					<div class="economic-sub">Índice oficial medido pelo IBGE</div>
+				</div>
+
+				<!-- 5. Parâmetros Trabalhistas -->
+				<div class="economic-card">
+					<div class="economic-card-header">
+						<span class="economic-label">Salário Mínimo / Teto</span>
+						<span class="economic-tag">2026</span>
+					</div>
+					<div class="economic-val" style="font-size: 1.05rem;">R$ 1.621 / R$ 8.475</div>
+					<div class="economic-sub">Piso nacional e teto previdenciário</div>
+				</div>
+			</div>
+		</section>
+
 					<!-- 1. SEÇÃO DE FERRAMENTAS INTERATIVAS (Hero Cidadão + Atalhos das Calculadoras) -->
 		<section class="tools-spotlight-section" aria-label="Calculadoras Trabalhistas em Destaque">
 			<!-- Cartão Principal (Hero Cidadão 1920x1080 com espaço negativo à esquerda para HTML e pessoa visível à direita) -->

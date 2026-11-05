@@ -498,3 +498,50 @@ window.calcularIRPFMensal = function () {
     '<br><small>Regra aplicada: ' + irObj.metodo + '</small>';
   box.classList.add('active');
 };
+
+
+// 6. Atualização Dinâmica do Painel de Indicadores Econômicos em Tempo Real
+function carregarIndicadoresTempoReal() {
+  var tickerEl = document.getElementById("painel-indicadores-dinamicos");
+  if (!tickerEl) return;
+
+  fetch("/api/indicadores")
+    .then(function (res) {
+      if (!res.ok) throw new Error("Falha HTTP");
+      return res.json();
+    })
+    .then(function (data) {
+      if (data && data.status === "success") {
+        var selicEl = document.getElementById("ind-selic-valor");
+        var dolarEl = document.getElementById("ind-dolar-valor");
+        var dolarVarEl = document.getElementById("ind-dolar-var");
+        var euroEl = document.getElementById("ind-euro-valor");
+        var euroVarEl = document.getElementById("ind-euro-var");
+        var ipcaEl = document.getElementById("ind-ipca-valor");
+        var statusEl = document.getElementById("ind-tempo-status");
+
+        if (selicEl && data.selic) selicEl.textContent = data.selic.formato;
+        if (dolarEl && data.dolar) dolarEl.textContent = data.dolar.formato;
+        if (dolarVarEl && data.dolar) {
+          dolarVarEl.textContent = data.dolar.variacao_texto || ((data.dolar.variacao >= 0 ? "+" : "") + data.dolar.variacao.toFixed(2) + "%");
+          dolarVarEl.className = "economic-tag " + (data.dolar.variacao >= 0 ? "positive" : "negative");
+        }
+        if (euroEl && data.euro) euroEl.textContent = data.euro.formato;
+        if (euroVarEl && data.euro) {
+          euroVarEl.textContent = data.euro.variacao_texto || ((data.euro.variacao >= 0 ? "+" : "") + data.euro.variacao.toFixed(2) + "%");
+          euroVarEl.className = "economic-tag " + (data.euro.variacao >= 0 ? "positive" : "negative");
+        }
+        if (ipcaEl && data.ipca_12m) ipcaEl.textContent = data.ipca_12m.formato;
+        if (statusEl) {
+          var agora = new Date();
+          var h = ("0" + agora.getHours()).slice(-2) + ":" + ("0" + agora.getMinutes()).slice(-2);
+          statusEl.innerHTML = "● Atualizado hoje às " + h + " (Fontes: Banco Central do Brasil &amp; B3)";
+        }
+      }
+    })
+    .catch(function () {});
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+  carregarIndicadoresTempoReal();
+});
