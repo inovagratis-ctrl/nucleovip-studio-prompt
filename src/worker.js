@@ -19,15 +19,16 @@ export default {
       return Response.redirect(`https://nucleovip.com.br${url.pathname}${url.search}`, 301);
     }
 
-    // 2.0 API de Indicadores Financeiros em Tempo Real (Selic Oficial BCB, Dólar, Euro, IPCA e Parâmetros)
+    // 2.0 API de Indicadores Financeiros em Tempo Real (Selic Oficial BCB, Dólar, Euro, IPCA, Ibovespa e Parâmetros)
     if (url.pathname === "/api/indicadores" || url.pathname === "/api/indicadores/") {
       const fallbackData = {
         updated_at: new Date().toISOString(),
         status: "success",
         selic: { valor: 13.75, formato: "13,75% a.a.", fonte: "Banco Central do Brasil" },
-        dolar: { valor: 5.48, variacao: 0.15, formato: "R$ 5,48", fonte: "Mercado Financeiro / BCB" },
-        euro: { valor: 6.16, variacao: 0.20, formato: "R$ 6,16", fonte: "Mercado Financeiro / BCB" },
-        ipca_12m: { valor: 4.58, formato: "4,58% (12m)", fonte: "IBGE / BCB" },
+        dolar: { valor: 5.48, variacao: 0.15, formato: "R$ 5,48", variacao_texto: "+0,15%", fonte: "Mercado Financeiro / BCB" },
+        euro: { valor: 6.16, variacao: 0.20, formato: "R$ 6,16", variacao_texto: "+0,20%", fonte: "Mercado Financeiro / BCB" },
+        ipca_12m: { valor: 4.58, formato: "4,58%", fonte: "IBGE / BCB" },
+        ibov: { valor: 166655, variacao: -0.54, formato: "166.655 pts", variacao_texto: "-0,54%", fonte: "B3 (Brasil, Bolsa, Balcão)" },
         salario_minimo: { valor: 1621.00, formato: "R$ 1.621", vigencia: "2026" },
         teto_inss: { valor: 8475.55, formato: "R$ 8.475", vigencia: "Portaria Interministerial MPS/MF" }
       };
@@ -39,8 +40,10 @@ export default {
         let euroVal = fallbackData.euro.valor;
         let euroVar = fallbackData.euro.variacao;
         let ipcaVal = fallbackData.ipca_12m.valor;
+        let ibovVal = fallbackData.ibov.valor;
+        let ibovVar = fallbackData.ibov.variacao;
 
-        const [selicRes, moedasRes, ipcaRes] = await Promise.allSettled([
+        const [selicRes, moedasRes, ipcaRes, ibovRes] = await Promise.allSettled([
           fetch("https://api.bcb.gov.br/dados/serie/bcdata.sgs.432/dados/ultimos/1?formato=json", {
             headers: { "Accept": "application/json" }
           }).then(r => r.ok ? r.json() : null),
@@ -49,6 +52,9 @@ export default {
           }).then(r => r.ok ? r.json() : null),
           fetch("https://api.bcb.gov.br/dados/serie/bcdata.sgs.13522/dados/ultimos/1?formato=json", {
             headers: { "Accept": "application/json" }
+          }).then(r => r.ok ? r.json() : null),
+          fetch("https://query1.finance.yahoo.com/v8/finance/chart/%5EBVSP?interval=1d", {
+            headers: { "User-Agent": "Mozilla/5.0" }
           }).then(r => r.ok ? r.json() : null)
         ]);
 
@@ -76,6 +82,16 @@ export default {
           if (!isNaN(parsedIpca) && parsedIpca > 0) ipcaVal = parsedIpca;
         }
 
+        if (ibovRes.status === "fulfilled" && ibovRes.value?.chart?.result?.[0]?.meta) {
+          const meta = ibovRes.value.chart.result[0].meta;
+          const currentPrice = meta.regularMarketPrice;
+          const prevClose = meta.chartPreviousClose || meta.previousClose;
+          if (currentPrice && prevClose) {
+            ibovVal = Math.round(currentPrice);
+            ibovVar = ((currentPrice - prevClose) / prevClose) * 100;
+          }
+        }
+
         const payload = {
           updated_at: new Date().toISOString(),
           status: "success",
@@ -100,17 +116,24 @@ export default {
           },
           ipca_12m: {
             valor: ipcaVal,
-            formato: `${ipcaVal.toFixed(2).replace(".", ",")}%`,
+            formato: `${ipcaVal.toFixed(2).replace(".", ",") }%`,
             fonte: "IBGE / Banco Central"
+          },
+          ibov: {
+            valor: ibovVal,
+            variacao: Number(ibovVar.toFixed(2)),
+            formato: `${ibovVal.toLocaleString('pt-BR')} pts`,
+            variacao_texto: `${ibovVar >= 0 ? "+" : ""}${ibovVar.toFixed(2).replace(".", ",") }%`,
+            fonte: "B3 (Brasil, Bolsa, Balcão)"
           },
           salario_minimo: {
             valor: 1621.00,
-            formato: "R$ 1.621,00",
+            formato: "R$ 1.621",
             vigencia: "Ano Base 2026"
           },
           teto_inss: {
             valor: 8475.55,
-            formato: "R$ 8.475,55",
+            formato: "R$ 8.475",
             vigencia: "Portaria Interministerial MPS/MF"
           }
         };
@@ -119,7 +142,7 @@ export default {
           status: 200,
           headers: {
             "Content-Type": "application/json; charset=UTF-8",
-            "Cache-Control": "public, max-age=180, s-maxage=300",
+            "Cache-Control": "public, max-age=120, s-maxage=120",
             "Access-Control-Allow-Origin": "*",
             "X-Content-Type-Options": "nosniff"
           }

@@ -519,6 +519,8 @@ function carregarIndicadoresTempoReal() {
         var euroEl = document.getElementById("ind-euro-valor");
         var euroVarEl = document.getElementById("ind-euro-var");
         var ipcaEl = document.getElementById("ind-ipca-valor");
+        var ibovEl = document.getElementById("ind-ibov-valor");
+        var ibovVarEl = document.getElementById("ind-ibov-var");
         var salarioEl = document.getElementById("ind-salario-min");
         var tetoEl = document.getElementById("ind-teto-inss");
         var statusEl = document.getElementById("ind-tempo-status");
@@ -544,6 +546,15 @@ function carregarIndicadoresTempoReal() {
         }
         if (ipcaEl && data.ipca_12m) {
           ipcaEl.textContent = data.ipca_12m.valor.toFixed(2).replace('.', ',') + '%';
+        }
+        if (ibovEl && data.ibov) {
+          var ibovFormatted = data.ibov.valor ? Math.round(data.ibov.valor).toLocaleString('pt-BR') : data.ibov.formato;
+          ibovEl.innerHTML = ibovFormatted + ' <span class="dash-unit">pts</span>';
+        }
+        if (ibovVarEl && data.ibov) {
+          var isUpIbov = data.ibov.variacao >= 0;
+          ibovVarEl.textContent = (isUpIbov ? '+' : '') + data.ibov.variacao.toFixed(2).replace('.', ',') + '%';
+          ibovVarEl.className = isUpIbov ? 'dash-badge-green' : 'dash-badge-red';
         }
         if (salarioEl && data.salario_minimo) {
           salarioEl.textContent = 'R$ 1.621';
