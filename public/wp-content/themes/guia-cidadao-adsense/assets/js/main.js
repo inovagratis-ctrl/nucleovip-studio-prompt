@@ -506,9 +506,10 @@ function carregarIndicadoresTempoReal() {
   var tickerEl = document.getElementById("painel-indicadores-dinamicos");
   if (!tickerEl) return;
 
-  fetch("/api/indicadores")
+  // Chamada sempre fresca sem cache local do navegador
+  fetch("/api/indicadores?t=" + new Date().getTime(), { cache: "no-store" })
     .then(function (res) {
-      if (!res.ok) throw new Error("Falha HTTP");
+      if (!res.ok) throw new Error("Falha HTTP " + res.status);
       return res.json();
     })
     .then(function (data) {
@@ -570,10 +571,12 @@ function carregarIndicadoresTempoReal() {
       }
     })
     .catch(function (e) {
-      console.warn('Erro ao carregar indicadores:', e);
+      console.warn('Erro ao atualizar indicadores:', e);
     });
 }
 
 document.addEventListener("DOMContentLoaded", function () {
   carregarIndicadoresTempoReal();
+  // Atualiza automaticamente a cada 3 minutos se o usuário mantiver a página aberta
+  setInterval(carregarIndicadoresTempoReal, 180000);
 });

@@ -24,12 +24,12 @@ export default {
       const fallbackData = {
         updated_at: new Date().toISOString(),
         status: "success",
-        selic: { valor: 13.75, formato: "13,75% a.a.", fonte: "Banco Central do Brasil" },
-        dolar: { valor: 5.48, variacao: 0.15, formato: "R$ 5,48", variacao_texto: "+0,15%", fonte: "Mercado Financeiro / BCB" },
-        euro: { valor: 6.16, variacao: 0.20, formato: "R$ 6,16", variacao_texto: "+0,20%", fonte: "Mercado Financeiro / BCB" },
-        ipca_12m: { valor: 4.58, formato: "4,58%", fonte: "IBGE / BCB" },
-        ibov: { valor: 166655, variacao: -0.54, formato: "166.655 pts", variacao_texto: "-0,54%", fonte: "B3 (Brasil, Bolsa, Balcão)" },
-        salario_minimo: { valor: 1621.00, formato: "R$ 1.621", vigencia: "2026" },
+        selic: { valor: 13.75, formato: "13,75% a.a.", fonte: "Banco Central do Brasil (Copom)" },
+        dolar: { valor: 5.58, variacao: 1.35, formato: "R$ 5,58", variacao_texto: "+1,35%", fonte: "Mercado Financeiro / BCB" },
+        euro: { valor: 6.24, variacao: 0.88, formato: "R$ 6,24", variacao_texto: "+0,88%", fonte: "Mercado Financeiro / BCB" },
+        ipca_12m: { valor: 4.58, formato: "4,58%", fonte: "IBGE / Banco Central" },
+        ibov: { valor: 171337, variacao: -0.52, formato: "171.337 pts", variacao_texto: "-0,52%", fonte: "B3 (Brasil, Bolsa, Balcão)" },
+        salario_minimo: { valor: 1621.00, formato: "R$ 1.621", vigencia: "Ano Base 2026" },
         teto_inss: { valor: 8475.55, formato: "R$ 8.475", vigencia: "Portaria Interministerial MPS/MF" }
       };
 
@@ -43,45 +43,78 @@ export default {
         let ibovVal = fallbackData.ibov.valor;
         let ibovVar = fallbackData.ibov.variacao;
 
-        const [selicRes, moedasRes, ipcaRes, ibovRes] = await Promise.allSettled([
-          fetch("https://api.bcb.gov.br/dados/serie/bcdata.sgs.432/dados/ultimos/1?formato=json", {
-            headers: { "Accept": "application/json" }
-          }).then(r => r.ok ? r.json() : null),
-          fetch("https://economia.awesomeapi.com.br/last/USD-BRL,EUR-BRL", {
-            headers: { "Accept": "application/json" }
-          }).then(r => r.ok ? r.json() : null),
-          fetch("https://api.bcb.gov.br/dados/serie/bcdata.sgs.13522/dados/ultimos/1?formato=json", {
-            headers: { "Accept": "application/json" }
-          }).then(r => r.ok ? r.json() : null),
-          fetch("https://query1.finance.yahoo.com/v8/finance/chart/%5EBVSP?interval=1d", {
-            headers: { "User-Agent": "Mozilla/5.0" }
-          }).then(r => r.ok ? r.json() : null)
+        const commonHeaders = {
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          "Accept": "application/json"
+        };
+
+        const [selicRes, moedasRes, ipcaRes, ibovRes, usdYahooRes, eurYahooRes] = await Promise.allSettled([
+          fetch("https://api.bcb.gov.br/dados/serie/bcdata.sgs.432/dados/ultimos/1?formato=json", { headers: commonHeaders })
+            .then(r => r.ok ? r.json() : null),
+          fetch("https://economia.awesomeapi.com.br/last/USD-BRL,EUR-BRL", { headers: commonHeaders })
+            .then(r => r.ok ? r.json() : null),
+          fetch("https://api.bcb.gov.br/dados/serie/bcdata.sgs.13522/dados/ultimos/1?formato=json", { headers: commonHeaders })
+            .then(r => r.ok ? r.json() : null),
+          fetch("https://query1.finance.yahoo.com/v8/finance/chart/%5EBVSP?interval=1d", { headers: commonHeaders })
+            .then(r => r.ok ? r.json() : null),
+          fetch("https://query1.finance.yahoo.com/v8/finance/chart/USDBRL=X?interval=1d", { headers: commonHeaders })
+            .then(r => r.ok ? r.json() : null),
+          fetch("https://query1.finance.yahoo.com/v8/finance/chart/EURBRL=X?interval=1d", { headers: commonHeaders })
+            .then(r => r.ok ? r.json() : null)
         ]);
 
+        // Selic
         if (selicRes.status === "fulfilled" && Array.isArray(selicRes.value) && selicRes.value[0]?.valor) {
           const parsed = parseFloat(selicRes.value[0].valor);
           if (!isNaN(parsed) && parsed > 0) selicVal = parsed;
         }
 
+        // Moedas: Tenta AwesomeAPI primeiro
+        let usdParsed = false;
+        let eurParsed = false;
+
         if (moedasRes.status === "fulfilled" && moedasRes.value?.USDBRL?.bid) {
-          const parsedUsd = parseFloat(moedasRes.value.USDBRL.bid);
-          const parsedUsdVar = parseFloat(moedasRes.value.USDBRL.pctChange);
-          if (!isNaN(parsedUsd)) dolarVal = parsedUsd;
-          if (!isNaN(parsedUsdVar)) dolarVar = parsedUsdVar;
+          const pBid = parseFloat(moedasRes.value.USDBRL.bid);
+          const pVar = parseFloat(moedasRes.value.USDBRL.pctChange);
+          if (!isNaN(pBid)) { dolarVal = pBid; usdParsed = true; }
+          if (!isNaN(pVar)) { dolarVar = pVar; }
         }
 
         if (moedasRes.status === "fulfilled" && moedasRes.value?.EURBRL?.bid) {
-          const parsedEur = parseFloat(moedasRes.value.EURBRL.bid);
-          const parsedEurVar = parseFloat(moedasRes.value.EURBRL.pctChange);
-          if (!isNaN(parsedEur)) euroVal = parsedEur;
-          if (!isNaN(parsedEurVar)) euroVar = parsedEurVar;
+          const pBid = parseFloat(moedasRes.value.EURBRL.bid);
+          const pVar = parseFloat(moedasRes.value.EURBRL.pctChange);
+          if (!isNaN(pBid)) { euroVal = pBid; eurParsed = true; }
+          if (!isNaN(pVar)) { euroVar = pVar; }
         }
 
+        // Fallback robusto via Yahoo Finance se AwesomeAPI falhar
+        if (!usdParsed && usdYahooRes.status === "fulfilled" && usdYahooRes.value?.chart?.result?.[0]?.meta) {
+          const meta = usdYahooRes.value.chart.result[0].meta;
+          const p = meta.regularMarketPrice;
+          const prev = meta.chartPreviousClose || meta.previousClose;
+          if (p) {
+            dolarVal = p;
+            if (prev) dolarVar = ((p - prev) / prev) * 100;
+          }
+        }
+
+        if (!eurParsed && eurYahooRes.status === "fulfilled" && eurYahooRes.value?.chart?.result?.[0]?.meta) {
+          const meta = eurYahooRes.value.chart.result[0].meta;
+          const p = meta.regularMarketPrice;
+          const prev = meta.chartPreviousClose || meta.previousClose;
+          if (p) {
+            euroVal = p;
+            if (prev) euroVar = ((p - prev) / prev) * 100;
+          }
+        }
+
+        // IPCA 12m
         if (ipcaRes.status === "fulfilled" && Array.isArray(ipcaRes.value) && ipcaRes.value[0]?.valor) {
           const parsedIpca = parseFloat(ipcaRes.value[0].valor);
           if (!isNaN(parsedIpca) && parsedIpca > 0) ipcaVal = parsedIpca;
         }
 
+        // Ibovespa (B3)
         if (ibovRes.status === "fulfilled" && ibovRes.value?.chart?.result?.[0]?.meta) {
           const meta = ibovRes.value.chart.result[0].meta;
           const currentPrice = meta.regularMarketPrice;
@@ -101,17 +134,17 @@ export default {
             fonte: "Banco Central do Brasil (Copom)"
           },
           dolar: {
-            valor: dolarVal,
-            variacao: dolarVar,
+            valor: Number(dolarVal.toFixed(2)),
+            variacao: Number(dolarVar.toFixed(2)),
             formato: `R$ ${dolarVal.toFixed(2).replace(".", ",")}`,
-            variacao_texto: `${dolarVar >= 0 ? "+" : ""}${dolarVar.toFixed(2).replace(".", ",")}%`,
+            variacao_texto: `${dolarVar >= 0 ? "+" : ""}${dolarVar.toFixed(2).replace(".", ",") }%`,
             fonte: "Mercado Financeiro / BCB"
           },
           euro: {
-            valor: euroVal,
-            variacao: euroVar,
+            valor: Number(euroVal.toFixed(2)),
+            variacao: Number(euroVar.toFixed(2)),
             formato: `R$ ${euroVal.toFixed(2).replace(".", ",")}`,
-            variacao_texto: `${euroVar >= 0 ? "+" : ""}${euroVar.toFixed(2).replace(".", ",")}%`,
+            variacao_texto: `${euroVar >= 0 ? "+" : ""}${euroVar.toFixed(2).replace(".", ",") }%`,
             fonte: "Mercado Financeiro / BCB"
           },
           ipca_12m: {
@@ -142,7 +175,7 @@ export default {
           status: 200,
           headers: {
             "Content-Type": "application/json; charset=UTF-8",
-            "Cache-Control": "public, max-age=120, s-maxage=120",
+            "Cache-Control": "public, max-age=60, s-maxage=60",
             "Access-Control-Allow-Origin": "*",
             "X-Content-Type-Options": "nosniff"
           }
@@ -152,7 +185,7 @@ export default {
           status: 200,
           headers: {
             "Content-Type": "application/json; charset=UTF-8",
-            "Cache-Control": "public, max-age=60",
+            "Cache-Control": "public, max-age=30",
             "Access-Control-Allow-Origin": "*",
             "X-Content-Type-Options": "nosniff"
           }
